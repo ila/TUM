@@ -13,3 +13,14 @@ Five golden rules:
 * *Develop an exam strategy* - start learning early enough and identify the optimal learning method for each subject: use old exams, practice dry runs and understand the structure of the test;
 * *Explore the learning style* - not everything works for everyone, and people have different habits. Finding the right one (and the right environment) takes some time and exploring;
 * *Take care of yourself* - enjoy student and everyday life while taking care of health and making friends.
+
+When struggling with studies, learncoaching@ssz.tum.de can help.
+
+
+
+### Shaping our University - together!
+
+Students Council consists in students actively engaged to improve the University and support fellow students. Common tasks are:
+
+* Co-designing campus and faculties;
+* 
