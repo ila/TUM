@@ -28,7 +28,7 @@ Students Council consists in students actively engaged to improve the University
 * Organizing movie nights;
 * Renting laptops.
 
-Students are volunteers - anyone can get involved! The official mail to contact the organization is sv@fs.tum.de, the website is [sv.tum.de](sv.tum.de), check it out! 
+Students are volunteers - anyone can get involved! The official mail to contact the organization is sv@fs.tum.de, the website is [sv.tum.de](https://www.sv.tum.de/startseite/), check it out! 
 
 
 
