@@ -28,7 +28,7 @@ Students Council consists in students actively engaged to improve the University
 * Organizing movie nights;
 * Renting laptops.
 
-Students are volunteers - anyone can get involved! The official mail to contact the organization is sv@fs.tum.de, the website is [sv.tum.de](https://www.sv.tum.de/startseite/), check it out! 
+Students are volunteers - anyone can get involved! The official mail to contact the organization is sv@fs.tum.de, the website is [sv.tum.de](sv.tum.de), check it out! 
 
 
 
@@ -92,7 +92,4 @@ Furthermore, there is a Double Degree program offering the opportunity to study 
 ATHENS provides one week courses abroad in 24 universities in Europe.
 
 Studying abroad is supported by TUM with scholarships and grants from the Bavarian Ministry for Education. 
-<<<<<<< HEAD
 
-=======
->>>>>>> db3ec3541dfd196efde69b5d26eeb17acb44977a
