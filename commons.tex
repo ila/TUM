@@ -1,0 +1,150 @@
+
+
+% Migliore grafica per i theorem/definition/properties/exercises/examples
+\newtheoremstyle{break}% name
+{2 \baselineskip}%         Space above, empty = `usual value'
+{}%         Space below
+{} %{\itshape}% Body font. I prefer empty body font
+{\parindent}%         Indent amount (empty = no indent, \parindent = para indent)
+{\bfseries}% Thm head font
+{.}%        Punctuation after thm head
+{\newline}% Space after thm head: \newline = linebreak
+{}%         Thm head spec
+
+\theoremstyle{break}
+
+\newtcbtheorem[number within=section]{thm}{Teorema}%
+{colback=green!5,colframe=green!35!black,fonttitle=\bfseries}{th}
+\newcounter{def}
+\newtcbtheorem[number within=section]{definition}{Definizione}%
+{colback=red!5,colframe=red!35!black,fonttitle=\bfseries}{dfn}
+\newcounter{prop}
+\newtheorem{property}[prop]{Proprietà}
+\newcounter{exer}
+\newtheorem{exercise}[exer]{Esercizio}
+\newcounter{exmp}
+\newtcbtheorem[number within=section]{example}{Esempio}%
+{breakable,colback=gray!5,colframe=gray!35!black,fonttitle=\bfseries}{exmp}
+\newcounter{lmma}
+\newtheorem{lemma}[lmma]{Lemma}
+\tcolorboxenvironment{nota}{
+blanker,breakable,left=5mm,
+before skip=10pt,after skip=10pt,
+borderline west={1mm}{0pt}{red}}
+
+% TikzStyles
+\tikzstyle{block} = [rectangle, draw, text centered]
+\tikzstyle{empty_block} = [rectangle, text centered]
+\tikzstyle{line} = [draw, -latex']
+% /End TikzStyles
+
+\definecolor{azzurro}{cmyk}{1,0.33,0,0.13}
+\definecolor{arancione}{cmyk}{0,0.41,1,0}
+\definecolor{verde}{cmyk}{0.44,0,0.38,0.31}
+\definecolor{viola}{rgb}{0.58,0,0.82}
+\definecolor{bianco}{rgb}{0.95, 0.95, 0.92}
+% C style
+\lstdefinestyle{CStyle}{
+    backgroundcolor=\color{bianco},   
+    commentstyle=\color{verde},
+    keywordstyle=\color{viola},
+    numberstyle=\tiny\color{arancione},
+    stringstyle=\color{azzurro},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=C
+}
+\lstset{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  frame=single,
+  breaklines=true,
+  postbreak=\mbox{\textcolor{red}{\(\hookrightarrow\)}\space},
+}
+% maximum matrix environment set to 50 instead of 10
+\setcounter{MaxMatrixCols}{50}
+
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\R}{\mathbb{R}}
+\newcommand*\circled[1]{\tikz[baseline= (char.base)]{
+            \node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+\newcommand{\coloredbox}[1]{\fcolorbox{black}{#1}{\rule{0pt}{6pt}\rule{6pt}{0pt}}\quad}
+
+% Text under-above matrix https://tex.stackexchange.com/a/78467
+\newenvironment{spmatrix}[1]
+  {\def\mysubscript{#1}\mathop\bgroup\begin{pmatrix}}
+  {\end{pmatrix}\egroup_{\textstyle\mathstrut\mysubscript}}
+
+\newenvironment{sbmatrix}[1]
+  {\def\mysubscript{#1}\mathop\bgroup\begin{bmatrix}}
+  {\end{bmatrix}\egroup_{\textstyle\mathstrut\mysubscript}}
+
+% per le nostre cagate
+\newcommand{\checkeditem}{\item[\refstepcounter{enumi}$\text{\rlap{$\checkmark$}}\square$]}
+\newlist{todolist}{itemize}{2}
+\setlist[todolist]{label=$\square$}
+
+% Euro workaround - https://tex.stackexchange.com/questions/110972/eurosym-seems-to-not-be-working
+\DeclareRobustCommand{\officialeuro}{%
+  \ifmmode\expandafter\text\fi
+  {\fontencoding{U}\fontfamily{eurosym}\selectfont e}}
+
+% forest
+\forestset{
+  every leaf node/.style={
+    if n children=0{#1}{}
+  },
+  every tree node/.style={
+    if n children=0{}{#1}
+  },
+  edgelabel/.style n args={2}{
+    edge label={node[midway,#1]{#2}}
+  },
+  nodevalue/.style n args={2}{
+    label=#1:{{#2}}
+  }
+}
+\forestset{
+  suffix tree/.style={
+    for tree={
+      edge={->},
+      every tree node={
+        circle, draw, minimum size=1.5em, s sep=1cm,
+        s sep+=1em,
+        l sep+=1em
+      },
+      every leaf node={
+        rectangle, draw, 
+        minimum size=1.5em
+      }
+    }
+  }
+}
+\forestset{
+  highlight ancestors/.style={
+    before typesetting nodes={
+      for current and ancestors=highlight
+    }
+  },
+  highlight/.style={
+    draw=darkgray,
+    edge+=red
+  }
+}
+\forestset{
+  terminal/.style={
+    if n children=0{
+    tier=terminal
+    }{}
+  }
+}
