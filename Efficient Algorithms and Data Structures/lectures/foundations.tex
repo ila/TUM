@@ -27,25 +27,26 @@ There are different types of complexity bounds:
 \begin{itemize}
 	\item Best-case: $C_{bc}(n) := min\{C(x) | \abs{x} = n\}$;
 	\item Worst-case: $C_{wc}(n) := max\{C(x) | \abs{x} = n\}$;
-	\item Average case: $C_{avg}(n) := \frac{1}{\abs{I_n}} \sum_{\abs{x} = n} C(x)$ \\
+	\item Average (expected) case: $C_{avg}(n) := \frac{1}{\abs{I_n}} \sum_{\abs{x} = n} C(x)$ \\
 	$C_{avg}(n) := \sum_{x \in I_n} \mu(x) C(x)$.
 \end{itemize}
 $I_n$ is a set of instances of length $n$.
 
-There also are amortized complexity, the average cost over a worst case sequence of operations, and randomized complexity, worst case using random bits for a fixed input.
+There also are amortized complexity, the average cost of data structure operations over a worst case sequence, and randomized complexity (non-deterministic algorithms), worst case using random bits for a fixed input. Randomized complexity has cost $C(x)$ as expected cost $E[C(x)]$.
 
-Running times are interesting for large values of $n$, without considering constant additive terms. A linear speed-up is always possible, but the complexity should be expressed by simple (positive) functions.
-
-$$O(f) = \{g | \exists c > 0 \exists n_0 \in \mathbb{N}_0 \forall n \geq n_0 : [g(n) \leq c \cdot f(n)]\} \qquad g(x) \in O(f): 0 \leq \lim\limits_{n \rightarrow \infty} \frac{g(n)}{f(n)} < \infty$$
-$$\Omega(f) = \{g | \exists c > 0 \exists n_0 \in \mathbb{N}_0 \forall n \geq n_0 : [g(n) \geq c \cdot f(n)]\} \qquad g(x) \in \Omega(f): 0 < \lim\limits_{n \rightarrow \infty} \frac{g(n)}{f(n)} \leq \infty$$
+Running times are interesting for large values of $n$, without considering constant additive terms and exact numbers. A linear speed-up is always possible, but the complexity should be expressed by simple (positive, from $\mathbb{N}$ to $\mathbb{R}^+$) functions.
+$$O(f) = \{g\ |\ \exists c > 0\ \exists n_0 \in \mathbb{N}_0\ \forall n \geq n_0 : [g(n) \leq c \cdot f(n)]\} \qquad g(x) \in O(f): 0 \leq \lim\limits_{n \rightarrow \infty} \frac{g(n)}{f(n)} < \infty$$
+$$\Omega(f) = \{g\ |\ \exists c > 0\ \exists n_0 \in \mathbb{N}_0\ \forall n \geq n_0 : [g(n) \geq c \cdot f(n)]\} \qquad g(x) \in \Omega(f): 0 < \lim\limits_{n \rightarrow \infty} \frac{g(n)}{f(n)} \leq \infty$$
 $$\Theta(f) = \Omega(f) \cap O(f) \qquad g(x) \in \Theta(f): 0 < \lim\limits_{n \rightarrow \infty} \frac{g(n)}{f(n)} < \infty$$
-$$o(f) = \{g | \forall c > 0 \exists n_0 \in \mathbb{N}_0 \forall n \geq n_0 : [g(n) \leq c \cdot f(n)]\} \qquad g(x) \in o(f): \lim\limits_{n \rightarrow \infty} \frac{g(n)}{f(n)} = 0$$
-$$\omega(f) = \{g | \forall c > 0 \exists n_0 \in \mathbb{N}_0 \forall n \geq n_0 : [g(n) \geq c \cdot f(n)]\} \qquad g(x) \in \omega(f): \lim\limits_{n \rightarrow \infty} \frac{g(n)}{f(n)} = \infty$$
+$$o(f) = \{g\ |\ \forall c > 0\ \exists n_0 \in \mathbb{N}_0\ \forall n \geq n_0 : [g(n) \leq c \cdot f(n)]\} \qquad g(x) \in o(f): \lim\limits_{n \rightarrow \infty} \frac{g(n)}{f(n)} = 0$$
+$$\omega(f) = \{g\ |\ \forall c > 0\ \exists n_0 \in \mathbb{N}_0\ \forall n \geq n_0 : [g(n) \geq c \cdot f(n)]\} \qquad g(x) \in \omega(f): \lim\limits_{n \rightarrow \infty} \frac{g(n)}{f(n)} = \infty$$
 It is important to note that a function belongs to a set, does not equal to it. The constant factors can be written or ignored.
 
 Property of linearity of sum and multiplications apply to functions with the property $\exists n_0 > 0 \forall n \geq n_0 : f(n) > 0$ for $O$ and $\Theta$.
 
 Asymptotic notations must not be used within induction proofs: for any constants $a, b, \log_a n = \Theta(\log_b n)$ and the base can be ignored. In general, $\log n = \log_2 n$.
+
+Sometimes the input of an algorithm consists in several variables, which extend the general definition of asymptotic notation
 
 \section{Recurrences}
 Recurrences need to be solved to bring the expression from the number of comparisons to the closed form. It can be solved in several ways:
