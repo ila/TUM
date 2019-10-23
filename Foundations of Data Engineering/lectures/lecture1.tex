@@ -1,0 +1,20 @@
+\section{File formats}
+Files can have a huge variety of formats, when in doubt the \texttt{file} command can be useful.
+
+CSV are plain text files containing rows of data separated by a comma, in a simple format with customizable separator. It requires quoting of separators within strings.
+
+XML is a text format encoding of semi structured data, better standardized than CSV but not human writable. It is suitable for nested objects and allows advanced features, yet it is very verbose and its use is declining.
+
+JSON is similar to XML although much simpler and less verbose, easy to write. Its popularity is growing. 
+
+\subsection{Command line tools}
+Text formats are overall well-known and can be manipulated with command line tools, a very powerful instrument to perform preliminary analysis:
+\begin{itemize}
+	\item \texttt{cat} shows the content of one or multiple files (works with piped input as well);
+	\item \texttt{zcat} is \texttt{cat} for compressed files;
+	\item \texttt{less} allows paging (chopping long lines);
+	\item \texttt{grep} is useful to search text (regex goes between quotes) with options such as file formats, lines not matching and case insensitiveness;
+	\item \texttt{sort} to (merge) sort even large output;
+	\item \texttt{uniq} handles duplicates;
+	\item \texttt{tail} and \texttt{less} display suffixes and prefixes;
+\end{itemize}
