@@ -49,16 +49,43 @@ Asymptotic notations must not be used within induction proofs: for any constants
 Sometimes the input of an algorithm consists in several variables, which extend the general definition of asymptotic notation
 
 \section{Recurrences}
-Recurrences need to be solved to bring the expression from the number of comparisons to the closed form. It can be solved in several ways:
+Recurrences need to be solved to bring the expression from the number of comparisons to the closed form. This can be done in several ways:
 \begin{enumerate}
-	\item Induction, proving the solution is correct;
-	\item Master Theorem, obtaining tight asymptotic bounds;
+	\item Induction, proving or disproving the solution is correct by taking a wild guess of it (assuming $n$ respects certain conditions, such as being a power of 2 to apply the logarithm);
+	\item Master Theorem, obtaining tight asymptotic bounds applicable to most recurrences;
 	\item Characteristic Polynomial, to solve linear homogeneous recurrences;
 	\item Generating Functions, a more general technique also for non linear relations;
 	\item Transformation of the Recurrence to a linear one.
 \end{enumerate}
 
+\subsection{Master theorem}
+Let $a \geq 1$, $b \geq 1$ (usually strictly larger) and $\epsilon > 0$ denote constants. Considering the recurrence
+$$T(n) = aT\Big( \frac{n}{b} = f(n) \Big)$$
+where the first term can be substituted with a constant $c$ havig $n$ sufficiently small, there are three possible cases:
+$$f(n) = O(n^{\log_b(a) - \epsilon}) \implies T(n) = \Theta(n^{log_ba})$$
+$$f(n) = \Theta(n^{\log_b(a)}\log^kn) \implies T(n) = \Theta(n^{\log_ba}\log{k+1}n) \quad k \geq 0$$
+$$f(n) = \Omega(n^{\log_b(a) - \epsilon}) \land af\Big( \frac{n}{b} \Big) \leq cf(n) \text{ for sufficiently large \textit{n} and $c < 1$} \implies T(n) = \Theta(f(n))$$ 
+This methods divides the problem in $a$ sub-problems of the same size \nicefrac{n}{b} and then combines them. The master theorem can be applied looking at the function $f(n)$ and comparing it to $n^{\log_ba}$ to understand which case it falls into:
+\begin{enumerate}
+	\item Strictly smaller;
+	\item Same growth, adding a logarithm factor with increasing exponent;
+	\item Bigger growth (usually not happening with good recursive algorithms);
+	\item None of those cases (theorem invalid).
+\end{enumerate}
 
+The Master theorem can be proven using a recursion tree to visualize the running time of an algorithm, assuming $n$ is in the case $b^l$ with non-recursive case applied to problem of the size 1. 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.43]{lectures/images/master_tree.png}
+\end{figure}
+
+The tree stops when timing becomes $a^{log_bn}$, ignoring smaller sub-problems. From this can be derived the final equation, assuming $(b^{log_ba})^{log_bn} = a^{log_bn} = n^{log_ba} = (b^{log_bn})^{log_ba}$.
+
+$f(n)$ (the cost of the algorithm at the first step) is compared to the three cases: if it's the first (smaller), the actual computation is performed at the lower levels. If functions have the same growth, the running time is approximately the same at every level - otherwise, the total time is dominated by the root (technically, not happening in practice). 
+
+This gives a formula which needs to be evaluated for each case: 
+$$T(n) = n^{log_ba} = \sum_{i=0}^{log_bn-1}a_if \Big( \frac{n}{b_i} \Big)$$
 
 
 

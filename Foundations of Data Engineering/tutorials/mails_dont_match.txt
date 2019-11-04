@@ -1,0 +1,9 @@
+@
+@com
+pipes@com
+@muenchen.de
+www.tum.de
+ftp://user@tum.de
+randomText
+mail withWhitespace@dontmatch.com
+bla@blub@other.net
