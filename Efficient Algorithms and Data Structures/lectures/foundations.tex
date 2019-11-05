@@ -87,5 +87,35 @@ $f(n)$ (the cost of the algorithm at the first step) is compared to the three ca
 This gives a formula which needs to be evaluated for each case: 
 $$T(n) = n^{log_ba} = \sum_{i=0}^{log_bn-1}a_if \Big( \frac{n}{b_i} \Big)$$
 
+\section{Linear recurrences}
+Linear recurrences (without products of $T[n]$) are in the form:
+$$c_0T(n) + c_1T(n-1) + c_2T(n-2) + \dots + c_kT(n-k) = f(n)$$
+Since the Master theorem only gives asymptotic bounds on divide-et-impera problems, it gives no information on where the input starts and what actual value it assumes. The operation also differs, since it is a subtraction, and the recurrence is defined of order $k$ (constant coefficients $c_0, c_k \neq 0$). 
+
+The general form does not depend on $n$, but only from the preceding values. If $f(n) = 0$ then the relation becomes a linear, homogeneous recurrence relation. 
+
+The solution is completely determined by a set of boundary conditions, that specify values for $T[i]$: any  $k$ consecutive results allow to set a solution and non-consecutive numbers may not be an appropriate set of boundary conditions.
+
+The approach consists in determining all solutions and picking the correct one based on boundaries. The solution space of $T$ (of dimension $k$) fulfilling a recurrence relation is a vector space, and satisfies the linearity properties: there exists an $\alpha$ that makes the equation equal to 0.
+
+A non-trivial solution needs to describe the elements in a closed form, underlining how the vector space looks like while respecting boundaries. It has the form $\lambda^n, \lambda \neq 0$, meaning that the sequence of every element $c_i$ multiplied by $\lambda^{n-i}$ is equal to 0 for all $n \geq k$.
+
+Dividing by $\lambda^k$ gives that all the constraints are identical to:
+$$c_0\lambda^k + c_1\lambda^{k-1} + \dots + c_k = 0$$
+This means that if $\lambda^i$ is a root of $P[\lambda]$ then the vector $T[n] = \lambda^i_n$ is a solution to the recurrence relation. 
+
+The polynomial can be decomposed using complex roots, which because of the linear space property still consist in a feasible solution with arbitrary values $\alpha_i$. 
+
+Every sequence having $k$ distinct roots in the solution space can be written in the form:
+$$\alpha_1\lambda^n_1 + \alpha_2\lambda^n_2 = \dots + \alpha_k\lambda^n_k = 0$$
+There is one solution for every possible choice of boundary conditions, according to $\alpha_i$. 
+
+The solution is found taking the inverse of the Vandermont matrix with column vectors $\lambda$, which are linearly independent. The determinant is computed repeating products and subtractions.
+
+\subsection{Homogeneous case}
+If roots are not all distinct (some of them have multiplicity of at least 2), then not only $\lambda_i^n$ is a solution, but also $n\lambda_i^n$. 
+
+
+
 
 

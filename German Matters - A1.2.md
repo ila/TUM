@@ -206,14 +206,71 @@ Menschen: people
 
 
 
-##### Grammar
-
-
-
-
-
 ##### Phrases
 
 *Er ist bei Jonas.* He is at Jonas'.
 
 Um 16.30 / um 16 Uhr dreißig. At 16.30 / at 16 and 30.
+
+
+
+### Lecture 5
+
+##### Vocabulary
+
+Das Auto: the car
+Das Flugzeug: the airplane
+Das Fahrrad: the bike
+
+Die Brücke: the bridge
+
+Das Blume: the flower
+
+Die Spielplatz: the playground
+
+Die Ampel: the traffic light
+Die Kreuzung: the crossroad
+
+Die geradeaus: the straight direction
+Die nach recht: to the right
+
+Die Insel: the island
+
+Die Feuerwehr: the firetruck
+
+Über: more than / over
+
+Kaufen: to buy
+
+Man: (general) you / one / people
+
+Nur: only
+
+Passenden: to match
+
+Ganzen Welt: the whole world
+
+Ziel: target (destination)
+
+Alt: old
+Hoch: tall (buildings)
+Groß: tall (person)
+
+Die Körper größe: the size (clothes)
+
+Hoch: high (dimension)
+Höhe: height
+Breit: large
+Tief: deep
+
+Der Hafen: the port
+Das Schiff: the boat
+
+Die Stufen: the stairs
+
+Turm: tower
+
+
+
+##### Phrases
+
