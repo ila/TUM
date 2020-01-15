@@ -1,27 +1,63 @@
 \section{Performance spectrum}
 Analyzing the performance is relevant to understand whether an operation is taking too long, and comparing it according to time and input size. It can improve speed and energy consumption.
 
-The performance spectrum involves many variables: theoretical limits, programming tools (interpreted vs. compiled languages) and methods, or hardware (clustering, scaling). Real input is complex, yet just analyzing simple text queries can be highly explicative.
+The performance spectrum involves many variables: theoretical limits, programming tools (interpreted vs. compiled languages) and methods, or hardware (clustering, scaling). Real input is complex, yet just analyzing simple text queries using benchmarks can be highly explicative.
 
-For instance, a program written in AWK or Python will be slower than C++ since those two are interpreted and require extra operations.
+For instance, a program written in AWK or Python will be slower than C++ since those two are interpreted languages and require extra operations.
 
-Naively optimising can have downsides, making the situation worse sacrificing portability or creating a messy code: before touching a program there are tools which can be used to analyze time and performance (\texttt{perf}).
+Example bandwidth for different input processing:
+\begin{itemize}
+	\item 1GB ethernet: 100 MB/s;
+	\item Rotating disk (hard disk): 200 MB/s;
+	\item SATA SSD: 500 MB/s;
+	\item PCI SSD (uses multiple lanes to connect to the motherboard): 2 GB/s;
+	\item DRAM (dynamic RAM, has the fastest path to the CPU thanks to semiconductors): 20 GB/s.
+\end{itemize}
 
-Performance when manipulating text completely ignores CPU costs, which are not important for disks but very relevant for reading data from DRAM: this option is one of the fastest, followed by SSD.
+Performance when manipulating text completely ignores CPU costs, which are not important for disks but very relevant for reading data from DRAM: when using the largest bandwidth, they have the biggest impact on computational time.
 
-A good way to optimize code is memory mapping: files are saved in the address space of the program, and are treated as arrays being accessed in the same way as dynamic memory (better than caching). 
+The first time a program is executed, data is stored in main memory: after that, it gets copied to cache, accessed in a quicker way, making the following executions faster (and CPU bound).
+
+Naively optimizing can have downsides, making the situation worse sacrificing portability or creating a messy code: before touching a program there are tools which can be used to analyze time and performance (\texttt{perf}).
+
+An efficient way to optimize code is memory mapping: files are saved in the address space of the program, and are treated as arrays being accessed in the same way as dynamic memory (better than caching).
+
+A memory mapped file is in fact a segment of virtual memory which has been assigned a byte-for-byte correlation with some resource, increasing I/O performance with faster access. Memory maps are always aligned to page size (4 KiB at most).
+
+Memory mapped files can also be used to share memory between multiple processes without causing page faults or segmentation violations. Executions in C++ with cold cache are slightly slower, but warm cache are faster since data is directly accessed from there without copying.
 
 Another useful way consists in using block operations. Search can be performed for instance through the encoding of special characters, since there is no way to split the data just by directly scanning the memory.
 
-Optimisation of mathematical operations is done using several strategies:
-\begin{itemize}
-	\item By the compiler, choosing fastest registry operations (64-bit is faster than 32);
-	\item $a / c = a * (2^{64} / c) >> 64$;
-	\item \texttt{const} instead of \texttt{constexpr};
-	\item \dots
-\end{itemize}
+Loop nest optimization applies a set of loop transformations (increasing the speed of loops and improving cache performance) partitioning iteration spaces into smaller chunks, ensuring data stays in cache until it is reused.
 
 Files can be stored in binary format to speed up implementation: using text files implies storing characters in more than 4 bytes, and parsing with delimiters is slower than just copying the bit stream to memory.
 
-Multithreading consistently increases performance - but network speed and remote CPUs can cause connection problems. 
+SSE instructions are an extension of x86 which define faster floating point operations opposite to the standard architecture, having wider application in digital signal and graphics processing. This method, although fast, is not portable. 
 
+Optimization of mathematical operations is done using several strategies:
+\begin{itemize}
+	\item Choosing fastest registry operations (64-bit is faster than 32, performed automatically by the compiler);
+	\item \texttt{const} instead of \texttt{constexpr};
+	\item Using assembly language to convert floating point to integer;
+	\item Dividing and multiplying by powers of two (shifting bits), for instance $a / c = a * (2^{64} / c) >> 64$;
+	\item Speeding up division and modulo by constant using unsigned integers.
+\end{itemize}
+
+Different data structures also have different performance: arrays have worst-case linear time search, while maps and sets are implemented using trees for better performance.
+
+Multithreading (processing within multiple CPU cores) consistently increases performance - but network speed and remote CPUs can cause connection problems. Warm caches parallelizes well, yet cold cache gets slower.
+
+Different input representation is not always an option, yet when possible a columnar binary format can reduce touched data up to a factor of 50. It requires an additional conversion step, but it pays off for repeated queries.
+
+Using all those performance improvements can make a simple program improve bandwidth up to 5 GB/s. 
+
+\subsection{Clustering}
+Using multiple machines to perform operations can seem a feasible option, but it depends on which part of the program has to be sent in the network.
+
+Shipping data with a bandwidth of 100 MB/s having a local bandwidth of up to 5 GB/s is inefficient and would slow down computation.
+
+On the other hand, if only computation can be shipped, the performance is determined by the latency and the number of nodes:
+$$\approx 20ms + \frac{\abs{W}}{5GB / s \cdot n}$$
+$n$ is the number of nodes, $s$ is the latency in seconds and $W$ is the size of the problem. $W$ has to be larger than 113 MB for 10 nodes for this system to be efficient.
+
+In the end, since a single machine can handle many gigabytes efficiently and network speed can be a bottleneck, scaling up is often preferred over scaling out: the latter, because of its significant overhead, only pays off in the long run.

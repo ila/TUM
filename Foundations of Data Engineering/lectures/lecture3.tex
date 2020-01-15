@@ -1,5 +1,5 @@
 \section{SQL}
-SQL is a declarative (orders to execute a query without specifying how) language to interact with databases and retrieve data. Optimisation is not only on the query level, but also on storage and data types: for instance, strings can be managed adding a pointer to their size (if they are long). 
+SQL is a declarative language (orders to execute a query without specifying how) to interact with databases and retrieve data. Optimization is not only on the query level, but also on storage and data types: for instance, strings can be managed adding a pointer to their size (if they are long). 
 
 Various SQL dialects have slight differences between semantics, but there are general standards starting from older versions. Different databases might also have different type management, operations and speed.
 
@@ -14,14 +14,47 @@ Some PostgreSQL data types:
 \end{itemize} 
 
 \subsection{SQL commands}
+Standard SQL commands are for instance SELECT, FROM, WHERE, GROUP BY, ORDER BY. Those can be found in normal queries or subqueries, which allow to temporarily subset data without saving it to memory.
+
 The \texttt{\textbackslash copy} statement allows to import data from a text file, but can be slow with large datasets since it requires a full scan.
 
-Regular expression matching is performed through \texttt{LIKE} or $\sim$, but cannot run in linear time since the construction of the NFA is exponential in the size of input. 
+Regular expression matching is performed through LIKE or $\sim$, but cannot run in linear time since the construction of the NFA is exponential in the size of input. 
 
 Random samples can be extracted with various methods, of which the most accurate in randomness (Bernoulli) is also the slowest.
 
 Views create faster reusable tables, but are seen globally and this could cause issues with naming. Another way to optimize through a temporary table is \texttt{WITH}, a common table expression.
 
+\subsection{Query decorrelation}
+Often queries are easier to formulate using subqueries, yet this can take a toll on performance.
+
+A subquery is correlated if it refers to tuples from the outer query. The execution of a correlated query is poor, since the inner one gets computed for every tuple of the outer one, causing a quadratic running time.
+
+Example (from TCP-H dataset):
+\begin{lstlisting}[language=SQL]
+select avg(l_extendedprice)
+from lineitem l1
+where l_extendedprice =
+	(select min(l_extendedprice)
+	from lineitem l2
+	where l1.l_orderkey = l2.l_orderkey;)
+\end{lstlisting}
+
+This query can be rewritten to avoid correlation:
+\begin{lstlisting}[language=SQL]
+select avg(l_extendedprice)
+from lineitem l1,
+	(select min(l_extendedprice) m, l_orderkey
+	from lineitem
+	group by l_orderkey) l2
+where l1.l_orderkey = l2.l_orderkey
+and l_extendedprice = m;
+\end{lstlisting}
+
+The new query is much more efficient, yet not as intuitive. Compilers sometimes manage to automatically decorrelate, but correlations can be complex (inequalities, disjunctions).
+
+% todo
+
+\subsection{Recursive CTEs}
 CTEs are performed only once within each query and destroyed as soon as the query ends on Postgres, yet other database systems may differ in implementation. 
 
 Recursive CTEs traverse hierarchical data of arbitrary length, and consist in a base case (stop condition) and its recursive step. To manipulate values before the previous one, it is useful to store them in columns. It is possible to increment counters within RCTEs, and create trees. 
