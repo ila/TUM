@@ -168,6 +168,8 @@ Direct prepositions:
 * In, used with lands with articles;
 * Zu, for all other places (zum is short for zu dem).
 
+Verb is always in the second position!
+
 
 
 ##### Phrases
@@ -272,5 +274,199 @@ Turm: tower
 
 
 
+### Lecture 6
+
+##### Vocabulary
+
+Die Lampe: the lamp
+
+Glück: luck
+Glück haben: lucky
+Glücklich: happy
+
+Kaputt: broken
+Keine Luft: no air
+
+Kein Fahrrad: no bike
+
+Die See: the lake
+
+Tasche: bag
+Rucksack: backpack (Ruck: back)
+
+Links: left
+
+
+
+##### Grammar
+
+All nouns with *-ung* are feminine
+
+1. erste
+2. zweite
+3. dritte
+
+
+
 ##### Phrases
 
+*(Ich habe) Keine Ahnung*: no idea
+
+*Ganz einfach:* totally simple
+
+*Nicht weit*: not far
+
+Jeder würfelt zwei Mal: everyone rolls the dice twice (Mal: times)
+
+*Gehen Sie bis zum Rathaus*: go until Town Hall
+*Gehen Sie zwei Straßen geradeaus*:  go straight on for two streets
+
+
+
+### Lecture 7
+
+##### Vocabulary
+
+Schon / Schön: ready / beautiful
+
+Kannen / Können: know / can
+
+Der Gasteig: the concert hall
+
+Viel Spaß: have a lot of fun
+
+Der Teller: the dish
+Die Pfanne: the pan
+
+Braten: to fry
+Backen: to bake
+
+Salzig: salty
+
+Das Brötchen: the little bread
+
+Das Messer: the knife
+Der Löffel: the spoon
+Das Besteck: the cutlery
+Die Gabel: the fork
+
+Der Tee: the tea
+
+Der Kaffee: the coffee
+
+Die Orange: the orange
+
+Frühstück: breakfast
+Mittagessen: lunch
+Abendessen: dinner
+
+Fleisch: meat
+Schwein: pork
+Hähnchen / Hühnchen: chicken
+Puten: turkey
+
+Fisch: fish
+Thunfisch: tuna
+Lachs: lake fish
+Forelle: trout
+
+Der Metzgerei: the butchery
+
+
+
+### Lecture 8
+
+##### Vocabulary
+
+Wechseln: change (money)
+
+Kassenzettel: receipt
+
+Rezept: prescription / recipe
+
+Lebensmittel: groceries
+
+Tüte: bag
+
+
+
+##### Phrases
+
+*Wer kommt dran?* Who's coming next?
+
+*An der Reihe - daran - dran*
+
+*Sonst noch etwas?* Do you want anything else?
+
+*Dort rechts.* Right there.
+
+*Wie viel?* How much?
+
+*Das ist zu teuer.* This is too much (expensive).
+
+
+
+### Lecture 9
+
+##### Vocabulary
+
+Hausaufgaben: homework
+
+Stehen: to get up
+Wachen: to wake up
+
+Klingen: to sound
+
+Bleiben: to stay
+
+Schenken: to give as a present
+
+Schicken / senden: to send
+
+Feiern: party
+
+Zwilling: twin
+
+Überraschung: surprise
+
+
+
+##### Grammar
+
+Ich: mein/meine
+Du: dein/deine
+Er: sein/seine
+Sie: ihr/ihre
+Wir: unser/unsere
+Ihr: euer/eure
+Sie: ihr/ihre (formal too)
+
+Modal verbs:
+
+* müssen (have to)
+* völlen (want)
+* können (can)
+
+-sten for ordinal numbers
+-ten for numbers from 1 to 19 (dritten)
+
+
+
+##### Phrases
+
+*Ich kaufe morgen ein.* I shop tomorrow. 
+
+*Ich muss morgen einkaufen.* I have to do shopping tomorrow.
+
+*Ich joggen sehr gern.* 
+*Ich wandere gern.*
+*Ich surfe gern im Internet.*
+
+*Hilft du mir?* Will you help me?
+
+1. Marc und Anne laden alle Freunde ein.
+2. Der Tag fängt um 10 Uhr am.
+3. Sie holen Sofia zusammen ab.
+4. Marc und Anne bringen Essen für das Picknick mit.
+5. Sie rufen alle bei Regen am.
+6. 

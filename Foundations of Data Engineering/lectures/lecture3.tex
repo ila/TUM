@@ -1,0 +1,29 @@
+\section{SQL}
+SQL is a declarative (orders to execute a query without specifying how) language to interact with databases and retrieve data. Optimisation is not only on the query level, but also on storage and data types: for instance, strings can be managed adding a pointer to their size (if they are long). 
+
+Various SQL dialects have slight differences between semantics, but there are general standards starting from older versions. Different databases might also have different type management, operations and speed.
+
+Another common problem with databases is handling null values while evaluating boolean expressions: NULL and FALSE results in FALSE, therefore this may give an inaccurate representation of information. On the other hand, NOT NULL columns are beneficial for optimization (NULL columns have a reserved memory space for this possibility).
+
+Some PostgreSQL data types:
+\begin{itemize}
+	\item Numeric, slow arbitrary precision numbers with unbounded size;
+	\item Float, mobile floating point (4 bytes) or double precision (8 bytes);
+	\item Strings of variable length (pre-allocated or dynamic);
+	\item Other common types such as \texttt{bytea}, \texttt{timestamp} and \texttt{interval}.
+\end{itemize} 
+
+\subsection{SQL commands}
+The \texttt{\textbackslash copy} statement allows to import data from a text file, but can be slow with large datasets since it requires a full scan.
+
+Regular expression matching is performed through \texttt{LIKE} or $\sim$, but cannot run in linear time since the construction of the NFA is exponential in the size of input. 
+
+Random samples can be extracted with various methods, of which the most accurate in randomness (Bernoulli) is also the slowest.
+
+Views create faster reusable tables, but are seen globally and this could cause issues with naming. Another way to optimize through a temporary table is \texttt{WITH}, a common table expression.
+
+CTEs are performed only once within each query and destroyed as soon as the query ends on Postgres, yet other database systems may differ in implementation. 
+
+Recursive CTEs traverse hierarchical data of arbitrary length, and consist in a base case (stop condition) and its recursive step. To manipulate values before the previous one, it is useful to store them in columns. It is possible to increment counters within RCTEs, and create trees. 
+
+To avoid infinite loops, using \texttt{UNION} instead of \texttt{UNION ALL} allows to remove duplicates and checking before writing a new value.

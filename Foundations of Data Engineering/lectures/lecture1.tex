@@ -1,4 +1,6 @@
-\section{File formats}
+\section{File manipulation tools}
+Analyzing a dataset is useful to get a first impression about it, decide which tools are the most suitable and understand the required hardware.
+
 Files can have a huge variety of formats, when in doubt the \texttt{file} command can be useful.
 
 CSV are plain text files containing rows of data separated by a comma, in a simple format with customizable separator. It requires quoting of separators within strings.
@@ -23,23 +25,76 @@ Text formats are overall well-known and can be manipulated with command line too
 	\item \dots
 \end{itemize}
 
-\subsection{Performance spectrum}
-Analyzing the performance is relevant to understand whether an operation is taking too long, and comparing it according to time and input size.
-
-The performance spectrum involves many variables: theoretical limits, programming tools and methods, or hardware (clustering, scaling). Real input is complex, yet just analyzing simple text queries can be highly explicative.
-
-Performance when manipulating text completely ignores CPU costs, which are not important for disks but very relevant for reading data from DRAM: this option is one of the fastest, followed by SSD.
-
-A good way to optimize code is memory mapping: files are saved in the address space of the program, and are treated as arrays being accessed in the same way as dynamic memory. 
-
-Another useful way consists in using block operations. Search can be performed for instance through the encoding of special characters, since there is no way to split the data just by directly scanning the memory.
-
-Optimisation of mathematical operations is done using several strategies:
+Tools can be combined through pipes, which redirect the input/output stream. Some examples are:
 \begin{itemize}
-	\item By the compiler, choosing fastest registry operations (64-bit is faster than 32);
-	\item $a / c = a * (2^{64} / c) >> 64$;
-	\item \texttt{const} instead of \texttt{constexpr};
+	\item \texttt{|} to concatenate two commands (|\& also pipes standard error);
+	\item \texttt{>} to redirect to a file;
+	\item \texttt{<} to redirect from a file;
+	\item \texttt{\&\&} executes a command only if the previous one has succeeded;
+	\item \texttt{||} executes a command only if the previous one has failed;
+	\item \texttt{;} separates multiple commands regardless of their output.
 \end{itemize}
+
+Process substitution \texttt{<()} allows the input or the output of a command to appear as a file, to avoid verbose commands and extra processing. \\
+Example: \texttt{diff <(sort file1) <(sort file2)}
+
+\subsubsection{\texttt{cat}}
+Syntax: \texttt{cat [OPTION] [FILE]}
+
+\texttt{cat} concatenates file to standard output. When the file is unspecified, it prints to terminal. It can also be used with multiple files, and different formats (binary, compressed). It is mainly used as input for other commands, since displaying large data can be computationally expensive.
+
+\subsubsection{\texttt{less}}
+Syntax: \texttt{less [OPTIONS]}
+
+\texttt{less} is opposite to the analog command \texttt{more}, extending it with other features. It does not have to read the entire input file before starting, so with large files it starts up faster than text editors or \texttt{cat}. 
+
+Commands may be preceded by decimal numbers indicating the number of rows to display/scroll, and basic pattern matching can be performed as well. 
+
+\subsubsection{grep}
+Syntax: \texttt{grep [OPTION] PATTERNS [FILE]}
+
+It can search (Boyer-Moore algorithm) for any type of string, or any file, or even lists of files and output of commands. It uses basic regular expressions and normal strings.
+
+There also are the variations \texttt{egrep} (for extended regular expressions), \texttt{fgrep} (fixed, to only search strings) and \texttt{rgrep} (recursive, for folders).
+
+Regular expressions syntax:
+\begin{itemize}
+	\item \texttt{[]} enclose lists of characters (and);
+	\item \texttt{-} represents characters range;
+	\item \texttt{\^} negates an expression;
+	\item \texttt{*} denotes zero or more occurrences of previous character;
+	\item \texttt{()} start and end of alternation expression;
+	\item \texttt{{n}} range specifier (number of repetitions) $\rightarrow$ \texttt{a{3}};
+	\item \texttt{\textbackslash<} and \texttt{\textbackslash>} match empty strings at the beginning and the end of a word.
+\end{itemize}
+
+Extended regular expressions treat meta-characters without needing to escape them, and are more powerful thanks to the additional commands:
+\begin{itemize}
+	\item \texttt{?} matches at most one repetition;
+	\item \texttt{+} denotes one or more occurrences of previous character;
+	\item \texttt{|} matches either of the expressions $\rightarrow$ \texttt{(a|b)}.
+\end{itemize}
+
+\texttt{grep} returns all the lines with a match of the pattern. To only return the match, \texttt{-o} option needs to be specified.
+
+\subsubsection{sort}
+
+\subsubsection{head/tail}
+
+\subsubsection{uniq}
+
+\subsubsection{cut}
+
+\subsubsection{wc}
+
+\subsubsection{shuf}
+
+\subsubsection{sed}
+
+\subsubsection{join}
+
+\subsubsection{awk}
+
 
 
 

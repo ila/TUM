@@ -8,15 +8,15 @@ Big data is a relative term: each field has its own definition, but it's usually
 \subsection{Volume and privacy}
 Volume is one of the most important challenges when dealing with big data: it is not often possible to store it on a single machine, therefore it needs to be clustered and scaled. 
 
-Supercomputers (and AWS) are extremely expensive, and have a short life span, making them an unfeasible option. In fact, their usage is oriented towards scientific computing and assumes high quality hardware and maintenance, taking months to develop a program. 
+Supercomputers (and AWS) are extremely expensive, and have a short life span, making them an unfeasible option. In fact, their usage is oriented towards scientific computing and assumes high quality hardware and maintenance. Programs are written in low-level languages, taking months to develop, and rely extensively on GPUs.
 
-Cluster computing, on the other hand, uses a network of many computers to create a tool oriented towards cheap servers and business applications, although more unreliable. Since it is used to solve even large tasks, it relies on parallel database systems, NoSQL and MapReduce to speed up operations. 
+Cluster computing, on the other hand, uses a network of many computers to create a tool oriented towards cheap servers and business applications, although more unreliable. Since it is mostly used to solve large tasks, it relies on parallel database systems, NoSQL and MapReduce to speed up operations. 
 
 Cloud computing is another different instance which uses machines operated by a third party in a data center, renting them by the hour. This often raises controversies about the costs, since machines rarely operate at more than 30\% capacity.
 
-Resources in cloud computing can be scaled as demand dictates, providing elastic provisioning. The problem with this are the proprietary APIs wit lock-in that makes customers vulnerable to price increases, and local laws might prohibit externalizing data processing. 
+Resources in cloud computing can be scaled as requests dictate, providing elastic provisioning at every level (SaaS, IaaS, PaaS). Higher demand implies more instances, and vice versa.
 
-Providers might control data in unexpected ways, and have to grant access to the government - privilege which might be overused.
+The problem with this are the proprietary APIs wit lock-in that makes customers vulnerable to price increases, and local laws might prohibit externalizing data processing. Providers might control data in unexpected ways, and have to grant access to the government - privilege which might be overused.
 
 Privacy needs to be guaranteed, stated and kept-to: numerous web accounts get regularly hacked, and there are uncountable examples of private data being leaked. 
 

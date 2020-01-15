@@ -1,0 +1,27 @@
+\section{Performance spectrum}
+Analyzing the performance is relevant to understand whether an operation is taking too long, and comparing it according to time and input size. It can improve speed and energy consumption.
+
+The performance spectrum involves many variables: theoretical limits, programming tools (interpreted vs. compiled languages) and methods, or hardware (clustering, scaling). Real input is complex, yet just analyzing simple text queries can be highly explicative.
+
+For instance, a program written in AWK or Python will be slower than C++ since those two are interpreted and require extra operations.
+
+Naively optimising can have downsides, making the situation worse sacrificing portability or creating a messy code: before touching a program there are tools which can be used to analyze time and performance (\texttt{perf}).
+
+Performance when manipulating text completely ignores CPU costs, which are not important for disks but very relevant for reading data from DRAM: this option is one of the fastest, followed by SSD.
+
+A good way to optimize code is memory mapping: files are saved in the address space of the program, and are treated as arrays being accessed in the same way as dynamic memory (better than caching). 
+
+Another useful way consists in using block operations. Search can be performed for instance through the encoding of special characters, since there is no way to split the data just by directly scanning the memory.
+
+Optimisation of mathematical operations is done using several strategies:
+\begin{itemize}
+	\item By the compiler, choosing fastest registry operations (64-bit is faster than 32);
+	\item $a / c = a * (2^{64} / c) >> 64$;
+	\item \texttt{const} instead of \texttt{constexpr};
+	\item \dots
+\end{itemize}
+
+Files can be stored in binary format to speed up implementation: using text files implies storing characters in more than 4 bytes, and parsing with delimiters is slower than just copying the bit stream to memory.
+
+Multithreading consistently increases performance - but network speed and remote CPUs can cause connection problems. 
+
