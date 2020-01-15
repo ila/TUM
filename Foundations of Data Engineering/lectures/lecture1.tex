@@ -64,7 +64,7 @@ Regular expressions syntax:
 	\item \texttt{\^} negates an expression;
 	\item \texttt{*} denotes zero or more occurrences of previous character;
 	\item \texttt{()} start and end of alternation expression;
-	\item \texttt{{n}} range specifier (number of repetitions) $\rightarrow$ \texttt{a{3}};
+	\item \texttt{{n}} range specifier (number of repetitions) $\rightarrow$ \texttt{a\{3\}};
 	\item \texttt{\textbackslash<} and \texttt{\textbackslash>} match empty strings at the beginning and the end of a word.
 \end{itemize}
 
@@ -77,24 +77,78 @@ Extended regular expressions treat meta-characters without needing to escape the
 
 \texttt{grep} returns all the lines with a match of the pattern. To only return the match, \texttt{-o} option needs to be specified.
 
-\subsubsection{sort}
+\subsubsection{\texttt{sort}}
+Syntax: \texttt{sort [OPTION] [FILE]}
 
-\subsubsection{head/tail}
+\texttt{sort} sorts lines of text files, writing them to standard input. When no file is specified, it reads standard input. Some ordering options are \texttt{-n} (numeric), \texttt{-r} (reverse), \texttt{-k} (specific key), \texttt{-u} (removes duplicates).
 
-\subsubsection{uniq}
+It can handle files larger than main memory, and it is very useful to prepare input for other algorithms.
 
-\subsubsection{cut}
+\subsubsection{\texttt{head}\textbackslash \texttt{tail}}
+Syntax: HEAD [OPTION] [FILE]
 
-\subsubsection{wc}
+Those commands print the first (last) lines of files. The default number of lines is 10, and multiple files can be read. 
 
-\subsubsection{shuf}
+An integer can be specified as option to determine how many lines must be read (and skipped). Those commands are relevant to extract minimum and maximum of computations. Numbers may have a multiplier suffix, indicating bytes or related measurement units.
 
-\subsubsection{sed}
+\subsubsection{\texttt{uniq}}
+Syntax: \texttt{uniq [OPTION] [INPUT [OUTPUT]]}
 
-\subsubsection{join}
+\texttt{uniq} handles (adjancent) duplicates (similarly to SQL DISTINCT) in sorted input, reporting or omitting them. It also has option \texttt{-c} to count duplicates or \texttt{-u} for unique lines. With no options, matching lines are merged to the first occurrence.
 
-\subsubsection{awk}
+Its main applications are grouping and counting input.
 
+\subsubsection{\texttt{cut}}
+Syntax: \texttt{cut [OPTION] [FILE]}
 
+\texttt{cut} removes section from each line of files. This can be seen as selecting columns from a CSV, where relevant parts of delimited input get redirected to output.
 
+Example: \texttt{cat file | cut -f 1, 3} \\
+Returns specific fields of file, delimiter can be specified with \texttt{-d}.
 
+\subsubsection{\texttt{wc}}
+Syntax: \texttt{wc [OPTION] [FILE]}
+
+\texttt{wc} prints newline, word and byte counts for each file (and a total line if more than one file is specified). A word is a non-zero-length sequence of characters delimited by white space.
+
+Options may be used to select which counts are printed: \texttt{-c} for bytes, \texttt{-m} for chars, \texttt{-l} for lines and so on.
+
+\subsubsection{\texttt{shuf}}
+Syntax: \texttt{shuf [OPTION] [FILE]}
+
+This command generates random permutations of the input lines to standard output. It is not so common, although very useful when extracting random samples and running performance tests.
+
+\subsubsection{\texttt{sed}}
+Syntax: \texttt{sed [OPTION] {script} [FILE]}
+
+\texttt{sed} is a stream editor to perform basic text transformations on an input stream (or file). It works by making only one pass over the input, therefore it is more efficient than scripts. It can also filter text in a pipeline.
+
+This command is mostly used to replace text in a file. The operations are separated by a slash, and the letters (flags) represent options.
+
+Example: \texttt{cat file | sed 's/oldText?newText/'} \\
+Replaces oldText with newText.
+
+Example: \texttt{cat file | sed 's/file[0-9]*.png/"\&"/I'} \\
+Case insensitive matching and replacing.
+
+\subsubsection{\texttt{join}}
+Syntax: \texttt{join [OPTION] FILE1 FILE2}
+
+\texttt{join} joins the lines of two files on a common field. For each pair of input lines with identical join fields, writes a line to standard output. The default join field is the first, delimited by blanks. One file can be omitted, reading standard output.
+
+Unmatched lines are removed, or preserved with \texttt{-}a.
+
+Field number can be specified with \texttt{-j} or \texttt{-1 FIELD -2 FIELD}. Values must be sorted before joining, and it is not powerful compared to other tools.
+
+\subsubsection{\texttt{awk}}
+Syntax: \texttt{gawk [POSIX or GNU style options] -f program-file [--] file}
+
+Gawk is the GNU project's implementation of the AWK programming language, according to the POSIX standards. The command line takes as input the AWK program text.
+
+Gawk also has an integrated debugger and profiling statistics for the execution of programs.
+
+AWK's general structure is: \\
+\texttt{awk 'BEGIN {init-code} {per-line-code} END {done-code}' file}
+
+Example: \texttt{awk 'BEGIN {x=0; y=0} {x=x+\$2; y=y+1} END {print x/y}'} \\
+Computes the average of column 2 (identified with the dollar).
