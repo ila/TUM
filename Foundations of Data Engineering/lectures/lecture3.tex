@@ -22,10 +22,15 @@ Regular expression matching is performed through LIKE or $\sim$, but cannot run 
 
 Random samples can be extracted with various methods, of which the most accurate in randomness (Bernoulli) is also the slowest.
 
+UNION, EXCEPT and INTERSECT perform set operations, with the keyword ALL to keep duplicates.
+
 Views create faster reusable tables, but are seen globally and this could cause issues with naming. Another way to optimize through a temporary table is \texttt{WITH}, a common table expression.
 
+\subsection{Regular expression matching}
+
+
 \subsection{Query decorrelation}
-Often queries are easier to formulate using subqueries, yet this can take a toll on performance.
+Often queries are easier to formulate using subqueries, yet this can take a toll on performance: since SQL is a declarative language, the best evaluation strategy is up to the DBMS.
 
 A subquery is correlated if it refers to tuples from the outer query. The execution of a correlated query is poor, since the inner one gets computed for every tuple of the outer one, causing a quadratic running time.
 
@@ -52,7 +57,17 @@ and l_extendedprice = m;
 
 The new query is much more efficient, yet not as intuitive. Compilers sometimes manage to automatically decorrelate, but correlations can be complex (inequalities, disjunctions).
 
-% todo
+A join dependency allows to recreate a table by joining other tables which have subsets of the attributes (relationships are independent of each other). In other words, a table subject to join dependency can be decomposed in other tables and created again joining them.
+
+Dependent joins rely on nested loop evaluations, which are very expensive: the goal of unnesting is to eliminate them all.
+
+The easiest practice consists in pulling predicates up and creating temporary tables inside FROM instead of WHERE, evaluating the subquery for all possible bindings simultaneously. 
+
+The subquery in some cases is a set without duplicates which allows equivalence between dependent join and bindings of free variables, therefore dependency can be removed.
+
+Sometimes attributes of the set can be inferred, computing a superset of the values and eliminating them with the final join. This avoids computing the subquery, but causes a potential loss of pruning the evaluation tree.
+
+The approach is overall always working with relational algebra, yet not necessarily on the SQL level: it can add memory overhead which cannot always be removed, despite the ideal linear computational time.
 
 \subsection{Recursive CTEs}
 CTEs are performed only once within each query and destroyed as soon as the query ends on Postgres, yet other database systems may differ in implementation. 
@@ -95,4 +110,31 @@ Many systems concern both OLTP and OLAP workloads, and changes in the objective 
 
 Other common problems regard action selection policies, transparency and human interaction. 
 
+
+\section{Key-value storage}
+One of the benefits of this kind of storage is the lack of schema: they are defined with human readable languages (XML, SVG) for structured and semi-structured data. The possible formats vary from free text to relational models, the latter less common; data can also be compressed or uncompressed. 
+
+For instance, possible choices for configuration files are:
+\begin{enumerate}
+	\item JSON, although kind of hard to write long files;
+	\item YAML, really complicated;
+	\item TOML, with minimal syntax therefore easy.
+\end{enumerate}
+
+\subsection{XML}
+XML documents have a rooted hierarchical structure named Document Object Model, where elements are declared between tags with eventual attributes. Those documents allow to store reasonably large information, queried in a declarative language (XPath, XQuery) which guarantees results appearing in the same order as they were saved. Validation requires constraints which imply the choice between a simple grammar or a more powerful one. Grammar is only defined for tags and attributes, not contents. 
+
+An XPath is the tree containing elements subject of a query: it stores information about preceding nodes, siblings, descendants, parents and ancestors in the DOM. It can be navigated through the syntax \texttt{axis::node[predicate]/@attr} also allowing retrieval of a set related to the matching node (for instance \texttt{:.} indicates parent). 
+
+Grammar definition and DTD are defined in the headers of a document, although parsing can still be difficult due to malfunctioning web pages. 
+
+\subsection{JSON}
+JSON is a language similar to XML, but closer to a relational dataase: its structure consists in objects and arrays recursively nested in an arbitrarily complex way. It can be used for a broad range of data types and evaluated like JavaScript (not the best practice for security issues). Keys are between quotes to avoid referencing variables. 
+
+Data can be accessed through indexes and JavaScript syntax.
+
+\subsection{Other}
+Schema is similar to XSD and has the same syntax as JSON, yet it is rarely used.
+
+Transact-SQL is the Microsoft JSON query language.
 
