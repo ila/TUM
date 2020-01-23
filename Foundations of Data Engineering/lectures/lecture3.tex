@@ -129,7 +129,7 @@ An XPath is the tree containing elements subject of a query: it stores informati
 Grammar definition and DTD are defined in the headers of a document, although parsing can still be difficult due to malfunctioning web pages. 
 
 \subsection{JSON}
-JSON is a language similar to XML, but closer to a relational dataase: its structure consists in objects and arrays recursively nested in an arbitrarily complex way. It can be used for a broad range of data types and evaluated like JavaScript (not the best practice for security issues). Keys are between quotes to avoid referencing variables. 
+JSON is a language similar to XML, but closer to a relational database: its structure consists in objects and arrays recursively nested in an arbitrarily complex way. It can be used for a broad range of data types and evaluated like JavaScript (not the best practice for security issues). Keys are between quotes to avoid referencing variables. 
 
 Data can be accessed through indexes and JavaScript syntax.
 
@@ -137,4 +137,31 @@ Data can be accessed through indexes and JavaScript syntax.
 Schema is similar to XSD and has the same syntax as JSON, yet it is rarely used.
 
 Transact-SQL is the Microsoft JSON query language.
+
+\section{Resource Description Framework}
+RDF is a W3C standard to define semantics of resources (web pages) with URIs as keys, mostly used for arbitrarily connect semantics and information in a graph. 
+
+The smallest structure in RDF is a triple of \texttt{subject, predicate, object}, each of them represented as a node in the graph (or a column in a table). 
+
+Information is linked using common data or models, often categorized in a hierarchical manner. Ontologies define objects in an official way.
+
+RDF data is stored by serialization in different formats: N3 notation avoids repetition by defining URI prefixes and storing multiple predicate-object pairs without repeating the subject.
+
+Microformats annotate (X)HTML documents with RDF snippets, not very human readable. 
+
+Data types are similar to the primitives commonly found in databases and programming languages (integer, string, \dots) but can also be defined by users. 
+
+% todo owl (not good bc undecidable, exponential runtime)
+
+
+\section{SPARQL}
+Similarly to domain calculus, there is no equal condition (when joining, for instance) since the check is implicit thanks to the usage of the variable two times, requesting the same identifier. 
+
+
+\section{Hashing}
+Hash tables should be larger than the amount of keys to store, for instance the next power of two. There also are scaling coefficients such as 1.5 or 1.5, to avoid resizing too much and wasting space. Precomputing prime numbers is an useful option, but requires a range of about 10\% more than the number of keys. 
+% todo prime number generation
+% magic numbers?
+
+Introducing prime numbers is relevant because the size of hash table should not have factors in common with the linear component of the function, otherwise keys would be mapped to the same position. Increasing has also to be done by odd numbers, to reduce the possibility of remainder zero. 
 
