@@ -24,12 +24,59 @@ Random samples can be extracted with various methods, of which the most accurate
 
 UNION, EXCEPT and INTERSECT perform set operations, with the keyword ALL to keep duplicates.
 
+\subsection{Views and CTEs}
 Views create faster reusable tables, but are seen globally and this could cause issues with naming. Another way to optimize through a temporary table is \texttt{WITH}, a common table expression.
 
+%todo
+
 \subsection{Regular expression matching}
+There are different algorithms which establish whether a given regex matches a string:
+\begin{enumerate}
+	\item Deterministic finite automata, built from a non-deterministic one, which allows to match in linear time yet is constructed in exponential state (to the size);
+	\item NFA with caching to simulate a DFA, avoiding the construction cost but raising the computational to almost quadratic;
+	\item Pattern matching by backtracking, forcing an exponential number of sub-cases.
+\end{enumerate}
+Variations of the Boyer-Moore algorithm (grep) are commonly used, optimized with automata. 
 
+Postgres uses Harry Spencer's \texttt{regex} library for matching, an hybrid DFA/NFA implementation (thank you Tom Lane for making clear documentation) which initially generates a NFA representation, then optimizes it and executes a DFA materializing states only when needed and keeping them in cache. 
 
-\subsection{Query decorrelation}
+The parser also includes an NFA mode to implement features such as capturing parentheses and back-references. It constructs a tree of sub-expressions which is recursively scanned similarly to tradition engines, therefore quite slow. 
+
+To make this faster, each node has an associated DFA representing what it could potentially match as a regular expression. Before searching for sub-matches, the string goes through the DFA so that if it does not match the following stages can be avoided.
+
+\subsection{String comparison}
+String comparison is a task which can be computationally expensive in case of very large output. 
+
+There are several methods to implement this, such as suffix trees and edit distance, which also allow to search for errors in text through string similarity. 
+
+The metric represents the number of operations that need to be applied to one of the inputs to make it equal to the other one, through dynamic programming (construction of a matrix). 
+
+\subsection{Indexing}
+Postgres provides several index types, of which the most common is the B-tree, a self-balancing data structure allowing logarithmic-time operations (the most important is searching).
+
+It is useful because nodes can have more than two children: the number of sub-trees can in fact be a multiple of the file system block size. The structure is optimized to have few accesses to disk avoiding loading data within reads.
+
+Further improvements can be made creating auxiliary indexes containing the first record in each disk block, narrowing the search in the main database.
+
+\subsection{Count-distinct problem}
+The count-distinct problem finds how many unique elements are there in a dataset with duplicates. 
+
+The naive implementation consists in initializing an efficient data structure (hash table or tree) in which insertion and membership can be performed quickly, but this solution does not scale well.
+
+Streaming algorithms use randomization to produce a close approximation of the number, hashing every element and store either the maximum (likelihood estimator) or the $m$ minimal values.
+
+\subsubsection{HyperLogLog}
+HyperLogLog is one of the most widely used algorithms to count distinct elements avoiding calculating the cardinality of a set.
+
+It is a probabilistic algorithm, able to estimate cardinalities of $10^{9}$ with a typical standard error around 2\% using very little memory. 
+
+The process derives from Flajolet-Martin algorithm: given a hash function which uniformly distributes output, it is taken the least-significant set bit position from every binary representation. 
+
+Since data is uniformly distributed, the probability of having an output ending with $2^k$ (one followed by $k$ zeros) is $2^{-(k+1)}$. The cardinality is then estimated using the maximum number of leading zeros. With $n$ zeros, the number of distinct elements is circa $2^n$.
+
+HyperLogLog also allows to add new elements, count and merge to obtain the union of two sets.
+
+\section{Query decorrelation}
 Often queries are easier to formulate using subqueries, yet this can take a toll on performance: since SQL is a declarative language, the best evaluation strategy is up to the DBMS.
 
 A subquery is correlated if it refers to tuples from the outer query. The execution of a correlated query is poor, since the inner one gets computed for every tuple of the outer one, causing a quadratic running time.
@@ -69,7 +116,7 @@ Sometimes attributes of the set can be inferred, computing a superset of the val
 
 The approach is overall always working with relational algebra, yet not necessarily on the SQL level: it can add memory overhead which cannot always be removed, despite the ideal linear computational time.
 
-\subsection{Recursive CTEs}
+\section{Recursive CTEs}
 CTEs are performed only once within each query and destroyed as soon as the query ends on Postgres, yet other database systems may differ in implementation. 
 
 Recursive CTEs traverse hierarchical data of arbitrary length, and consist in a base case (stop condition) and its recursive step. To manipulate values before the previous one, it is useful to store them in columns. It is possible to increment counters within RCTEs, and create trees. 
