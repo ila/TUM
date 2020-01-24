@@ -18,16 +18,28 @@ Standard SQL commands are for instance SELECT, FROM, WHERE, GROUP BY, ORDER BY. 
 
 The \texttt{\textbackslash copy} statement allows to import data from a text file, but can be slow with large datasets since it requires a full scan.
 
-Regular expression matching is performed through LIKE or $\sim$, but cannot run in linear time since the construction of the NFA is exponential in the size of input. 
+Pattern matching can be done either by comparison (=) or regular expression (LIKE or $\sim$).
 
 Random samples can be extracted with various methods, of which the most accurate in randomness (Bernoulli) is also the slowest.
 
-UNION, EXCEPT and INTERSECT perform set operations, with the keyword ALL to keep duplicates.
+Set operations are performed thanks to the following instructions:
+\begin{enumerate}
+	\item UNION, which vertically merges two tables with the same attributes;
+	\item EXCEPT, which performs the set difference \texttt{A - B};
+	\item INTERSECT, to only keep rows in common between two tables.
+\end{enumerate}
+The default option implies removing duplicates; to keep them, specifying ALL is necessary.
 
 \subsection{Views and CTEs}
-Views create faster reusable tables, but are seen globally and this could cause issues with naming. Another way to optimize through a temporary table is \texttt{WITH}, a common table expression.
+A view is an abstract database object of a stored query, accessed as a virtual table but physically not containing data. It simplifies complexity of interrogations because it wraps commonly used information and makes it reusable.
 
-%todo
+Views are faster, but can be viewed globally, causing potential issues with naming. 
+
+A better way to optimize through a temporary table is \texttt{WITH}, a statement which defines common table expressions (CTE).
+
+CTEs are temporary result sets that can be referenced with another SQL instruction to simplify and speed up queries. Results get materialized and then scanned. The main difference from views is that CTEs have a scope only within the query, and get destroyed as soon as the execution is finished. 
+
+CTEs overcome SELECT statement limitations such as referencing themselves, which is the basis of recursion. 
 
 \subsection{Regular expression matching}
 There are different algorithms which establish whether a given regex matches a string:
@@ -115,100 +127,4 @@ The subquery in some cases is a set without duplicates which allows equivalence 
 Sometimes attributes of the set can be inferred, computing a superset of the values and eliminating them with the final join. This avoids computing the subquery, but causes a potential loss of pruning the evaluation tree.
 
 The approach is overall always working with relational algebra, yet not necessarily on the SQL level: it can add memory overhead which cannot always be removed, despite the ideal linear computational time.
-
-\section{Recursive CTEs}
-CTEs are performed only once within each query and destroyed as soon as the query ends on Postgres, yet other database systems may differ in implementation. 
-
-Recursive CTEs traverse hierarchical data of arbitrary length, and consist in a base case (stop condition) and its recursive step. To manipulate values before the previous one, it is useful to store them in columns. It is possible to increment counters within RCTEs, and create trees. 
-
-To avoid infinite loops, using \texttt{UNION} instead of \texttt{UNION ALL} allows to remove duplicates and checking before writing a new value.
-
-
-
-
-
-
-\section{Autonomous database systems}
-Autonomous database systems are designed to remove the burden of managing DBMS from humans, focusing on physical database design and configuration/query tuning. The first attempts to program self-adaptive systems were in the 1970s, and have now evolved to learned components. 
-
-Indexing has been replacing with a neural network which predicts the location of a key, and transaction are scheduled through the machines by learned scheduling with unsupervised clustering. The most promising innovation is learned planning, deep learning algorithms which help running the query planner, estimating the best execution order of the operations. 
-
-A self driving DBMS is therefore a system that configures, manages and optimizes itself for the target database and its workload, using an objective function (throughput, latency) and some constraints. The two components of this are an agent (the one who makes decisions and learns over time) and an environment, the subject of the actions. Environments have a state used as feedback for the agent. This system can help exploring unknown configurations (and their consequences) and generalizing over applications or hardware.
-
-\subsection{State modeling}
-State modeling concerns the representation of the environment state, and has to be performed in an accurate way. The model is stochastic, non stationary and episodic (there is a fixed endpoint), and it can be represented with a Markov decision process model. The entire history of the DBMS is encoded in a state vector: its contents, design, workload and resources.
-
-The table state contains number of tuples, attributes, cardinality and other values which altogether contribute to the choice of specific implementations (for instance indexes), but changes are constrained since the number of dimensions of the feature vectors always has to be the same. The content is approximated through a state vector, therefore there is no precise information regarding how the actual table looks like. 
-
-The knob configuration state depends on the machine, and is not really scalable. Not every configuration is applicable to servers, but one potential solution is to store hardware resources according to their percentages in respect of the available amount. 
-
-Feature vectors can be reduced (PCA), exacerbating instability, and hierarchical models help isolating components to reduce the propagation of changes. 
-
-Acquisition of data is done through targeted experiments while the system is running in production, training the model with end-to-end benchmarks of sample workloads. Instead of running the full system, micro-benchmarks can be run on a subset of components. This method is more effective and requires less iteration to converge. 
-
-To avoid slowing down the entire system, training is performed on replicas (master-slave architecture) having an agent recognize the resources and eventually propagating the best changes to the master. The application server primarily communicates with the master through reads and writes, and obtaining a complete view of all the operation is sometimes hard since not everything is sent to the replicas (failed queries, for instance). 
-
-An alternative is imitation learning: the model observes a tuned DBMS and tries to replicate those decisions. The state of the database still needs to be captured to extrapolate why changes have been applied, and training data will be sparse or noisy.
-
-\subsection{Reward observation}
-Rewards are classified as short-term and long-term, the latter more problematic since it is difficult to predict the workload trends. Transient hardware problems are hard to detect and could mask the true reward of an action, so current benchmarks have to be compared with historical data to reconsider recent events. 
-
-Many systems concern both OLTP and OLAP workloads, and changes in the objective functions may have a negative impact on either. Generally multiple policies define preference of one over th other in mixed environments. 
-
-Other common problems regard action selection policies, transparency and human interaction. 
-
-
-\section{Key-value storage}
-One of the benefits of this kind of storage is the lack of schema: they are defined with human readable languages (XML, SVG) for structured and semi-structured data. The possible formats vary from free text to relational models, the latter less common; data can also be compressed or uncompressed. 
-
-For instance, possible choices for configuration files are:
-\begin{enumerate}
-	\item JSON, although kind of hard to write long files;
-	\item YAML, really complicated;
-	\item TOML, with minimal syntax therefore easy.
-\end{enumerate}
-
-\subsection{XML}
-XML documents have a rooted hierarchical structure named Document Object Model, where elements are declared between tags with eventual attributes. Those documents allow to store reasonably large information, queried in a declarative language (XPath, XQuery) which guarantees results appearing in the same order as they were saved. Validation requires constraints which imply the choice between a simple grammar or a more powerful one. Grammar is only defined for tags and attributes, not contents. 
-
-An XPath is the tree containing elements subject of a query: it stores information about preceding nodes, siblings, descendants, parents and ancestors in the DOM. It can be navigated through the syntax \texttt{axis::node[predicate]/@attr} also allowing retrieval of a set related to the matching node (for instance \texttt{:.} indicates parent). 
-
-Grammar definition and DTD are defined in the headers of a document, although parsing can still be difficult due to malfunctioning web pages. 
-
-\subsection{JSON}
-JSON is a language similar to XML, but closer to a relational database: its structure consists in objects and arrays recursively nested in an arbitrarily complex way. It can be used for a broad range of data types and evaluated like JavaScript (not the best practice for security issues). Keys are between quotes to avoid referencing variables. 
-
-Data can be accessed through indexes and JavaScript syntax.
-
-\subsection{Other}
-Schema is similar to XSD and has the same syntax as JSON, yet it is rarely used.
-
-Transact-SQL is the Microsoft JSON query language.
-
-\section{Resource Description Framework}
-RDF is a W3C standard to define semantics of resources (web pages) with URIs as keys, mostly used for arbitrarily connect semantics and information in a graph. 
-
-The smallest structure in RDF is a triple of \texttt{subject, predicate, object}, each of them represented as a node in the graph (or a column in a table). 
-
-Information is linked using common data or models, often categorized in a hierarchical manner. Ontologies define objects in an official way.
-
-RDF data is stored by serialization in different formats: N3 notation avoids repetition by defining URI prefixes and storing multiple predicate-object pairs without repeating the subject.
-
-Microformats annotate (X)HTML documents with RDF snippets, not very human readable. 
-
-Data types are similar to the primitives commonly found in databases and programming languages (integer, string, \dots) but can also be defined by users. 
-
-% todo owl (not good bc undecidable, exponential runtime)
-
-
-\section{SPARQL}
-Similarly to domain calculus, there is no equal condition (when joining, for instance) since the check is implicit thanks to the usage of the variable two times, requesting the same identifier. 
-
-
-\section{Hashing}
-Hash tables should be larger than the amount of keys to store, for instance the next power of two. There also are scaling coefficients such as 1.5 or 1.5, to avoid resizing too much and wasting space. Precomputing prime numbers is an useful option, but requires a range of about 10\% more than the number of keys. 
-% todo prime number generation
-% magic numbers?
-
-Introducing prime numbers is relevant because the size of hash table should not have factors in common with the linear component of the function, otherwise keys would be mapped to the same position. Increasing has also to be done by odd numbers, to reduce the possibility of remainder zero. 
 

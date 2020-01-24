@@ -27,7 +27,7 @@ Text formats are overall well-known and can be manipulated with command line too
 
 Tools can be combined through pipes, which redirect the input/output stream. Some examples are:
 \begin{itemize}
-	\item \texttt{|} to concatenate two commands (|\& also pipes standard error);
+	\item \texttt{|} to concatenate two commands (\& also pipes standard error);
 	\item \texttt{>} to redirect to a file;
 	\item \texttt{<} to redirect from a file;
 	\item \texttt{\&\&} executes a command only if the previous one has succeeded;
@@ -125,7 +125,7 @@ Syntax: \texttt{sed [OPTION] {script} [FILE]}
 
 This command is mostly used to replace text in a file. The operations are separated by a slash, and the letters (flags) represent options.
 
-Example: \texttt{cat file | sed 's/oldText?newText/'} \\
+Example: \texttt{cat file | sed 's/oldText/newText/'} \\
 Replaces oldText with newText.
 
 Example: \texttt{cat file | sed 's/file[0-9]*.png/"\&"/I'} \\
@@ -136,7 +136,7 @@ Syntax: \texttt{join [OPTION] FILE1 FILE2}
 
 \texttt{join} joins the lines of two files on a common field. For each pair of input lines with identical join fields, writes a line to standard output. The default join field is the first, delimited by blanks. One file can be omitted, reading standard output.
 
-Unmatched lines are removed, or preserved with \texttt{-}a.
+Unmatched lines are removed, or preserved with \texttt{-a}.
 
 Field number can be specified with \texttt{-j} or \texttt{-1 FIELD -2 FIELD}. Values must be sorted before joining, and it is not powerful compared to other tools.
 

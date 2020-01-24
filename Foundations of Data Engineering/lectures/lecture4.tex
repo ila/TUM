@@ -1,0 +1,87 @@
+\section{Recursive CTEs}
+Recursive CTEs iteratively traverse hierarchical data of arbitrary length, and similarly to algorithms contain a base case (stop condition) and its recursive step. The number of times to iterate does not have to be constant.
+
+\begin{lstlisting}[language=SQL]
+with recursive r (i) as (
+	select 1
+	-- non-recursive term
+	union all
+	-- recursive term
+	select i + 1
+	from r
+	where i < 5)
+select * from r;
+\end{lstlisting}
+
+Recursive expressions can be used to manipulate data in a hierarchical structure. The non-recursive part defines the base case with eventual deterministic checks, while the recursive table traverses the tree upwards applying conditions.
+
+It is also possible to increment counters within RCTEs, and create trees. To avoid infinite loops in cyclic structures, using \texttt{UNION} instead of \texttt{UNION ALL} allows to remove duplicates and checking before writing a new value.
+
+\section{Window functions}
+Window functions are versatile tools to implement time series analysis, percentiles and cumulative sums. They are evaluated after every clause but ORDER BY, but opposite to aggregation they do not change the result: only additional columns are computed.
+
+% todo window functions
+TO FINISH :))
+
+\section{Database clusters}
+Storing a large quantity of data on a single machine can have limitations: performance is restricted to hardware, and in case of failure transactions get lost. 
+
+Using multiple machines is therefore a valid solution to handle databases: clusters are transparent and present themselves as a single system, still maintaining consistency between nodes. 
+
+\subsection{ACID vs BASE}
+ACID and BASE are two standards to describe the properties of databases. One could be defined as the opposite of the other, because their usage is distinct between relational models and NoSQL.
+
+\begin{itemize}
+	\item Atomic: all operations in a transaction must either succeed or be reverted;
+	\item Consistent: each transaction is always propagated to all nodes;
+	\item Isolated: transactions do not contend with one another;
+	\item Durable: results are permanent, even with failures.
+\end{itemize}
+
+\begin{itemize}
+	\item Basically Available: ensures an operating cluster yet not all data might be immediately accessible after a failure;
+	\item Soft state: data needs to be periodically refreshed, it does not have a permanent state;
+	\item Eventual consistency: consistency is not achieved all the time, but will be reached at some point after a number of updates.
+\end{itemize}
+
+Both models have advantages and disadvantages, but generally BASE properties are much looser and less strict than ACID. 
+
+\subsection{CAP theorem}
+The CAP theorem states that is impossible for a distributed database to simultaneously achieve more than two of the following guarantees:
+\begin{enumerate}
+	\item Consistency (every read receives either the most recent write or an error);
+	\item Availability (every request receives a response);
+	\item Partition tolerance (system operating even with dropped messages or delays).
+\end{enumerate}
+When a network partition failure happens, therefore, the choice has to be between canceling the operation decreasing availability or proceed propagating it risking consistency.
+
+% todo finish cap
+
+\section{Autonomous database systems}
+Autonomous database systems are designed to remove the burden of managing DBMS from humans, focusing on physical database design and configuration/query tuning. The first attempts to program self-adaptive systems were in the 1970s, and have now evolved to learned components. 
+
+Indexing has been replacing with a neural network which predicts the location of a key, and transaction are scheduled through the machines by learned scheduling with unsupervised clustering. The most promising innovation is learned planning, deep learning algorithms which help running the query planner, estimating the best execution order of the operations. 
+
+A self driving DBMS is therefore a system that configures, manages and optimizes itself for the target database and its workload, using an objective function (throughput, latency) and some constraints. The two components of this are an agent (the one who makes decisions and learns over time) and an environment, the subject of the actions. Environments have a state used as feedback for the agent. This system can help exploring unknown configurations (and their consequences) and generalizing over applications or hardware.
+
+\subsection{State modeling}
+State modeling concerns the representation of the environment state, and has to be performed in an accurate way. The model is stochastic, non stationary and episodic (there is a fixed endpoint), and it can be represented with a Markov decision process model. The entire history of the DBMS is encoded in a state vector: its contents, design, workload and resources.
+
+The table state contains number of tuples, attributes, cardinality and other values which altogether contribute to the choice of specific implementations (for instance indexes), but changes are constrained since the number of dimensions of the feature vectors always has to be the same. The content is approximated through a state vector, therefore there is no precise information regarding how the actual table looks like. 
+
+The knob configuration state depends on the machine, and is not really scalable. Not every configuration is applicable to servers, but one potential solution is to store hardware resources according to their percentages in respect of the available amount. 
+
+Feature vectors can be reduced (PCA), exacerbating instability, and hierarchical models help isolating components to reduce the propagation of changes. 
+
+Acquisition of data is done through targeted experiments while the system is running in production, training the model with end-to-end benchmarks of sample workloads. Instead of running the full system, micro-benchmarks can be run on a subset of components. This method is more effective and requires less iteration to converge. 
+
+To avoid slowing down the entire system, training is performed on replicas (master-slave architecture) having an agent recognize the resources and eventually propagating the best changes to the master. The application server primarily communicates with the master through reads and writes, and obtaining a complete view of all the operation is sometimes hard since not everything is sent to the replicas (failed queries, for instance). 
+
+An alternative is imitation learning: the model observes a tuned DBMS and tries to replicate those decisions. The state of the database still needs to be captured to extrapolate why changes have been applied, and training data will be sparse or noisy.
+
+\subsection{Reward observation}
+Rewards are classified as short-term and long-term, the latter more problematic since it is difficult to predict the workload trends. Transient hardware problems are hard to detect and could mask the true reward of an action, so current benchmarks have to be compared with historical data to reconsider recent events. 
+
+Many systems concern both OLTP and OLAP workloads, and changes in the objective functions may have a negative impact on either. Generally multiple policies define preference of one over th other in mixed environments. 
+
+Other common problems regard action selection policies, transparency and human interaction. 

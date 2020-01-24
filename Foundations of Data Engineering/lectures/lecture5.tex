@@ -1,0 +1,55 @@
+\section{Key-value storage}
+One of the benefits of this kind of storage is the lack of schema: they are defined with human readable languages (XML, SVG) for structured and semi-structured data. The possible formats vary from free text to relational models, the latter less common; data can also be compressed or uncompressed. 
+
+For instance, possible choices for configuration files are:
+\begin{enumerate}
+	\item JSON, although kind of hard to write long files;
+	\item YAML, really complicated;
+	\item TOML, with minimal syntax therefore easy.
+\end{enumerate}
+
+\subsection{XML}
+XML documents have a rooted hierarchical structure named Document Object Model, where elements are declared between tags with eventual attributes. Those documents allow to store reasonably large information, queried in a declarative language (XPath, XQuery) which guarantees results appearing in the same order as they were saved. Validation requires constraints which imply the choice between a simple grammar or a more powerful one. Grammar is only defined for tags and attributes, not contents. 
+
+An XPath is the tree containing elements subject of a query: it stores information about preceding nodes, siblings, descendants, parents and ancestors in the DOM. It can be navigated through the syntax \texttt{axis::node[predicate]/@attr} also allowing retrieval of a set related to the matching node (for instance \texttt{:.} indicates parent). 
+
+Grammar definition and DTD are defined in the headers of a document, although parsing can still be difficult due to malfunctioning web pages. 
+
+\subsection{JSON}
+JSON is a language similar to XML, but closer to a relational database: its structure consists in objects and arrays recursively nested in an arbitrarily complex way. It can be used for a broad range of data types and evaluated like JavaScript (not the best practice for security issues). Keys are between quotes to avoid referencing variables. 
+
+Data can be accessed through indexes and JavaScript syntax.
+
+\subsection{Other}
+Schema is similar to XSD and has the same syntax as JSON, yet it is rarely used.
+
+Transact-SQL is the Microsoft JSON query language.
+
+\section{Resource Description Framework}
+RDF is a W3C standard to define semantics of resources (web pages) with URIs as keys, mostly used for arbitrarily connect semantics and information in a graph. 
+
+The smallest structure in RDF is a triple of \texttt{subject, predicate, object}, each of them represented as a node in the graph (or a column in a table). 
+
+Information is linked using common data or models, often categorized in a hierarchical manner. Ontologies define objects in an official way.
+
+RDF data is stored by serialization in different formats: N3 notation avoids repetition by defining URI prefixes and storing multiple predicate-object pairs without repeating the subject.
+
+Microformats annotate (X)HTML documents with RDF snippets, not very human readable. 
+
+Data types are similar to the primitives commonly found in databases and programming languages (integer, string, \dots) but can also be defined by users. 
+
+% todo owl (not good bc undecidable, exponential runtime)
+
+
+\section{SPARQL}
+Similarly to domain calculus, there is no equal condition (when joining, for instance) since the check is implicit thanks to the usage of the variable two times, requesting the same identifier. 
+
+
+\section{Hashing}
+Hash tables should be larger than the amount of keys to store, for instance the next power of two. There also are scaling coefficients such as 1.5 or 1.5, to avoid resizing too much and wasting space. Precomputing prime numbers is an useful option, but requires a range of about 10\% more than the number of keys. 
+% todo prime number generation
+% magic numbers?
+
+Introducing prime numbers is relevant because the size of hash table should not have factors in common with the linear component of the function, otherwise keys would be mapped to the same position. Increasing has also to be done by odd numbers, to reduce the possibility of remainder zero. 
+
+
