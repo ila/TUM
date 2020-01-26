@@ -85,3 +85,45 @@ Melting and casting are essential to switch from wide to long data, or vice vers
 
 ### Plotting
 
+Data visualization is important to explore information revealing facts, and showing interesting relationships. 
+
+Plotting in R follows the theory of Grammar of Graphics: it separates data from aesthetics, defining common elements and combining them as layers.
+
+Components of graphics are:
+
+* Data, the object with variables;
+* Aesthetics, describe visual characteristics;
+* Layers, made of geometric objects that represent data;
+* Scales, convert visual characteristics to display values (eventually removing values outside the range);
+* Facets, split data into multiple graphs;
+* Stats, summarize data;
+* Coordinate system, describes 2D space data is projected onto.
+
+##### Types of plots
+
+Histograms are used with one continuous variable, eventually setting the number of bins (columns). They are sometimes not optimal to investigate the distribution of a variable due to the discretization effect during division into bins.
+
+Density plots are useful for this purpose, plotting by kernel density estimation. Bandwidth can be set manually, but can have a huge impact on visualization.
+
+Boxplots are graphical representations of numerical data (either continuous or discrete-continuous variables) through their quartiles, with whiskers indicating variability (1.5% of the interquartile range). 
+
+Outliers may be plotted as individual points, without making assumptions regarding distribution of the data. 
+
+Boxplots can be used for symmetric or exponential distributions, but do not work well with bimodal data since they only show one mode (the median). 
+
+A violin plot is similar to a boxplot, with the addition of a rotated kernel density plot on each side, showing the probability density.
+
+A bean plot is another alternative where the individual observations are shown as small lines in an one-dimensional scatter plot.
+
+Barplots combine two attributes to encode quantitative values, emphasizing the individual amounts by category and supporting their comparison. 
+
+Uncertainty can be visualized with error bars, for instance standard deviation and standard error of the mean (tending to 0 because of Central Limit theorem). 
+
+Scatterplots are used with two continuous variables, showing the relationship between them. They can also be converted to 2D density plots.
+
+Line plots can be added to highlight trends connecting individual dots, since the shape of data and its movement are subject to change. 
+
+
+
+### Relationship between data
+
