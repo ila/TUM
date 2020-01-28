@@ -40,10 +40,40 @@ Data types are similar to the primitives commonly found in databases and program
 
 % todo owl (not good bc undecidable, exponential runtime)
 
+Similarly to domain calculus, there is no equal condition (when joining, for instance) since the check is implicit thanks to the usage of the variable two times, requesting the same identifier. Queries can be translated to relational algebra, binding every WHERE clause with a join just above in the tree.
+
+This property makes it easier to iteratively change data and schema, connecting them to other sources, but on the other side it's harder to optimize storage and queries.
 
 \section{SPARQL}
-Similarly to domain calculus, there is no equal condition (when joining, for instance) since the check is implicit thanks to the usage of the variable two times, requesting the same identifier. 
+SPARQL is the RDF query language, working with pattern matching over triples and returning the matching ones. It only contains basic CRUD functionalities with three types of data: URI, literal and blank node. The latter represents a variable with local scope, not appearing in SELECT.
 
+The subject and the predicate must always be an URI, while objects can also be literals. Selection can be over distinct or reduced values, which allows to convert inner join to left outer, ignoring how many matchings are there.
+
+SPARQL permits advanced SELECT queries such as FILTER, containment check or output as a graph. Examples of semantic information that can be queried are found on DBPedia.
+
+\subsection{Query processing}
+On a large graph, queries could be performed simulating a relation database, loading triples in a table: this approach does not work since the database is not aware of the types of stored data. 
+
+RDF graphs are usually implemented through clustered B$^+$-trees, storing triples in lexicographical order allowing good compression (encoding differences with the previous node) and fast lookup on disk.
+
+Sorting requires a definition of the ordering field: since space is optimized due to compression, it is sometimes possible to create different trees according to each possibility ($3! = 6$), leading to efficient merge joins. 
+
+Queries can be performed in linear time through the following optimizations:
+\begin{itemize}
+	\item Extensive compression of trees;
+	\item Indexing for joins;
+	\item Information skipping large parts of data while traversing;
+	\item Encoded data.
+\end{itemize}
+
+% scalable join processing on vey large rdf graphs
+% querying graph structured data
+
+RDF triples are closely related, disallowing independence. Soft functional dependencies are indeed very common, with bind triple patterns making the others unselective and not captured by histograms.
+
+Cardinality estimation is not well suited for RDF data: the independence assumption does not hold (correlation is the norm), and leads to severe underestimation. Multi-dimensional histograms would help, but are really expensive to compute due to exponential growth of dimensions.
+
+RDF is also really unfriendly for sampling, since there is no schema: triples can be diverse and unrepresentative, therefore a sample needs to be huge to be useful.
 
 \section{Hashing}
 Hash tables should be larger than the amount of keys to store, for instance the next power of two. There also are scaling coefficients such as 1.5 or 1.5, to avoid resizing too much and wasting space. Precomputing prime numbers is an useful option, but requires a range of about 10\% more than the number of keys. 
@@ -52,4 +82,5 @@ Hash tables should be larger than the amount of keys to store, for instance the 
 
 Introducing prime numbers is relevant because the size of hash table should not have factors in common with the linear component of the function, otherwise keys would be mapped to the same position. Increasing has also to be done by odd numbers, to reduce the possibility of remainder zero. 
 
+ 
 

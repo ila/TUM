@@ -88,6 +88,11 @@ Since data is uniformly distributed, the probability of having an output ending 
 
 HyperLogLog also allows to add new elements, count and merge to obtain the union of two sets.
 
+\subsection{Sampling}
+Sampling is usually performed through the hypergeometrical distribution, a formula composed by 3 binomial coefficients. Computing factorials, approximated with exponentiation, can be a heavy operation.
+
+Factorials can be estimated using Stirling approximation: $\log(n!) \approx n\log n - n + \frac{1}{2}(2\pi n)$, which is cheaper and works for sufficiently big $n$, but still not efficient for very large numbers.
+
 \section{Query decorrelation}
 Often queries are easier to formulate using subqueries, yet this can take a toll on performance: since SQL is a declarative language, the best evaluation strategy is up to the DBMS.
 
