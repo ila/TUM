@@ -127,3 +127,85 @@ Line plots can be added to highlight trends connecting individual dots, since th
 
 ### Relationship between data
 
+
+
+### Classification
+
+Classification is important when trying to predict the value of $y$ applying linear regression, when $y$ is a category (diagnostic, spam detection, speech recognition).
+
+The variable used to predict are called features, while the prediction is the outcome. An efficient approach takes features as input and returns a valid outcome when it is unknown, eventually training algorithms using a dataset with outcome observations already present.
+
+##### Binary classification
+
+Binary classification has outcome $k$ which can only take values of 0 or 1.  Linear regression is not appropriate for classification, since values are not necessarily correlated: it is though useful to model the conditional expectation of the outcome as linear combination of the features.
+
+The system is rewritten so that $\epsilon_i$ (error), following a normal distribution, becomes the probability of having a value $y_i$ according to a normal with mean $y_i | \mu_i$. The expectation is then $E(y_i | x_i) = \mu_i$.
+
+Logistic regression models the conditional expectation of the outcome conditioned on the features. The expectation $\mu$ in a binary classification is probability of class 1 ($\mu > 0.5$):  real numbers used in linear regression are mapped to the $[0, 1]$ interval using the logistic function $ \lambda(t) = \frac{1}{1+e^{-t}}$ or the inverse sigmoid (logit). 
+
+Logistic regression can also be applied to generalized linear models (Poisson, Gamma) exploiting a probability distribution from the exponential family, a linear predictor and a link function (inverse of activation function).
+
+In R, it can be fit using the `glm` function (generalized linear model). The fitted model can be applied to data (seen or unseen) using `predict`, returning the linear predictor or probabilities.
+
+The odds for a binary variable $y$ are defined as $\frac{p(y)}{1-p(y)}$. The odds ratio is the ratio of the odds of $y$ with and without a specific condition. It can be obtained with `exp`.
+
+The $\beta$ coefficients from logistic regression are log odds ratios, given that all other variables are fixed.
+
+##### KNN
+
+K-nearest neighbor is a classifier which works assigning the most common class among the $k$ nearest training observation, using Euclidean distance measurement.
+
+In very high dimensions, the classifier explodes since the volume of space grows exponentially (curse of dimensionality). More modeling assumptions are required.
+
+##### Neural networks
+
+Neural network apply logistic regression modeling more complex functions, composing successions of linear transformations and non-linear activation functions. Most popular applications concern images and sequences.
+
+$$ \mu = \theta(\eta) = \frac{e^\eta}{1+e^\eta}$$
+
+##### SVM
+
+todo
+
+##### Decision trees
+
+todo
+
+##### Random forests
+
+Random forests are an efficient strategy against overfitting which can be applied in presence of multiple decisions. The output is a majority vote of many decision trees, fitting each of them to a random sampling of data with random subsets of features. 
+
+They are widely used for complex unknown models.
+
+
+
+### Assessing classifiers
+
+Assessing classifiers can be done through a confusion matrix, a table containing predicted class and true class distinguishing true positives, false negatives (type I error), false positives (type II error) and true negatives. A classifier should minimize type I-II errors.
+
+Classifiers can also be assessed through other measurements:
+
+* Sensitivity, $\frac{TP}{P} = \frac{TP}{TP+FN}$;
+* Specificity, $\frac{TN}{N} = \frac{TN}{TN+FP}$;
+* Positive predictive value, $\frac{TP}{TP+FP}$;
+* False discovery rate (hypothesis testing), $E[\frac{FP}{TP+FP}] = E[1 - \frac{FP}{TP+FP}] = 1 - E[PPV]$.
+
+Accuracy (fraction of correct predictions) can be problematic in presence of unequal class distributions. These measurements are also calculated applying Bayes theorem, solving class imbalance with other tests or further screening.
+
+Many classification methods do not assign a class, but rather output a score. It is necessary to set a cutoff above which a prediction is considered positive, depending on the problem. 
+
+
+
+### Training classifiers
+
+Models don't have hyperparameters to control their complexity (degree, depth, layers): complex models overfit data.
+
+Model fitting is performed without using the test dataset: if the model does not generalize, the quality on test set will be low.
+
+##### Cross-validation
+
+Cross-validation identifies optimal mode complexity without needing test data, mimicking it using training data. A part of the attributes are used to train and another to validate, and then subsets are switched through the $k$ iterations. Quality measures need to be aggregated over the $k$ folds.
+
+This method works on the assumption that training and test samples are independently and identically distributed, which is not always the case. Data sometimes comes in clusters, and measures are correlated.
+
+Performing cross-validation at the level of individual data will favor models that learns the cluster, therefore it needs to be performed at a cluster level, requiring application knowledge and eventual data visualization techniques.
