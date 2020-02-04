@@ -129,6 +129,38 @@ Line plots can be added to highlight trends connecting individual dots, since th
 
 
 
+### Clustering
+
+##### Hierarchical clustering
+
+This technique works with the following assumptions: 
+
+* Multivariate data;
+* Distance metric (Euclidean, Manhattan) between points $d(a, b)$;
+* The larger the distance, the less similar the data points.
+
+It aims to calculate an inter-cluster distance between either sets or data points, such as the average for elements of sets.
+
+The output is a binary tree whose leaves are the data points and each node is a set that is the union of its two children nodes.
+
+Sets are merged according to the two closest elements, computing a pairwise distance matrix which gets updated after each iteration.
+
+
+
+##### Rand index
+
+The purpose of this value is to compare clusterings of the same dataset with different number of clusters, trying to maximize similarity in the same set and minimize it between others. 
+
+
+
+### Multiple testing
+
+Multiple testing is a method that can be used to assess a distribution, fairness of probability or in general anything concerning multiple hypotheses.
+
+The more inferences are made, the more likely erroneous ones are to occur, therefore it is needed a strict significant threshold for individual comparisons.
+
+
+
 ### Classification
 
 Classification is important when trying to predict the value of $y$ applying linear regression, when $y$ is a category (diagnostic, spam detection, speech recognition).
