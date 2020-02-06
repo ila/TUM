@@ -98,6 +98,8 @@ Often queries are easier to formulate using subqueries, yet this can take a toll
 
 A subquery is correlated if it refers to tuples from the outer query. The execution of a correlated query is poor, since the inner one gets computed for every tuple of the outer one, causing a quadratic running time.
 
+Correlation can be recognized observing fields that do not have a bound with the attributes of the outer query. In SQL, they usually are in WHERE or EXISTS statements.
+
 Example (from TCP-H dataset):
 \begin{lstlisting}[language=SQL]
 select avg(l_extendedprice)
@@ -121,6 +123,8 @@ and l_extendedprice = m;
 
 The new query is much more efficient, yet not as intuitive. Compilers sometimes manage to automatically decorrelate, but correlations can be complex (inequalities, disjunctions).
 
+Instead of running a function every time, the subset is pre-computated trying to evaluate all the possible choices to then just use a lookup.
+
 A join dependency allows to recreate a table by joining other tables which have subsets of the attributes (relationships are independent of each other). In other words, a table subject to join dependency can be decomposed in other tables and created again joining them.
 
 Dependent joins rely on nested loop evaluations, which are very expensive: the goal of unnesting is to eliminate them all.
@@ -133,3 +137,48 @@ Sometimes attributes of the set can be inferred, computing a superset of the val
 
 The approach is overall always working with relational algebra, yet not necessarily on the SQL level: it can add memory overhead which cannot always be removed, despite the ideal linear computational time.
 
+To decorrelate subqueries, a general method can be used which is effective even with more complicated interrogations containing inequalities and several conditions.
+
+The procedure can be executed several times, always starting from the highest level of nesting:
+\begin{enumerate}
+	\item Moving the correlated subquery to FROM;
+	\item Since there might be multiple keys with the same value, putting DISTINCT helps reducing cardinality;
+	\item Joining is performed in the outer query, and if there is more than one value, an OR condition is applied so that either can be possible;
+	\item Values are grouped to maintain the same domain, according to the elements in DISTINCT and JOIN;
+	\item Other conditions taken from outside the subquery are applied after pre-aggregation.
+\end{enumerate}
+
+The inner table should always have an unique keys and some groups, which then can be selected in the outer one.
+
+Example:
+\begin{lstlisting}
+select o_orderpriority ,count (*) as order_count
+from orders
+where o_orderdate >= date '1993-07-01'
+and o_orderdate < date '1993-10-01'
+and exists (
+	select * 
+	from lineitem
+	where l_orderkey = o_orderkey
+	and l_commitdate < l_receiptdate)
+group by o_orderpriority
+order by o_orderpriority;
+\end{lstlisting}
+
+Decorrelated query:
+\begin{lstlisting}[language=SQL]
+select o_orderpriority, count(*) as order_count
+from orders, (
+	select o2.o_orderkey
+	from lineitem, (
+		select distinct o_orderkey 
+		from orders) o2
+	where l_orderkey = o2.o_orderkey
+	and l_commitdate < l_receiptdate
+	group by o2.o_orderkey) preagg
+where o_orderdate >= date '1993 -07 -01' 
+and o_orderdate < date '1993 -10 -01' 
+and orders.o_orderkey = preagg.o_orderkey
+group by  o_orderpriority
+order by  o_orderpriority;
+\end{lstlisting}

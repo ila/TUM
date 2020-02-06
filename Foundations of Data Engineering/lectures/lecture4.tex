@@ -15,13 +15,118 @@ select * from r;
 
 Recursive expressions can be used to manipulate data in a hierarchical structure. The non-recursive part defines the base case with eventual deterministic checks, while the recursive table traverses the tree upwards applying conditions.
 
+Every recursive query can be defined by a simple evaluation algorithm: 
+\begin{lstlisting}[language=Matlab]
+workingTable = evaluateNonRecursive()
+output workingTable
+while workingTable is not empty
+	workingTable = evaluateRecursive(workingTable)
+	output workingTable
+\end{lstlisting}
+
+It is important to notice that the working table gets fully replaced at every iteration of the second part.
+
 It is also possible to increment counters within RCTEs, and create trees. To avoid infinite loops in cyclic structures, using \texttt{UNION} instead of \texttt{UNION ALL} allows to remove duplicates and checking before writing a new value.
 
-\section{Window functions}
-Window functions are versatile tools to implement time series analysis, percentiles and cumulative sums. They are evaluated after every clause but ORDER BY, but opposite to aggregation they do not change the result: only additional columns are computed.
+To avoid loops within graphs, a NOT EXISTS condition can be added to check whether a node has already been discovered. 
 
-% todo window functions
-TO FINISH :))
+Best practices to deal with graph-like data involve knowing its cardinality, to be aware of the maximum distance, yet most problems are Turing complete.
+
+Postgres only allows one mention of the recursive relation in the recursive subquery.
+
+\section{Window functions}
+Window functions are versatile tools to implement time series analysis, percentiles and cumulative sums. 
+
+A window function can be seen as a special case of aggregate, evaluated after every clause but ORDER BY, but opposite to aggregation they do not change the result: only additional columns are computed.
+
+The term window describes the set of rows on which the window operates, returning values from it. 
+
+Example (from Postgres documentation):
+\begin{lstlisting}
+select product_name, 
+	price, 
+	group_name, 
+	avg(price) over (
+			partition by group_name
+			)
+from products
+	inner join product_groups
+	using (group_id);
+\end{lstlisting}
+The previous query returns the product name, the price, product group name, along with the average prices of each product group.
+
+AVG works as window function, operating on the subset of rows specified by OVER. 
+
+PARTITION BY distributes the rows of the result set into groups, each one of them subject to AVG, returning the average price.
+
+Calculations on window functions are always performed on the result set after the other clauses but ORDER BY.
+
+General window functions syntax:
+\begin{lstlisting}
+window_function(arg1, arg2,..) OVER (
+	[PARTITION BY partition_expression]
+	[ORDER BY sort_expression [ASC | DESC] [NULLS {FIRST | LAST }]
+	[frame_clause])
+\end{lstlisting}
+
+To summarize:
+\begin{itemize}
+	\item The window function is an aggregate function, such as SUM or AVG;
+	\item The (optional) partitioning clause divides the rows into multiple groups;
+	\item The ordering clause specifies the order of internal rows;
+	\item The framing clause defines a subset of rows in the current partition to which the window function is applied.
+\end{itemize}
+
+Multiple window functions can also be applied in the same query. Some other examples which ignore framing are:
+\begin{itemize}
+	\item Ranking:
+	\begin{itemize}
+		\item \texttt{rank()} and \texttt{dense\_rank()}, returning the rank of the current row with or without gaps;
+		\item \texttt{row\_number()};
+		\item\texttt{ ntile(n)}, distributing data over buckets;
+	\end{itemize}
+	\item Distribution:
+	\begin{itemize}
+		\item \texttt{percent\_rank()} and \texttt{cume\_dist()}, returning the relative rank of the current row or peer group (rows with equal partitioning);
+	\end{itemize}
+	\item Navigation:
+	\begin{itemize}
+		\item \texttt{lag(expr, offset, default)} and \texttt{lead(expr, offset, default)} evaluate the expression respectively on preceding and following row.
+	\end{itemize}
+\end{itemize}
+
+Framing can follow only a few specifications, not too complex:
+\begin{itemize}
+	\item \texttt{current row};
+	\item \texttt{unbounded preceding} or \texttt{unbounded following}, first and last row in the partition;
+	\item \texttt{range between unbounded preceding and current row}, default frame with order specified;
+	\item \texttt{range between unbounded preceding and unbounded following}, default frame with order unspecified;
+	\item \texttt{aggregates()}, computing aggregates over all tuples in current frame;
+	\item \texttt{first\_value()}, \texttt{last\_value()}, \texttt{nth\_value()}, evaluating an expression on determined rows of the frame.
+\end{itemize}
+
+\subsection{Segment trees}
+Segment trees are an useful data structure for efficient evaluation, used for storing information related to intervals (segments).
+
+Querying a static segment tree allows knowing which of the stored segments contains a given element, using logarithmic time operations.
+
+The set of existing values gets divided into possible interval endpoints, sorted from left to right. All leaves in the tree correspond to the elementary intervals induced by endpoints, while internal nodes are the union of two intervals. 
+
+Any interval is stored in the canonical set for at most two nodes at the same depth, therefore the required storage is $O(n \log n)$ with $n$ intervals.
+
+\subsection{Other aggregates}
+Newer version of Postgres allow calculation of more complex statistical aggregates, such as standard deviation, correlation and linear regression.
+
+Mode and percentiles are also supported, yet they require materialization and sorting therefore they need a special syntax and the clause \texttt{within group}.
+
+\subsubsection{Grouping sets}
+A grouping set is a set of columns by which data is grouped, for instance using aggregates. They can be unified using UNION ALL.
+
+Since uniting requires all sets to have the same number of columns, eventual inconsistencies must be filled with NULL: this is both lengthy and nonperforming (linear scans).
+
+GROUPING SETS, a GROUP BY option, allows to define multiple grouping sets in the same query. It is possible to group by one or multiple columns, or even nothing. Missing values are automatically filled with NULL.
+
+ROLLUP calculates all the grouping possibilities ($2^n$) and applies them. 
 
 \section{Database clusters}
 Storing a large quantity of data on a single machine can have limitations: performance is restricted to hardware, and in case of failure transactions get lost. 
@@ -46,6 +151,8 @@ ACID and BASE are two standards to describe the properties of databases. One cou
 
 Both models have advantages and disadvantages, but generally BASE properties are much looser and less strict than ACID. 
 
+BASE does not provide a consistent view of the data, which can lead to confusion and cannot be used for critical systems, therefore it should only be used when performance is more important than ACID guarantees.
+
 \subsection{CAP theorem}
 The CAP theorem states that is impossible for a distributed database to simultaneously achieve more than two of the following guarantees:
 \begin{enumerate}
@@ -56,6 +163,9 @@ The CAP theorem states that is impossible for a distributed database to simultan
 When a network partition failure happens, therefore, the choice has to be between canceling the operation decreasing availability or proceed propagating it risking consistency.
 
 % todo finish cap
+
+\subsection{Transaction handling}
+todo from slide 43
 
 \section{Autonomous database systems}
 Autonomous database systems are designed to remove the burden of managing DBMS from humans, focusing on physical database design and configuration/query tuning. The first attempts to program self-adaptive systems were in the 1970s, and have now evolved to learned components. 
