@@ -1,10 +1,3 @@
-\section{Distributed data processing}
-Distributed databases are a great solution to optimize memory and speed, yet not every operation is supported by them. Machine learning or graph algorithms, for instance, are hard to compute on a sharded relational schema.
-
-
-
-% dataset api is staticly typed, dataframe is not
-
 \section{Hashing}
 To make Maths people feel better about this exam, with the courtesy of Harald Räcke.
 
@@ -39,9 +32,11 @@ Prime numbers can be generated through algorithms, of which the most basic is th
 
 For large primes used in cryptography, a random chosen range of odd numbers of the desired size is sieved against a number of relatively small primes, and the remaining are subject to primality testing (Miller-Rabin).
 
+To keep uniformity of the distribution even allowing new elements to be added, rehashing might be necessary, or incremental of the prime.
+
 \subsection{Fibonacci hashing}
 Fibonacci hashing is a variation of classic hashing using instead of a modulo operation, a multiplication by the golden ratio:
-$$\frac{x}{y} = \frac{x + y}{x} \implies \phi = \frac{1 + \sqrt{5}}{2}$$.
+$$\frac{x}{y} = \frac{x + y}{x} \implies \phi = \frac{1 + \sqrt{5}}{2}$$
 
 The golden ratio has a close relationship with Fibonacci numbers: the previous equality, in fact, holds between every Fibonacci number and its successor.
 
@@ -66,8 +61,21 @@ The partitioning scheme defines how to assign partitions to nodes, using for ins
 Satisfying those constraints may lead to unused resources, for instance nodes not doing any work.
 
 \subsection{Chord hashing}
+Chord is a protocol for a peer-to-peer distributed hash table. it stores key-values assigning a node the values for which it is responsible, using a chord to assign and discover values.
+
+Nodes and keys are given an hashed identifier of $m$ bits, and using the Chord lookup protocol nodes are put in a circle that has as most $2^m$ nodes. 
+
+Each node has a successor and a predecessor, going in clockwise direction, but normally there are holes in the sequence. In general, the successor of a node $k$ has the first identifier equal or greater than $k$.
+
+Lookup is performed passing the query through the successors of a node, if the key cannot be found locally. This leads to linear worst-case performance, but can be avoided implementing a finger table in each node. 
+
+A finger table contains up to $m$ entries, and entry $i$ of node $n$ contains the successor of key $(n + 2^{i-1}) \mod 2^m$. At every lookup, the query is passed to closest successor or predecessor of $k$ in the finger table, narrowing worst-case performance to logarithmic.
+
+Each peer is responsible for all keys larger than the predecessor number until its own. Introducing a factor of $2^k$, the distance always increases by 2, halving the number of hops each time.
+
+\section{Distributed data processing}
+Distributed databases are a great solution to optimize memory and speed, yet not every operation is supported by them. Machine learning or graph algorithms, for instance, are hard to compute on a sharded relational schema.
 
 
 
-
-
+% dataset api is staticly typed, dataframe is not
