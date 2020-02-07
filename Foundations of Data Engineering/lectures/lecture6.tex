@@ -40,6 +40,17 @@ Data types are similar to the primitives commonly found in databases and program
 
 % todo owl (not good bc undecidable, exponential runtime)
 
+% capturing correlations: not all graphs are the same, therefore they take advantage of correlation: outgoing eges are behaviour, and they want nodes with similar behaviour
+% statistics are used to capture correlation
+% select distinct to see how many sets there are 
+% no distinct: if it is bound to a constant, either we look at the data - slow - or we do the maths, making estimates or relying on indexes (how common is this value?)
+
+% example: indexing looking at the first letter or attribute, and remembering how often this occurs
+% does it exist? and how often?
+% only storing the count, not the values!
+
+
+
 Similarly to domain calculus, there is no equal condition (when joining, for instance) since the check is implicit thanks to the usage of the variable two times, requesting the same identifier. Queries can be translated to relational algebra, binding every WHERE clause with a join just above in the tree.
 
 This property makes it easier to iteratively change data and schema, connecting them to other sources, but on the other side it's harder to optimize storage and queries.

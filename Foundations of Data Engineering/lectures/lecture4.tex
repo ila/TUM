@@ -114,6 +114,10 @@ The set of existing values gets divided into possible interval endpoints, sorted
 
 Any interval is stored in the canonical set for at most two nodes at the same depth, therefore the required storage is $O(n \log n)$ with $n$ intervals.
 
+Space for leaves is linear, and aggregated functions can be calculated on intervals very quickly. 
+
+Segment trees are useful for window functions, since intervals can be seen as windows, either static or sliding. For each call of a window function, a new segment tree gets built: the time for construction is just linear, since ordering is already performed by the ORDER BY clause.
+
 \subsection{Other aggregates}
 Newer version of Postgres allow calculation of more complex statistical aggregates, such as standard deviation, correlation and linear regression.
 
@@ -160,12 +164,119 @@ The CAP theorem states that is impossible for a distributed database to simultan
 	\item Availability (every request receives a response);
 	\item Partition tolerance (system operating even with dropped messages or delays).
 \end{enumerate}
+Partition tolerance is not really an option: some systems cannot be partitioned (servers with no replication), and for a distributed system not guaranteeing partition tolerance would imply to never drop messages and never have a dying node.
+
+The probability of any node to fail increases exponentially as the number of total nodes increase.
+
 When a network partition failure happens, therefore, the choice has to be between canceling the operation decreasing availability or proceed propagating it risking consistency.
 
-% todo finish cap
+If a system chooses to provide consistency, it will preserve atomic reads but refuse to respond to some requests.
+
+If, on the other hand, availability is chosen, the system will respond to all requests, potentially returning outdated information and accepting conflicting writes. 
 
 \subsection{Transaction handling}
-todo from slide 43
+In distributed systems, transactions should be atomic. This means there are two options for ending one:
+\begin{itemize}
+	\item Commit, the transaction was successful and it can become persistent and visible to all nodes;
+	\item Abort, the transaction failed or violates a constraint, therefore the system needs to be reverted to its previous state.
+\end{itemize}
+Since node crashes in a distributed system are independent, the protocol needs to be extended to ensure atomicity of transactions: a valid method is two-phase locking (2PL). 
+
+It is characterized by the presence of a coordinator node which allows $n$ agents of a system $A_1, A_2, \dots, A_n$ to either all persist the changes of $T$ or all discard them.
+
+This is a commitment protocol that coordinates all processes participating in a distributed atomic transaction, achieving its purpose using logging of the states to aid recovery procedures.
+
+The two phases of the protocol in a normal execution are:
+\begin{itemize}
+	\item Commit-request phase, in which a coordinator process attempts to prepare all the processes participating to the transaction to take the necessary steps and vote whether the operation can be committed;
+	\item Commit phase, based on the votes, whose result gets communicated to the participants and the needed actions to commit or abort are taken.
+\end{itemize}
+
+Message flow in 2PL with 4 agents:
+\begin{figure}[h]
+	\includegraphics[scale=0.4]{2pc.png}
+	\centering
+\end{figure}
+
+Issues of this method include the crash of nodes (both coordinator and agent) or potential lost messages.
+
+\subsection{Replication}
+Replication is a technique consisting in keeping a copy of the dataset in each machine. Redundant resources improve query throughput, can accommodate node failures and solve locality issues.
+
+Access to a replicated entity is typically uniform with access to a single non-replicated entity, and copying should be transparent to external users. 
+
+Systems can also use a master-slave scheme, predominant in high availability clusters, where a single node is designated to process all requests. 
+
+\subsubsection{Horizontal partitioning}
+Horizontal sharding involves every machine having only a chunk of the dataset. Query runtimes are improved, yet communication between shards should be minimized, due to network throughput.
+
+Performance, in fact, relies heavily on the used interconnect, but allows nodes to have much less occupied memory so that dataset eveb bigger than the capacity of the machine can be accommodated.
+
+Optimization of queries imply processing clauses separately, locally on each node, and aggregating results later so that the least amount of data is sent.
+
+\subsubsection{Shard allocation}
+Shards can be allocated to the cluster machines in different ways:
+\begin{itemize}
+	\item Every machine receives one shard;
+	\item Every machine receives multiple shards.
+\end{itemize}
+Having more shards than machines results in better skew handling: they can take advantage of the resources available on nodes, increasing performance.
+
+Also, there is no guarantee that the chosen hashing is uniform, and when values in between different shards are queried, it is likely that they are not all on the same machine.
+
+Replication and sharding can be applied together, combining the benefits of both, but this leads to an increased resource consumption.
+\begin{figure}[h]
+	\includegraphics[scale=0.5]{replication_sharding.png}
+	\centering
+\end{figure}
+
+\subsection{Joins}
+Joins in a distributed system are not different than local ones in presence of a replicated environment, yet can become complicated when data is sharded across multiple machines. 
+
+\subsubsection{Co-located joins}
+A co-located join is the most efficient way to join two large distributed tables: every table has a common distributed column and is sharded across machines in the same way.
+
+All rows with the same column, therefore, are always on the same machine, even across different tables, so that relational operations can be performed within the groups.
+
+The joins can be executed in parallel locally on the workers, returning results to the coordinator node.
+
+\subsubsection{Distributed joins}
+A distributed join involves data which is sharded across several nodes.
+
+Data is usually filtered as much as possible before being sent, but data movement is still necessary for joining: all nodes send their part of the table to a single one for it to run operations.
+
+This join is only performing when the number of rows is small, otherwise the node doing the join will be overwhelmed by the dataset size and unable to parallelize.
+
+\subsubsection{Broadcast joins}
+A broadcast join is applicable when only one side of the join requires a small set of rows (small table or very selective filter).
+
+The side of the join with the small set is sent to every node in the cluster, then joined locally with the large table on the other side of the join.
+
+\subsubsection{Considerations}
+All the previous methods still needs to consider size of the tables and bandwidth: some operations might be faster reading the data from remote machines rather than on local disks, since cache size is limited.
+
+In this case, data can be shared to multiple nodes, each of them storing a partition of the table and computing local results which are then aggregated.
+
+Postgres supports read replicas, kept in sync for consistent reads: each application can send data either to the master or the slaves, and the master itself can also trigger replication.
+
+However, it is not natively a distributed database: its alternative Greenplum (still based on Postgres) allows data distribution and partitioning, both of data and schema. 
+
+Distributed and partitioning schemes can be specified creating a table, adding DISTRIBUTED BY to define how data is spread, or PARTITION BY for partitioning within a segment.
+
+Distributions may be round-robin (as evenly as possible, non-deterministic), or hashed (rows dispersed according to a hash function).
+
+\begin{figure}[h]
+	\includegraphics[scale=0.38]{greenplum.png}
+	\centering
+\end{figure}
+
+MemSQL is another distributed database system based on SQL, which also allow replication, distributed and co-located joins.
+
+A MemSQL cluster consists of aggregator and leaf nodes: aggregators handle metadata, monitoring and results of queries, while leaves act as storage layer and execute queries. 
+
+By default, MemSQL shards tables by their primary key, while manual sharding needs to be specified.
+
+Distributed systems overall have more resources, but their synchronization might be expensive.
 
 \section{Autonomous database systems}
 Autonomous database systems are designed to remove the burden of managing DBMS from humans, focusing on physical database design and configuration/query tuning. The first attempts to program self-adaptive systems were in the 1970s, and have now evolved to learned components. 

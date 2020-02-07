@@ -1,8 +1,12 @@
 \section{Distributed data processing}
 
+% dataset api is staticly typed, dataframe is not
+
 \section{Hashing}
 Hash tables should be larger than the amount of keys to store, for instance the next power of two. There also are scaling coefficients such as 1.5 or 1.5, to avoid resizing too much and wasting space. Precomputing prime numbers is an useful option, but requires a range of about 10\% more than the number of keys. 
 % todo prime number generation
 % magic numbers?
+
+% having more shards then machines is better for skew handling bc 1) no guarantee that your hashing is uniform, and 2) when you query values in between, it is likey that your data is not all on the same machine
 
 Introducing prime numbers is relevant because the size of hash table should not have factors in common with the linear component of the function, otherwise keys would be mapped to the same position. Increasing has also to be done by odd numbers, to reduce the possibility of remainder zero.

@@ -70,6 +70,17 @@ It is useful because nodes can have more than two children: the number of sub-tr
 
 Further improvements can be made creating auxiliary indexes containing the first record in each disk block, narrowing the search in the main database.
 
+\subsection{Counting}
+Counting, unless an index is present, is not optimizable: to have an exact result, the DBMS must perform a linear scan of the table, to avoid eventual transaction conflicts.
+
+Counting distinct values or grouping before joining, on the other hand, is faster since it involves an approximation.
+
+Number of total rows can be approximated as well, thanks to sketches: probabilistic data structures that contain frequency tables of events in a stream of data.
+
+They use hash tables to map events to frequencies, and at any time the sketch can be queried for the frequency of a particular element. 
+
+To reduce variance and have a more accurate estimation, many independent copies can be stored in parallel, and their outputs is combined.
+
 \subsection{Count-distinct problem}
 The count-distinct problem finds how many unique elements are there in a dataset with duplicates. 
 
