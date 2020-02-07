@@ -20,7 +20,7 @@ The first time a program is executed, data is stored in main memory: after that,
 
 Naively optimizing can have downsides, making the situation worse sacrificing portability or creating a messy code: before touching a program there are tools which can be used to analyze time and performance (\texttt{perf}).
 
-An efficient way to optimize code is memory mapping: files are saved in the address space of the program, and are treated as arrays being accessed in the same way as dynamic memory (better than caching).
+An efficient way to optimize code is memory mapping: files are saved in the address space of the program and are treated as arrays being accessed in the same way as dynamic memory (better than caching).
 
 A memory mapped file is in fact a segment of virtual memory which has been assigned a byte-for-byte correlation with some resource, increasing I/O performance with faster access. Memory maps are always aligned to page size (4 KiB at most).
 

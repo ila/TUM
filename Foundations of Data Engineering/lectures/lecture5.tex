@@ -1,12 +1,73 @@
 \section{Distributed data processing}
+Distributed databases are a great solution to optimize memory and speed, yet not every operation is supported by them. Machine learning or graph algorithms, for instance, are hard to compute on a sharded relational schema.
+
+
 
 % dataset api is staticly typed, dataframe is not
 
 \section{Hashing}
-Hash tables should be larger than the amount of keys to store, for instance the next power of two. There also are scaling coefficients such as 1.5 or 1.5, to avoid resizing too much and wasting space. Precomputing prime numbers is an useful option, but requires a range of about 10\% more than the number of keys. 
-% todo prime number generation
-% magic numbers?
+To make Maths people feel better about this exam, with the courtesy of Harald Räcke.
 
-% having more shards then machines is better for skew handling bc 1) no guarantee that your hashing is uniform, and 2) when you query values in between, it is likey that your data is not all on the same machine
+The purpose of hashing is having a data structure that tries to directly compute the memory location from the given key, obtaining constant search time. 
+
+Hash functions and their associated hash tables are used in data storage and retrieval applications to access and store information thanks to their efficiency.
+
+Given an universe $U$ of keys and a set $S \leq U$ of used keys to be distributed over an array $T[0, \dots, n-1]$, an optimal hash function $H : U \rightarrow [0, \dots, n-1]$ should be fast to evaluate, have small storage requirements and a good distribution of elements over the whole table.
+
+Ideally, the hash function would map all keys to different memory locations (direct addressing), yet this is unrealistic since the size of the table would be much larger than available memory.
+
+Knowing previously the set $S$ of actual keys, it could be possible to design a simple function that maps all of them to different memory locations (perfect hashing); but this is not often the case.
+
+The best expectation would be a function which distributes keys evenly across the table, yet this leads to the problem of collision: usually the universe $U$ is much larger than the table size $n$, hence there may be two elements $k_1, k_2$ from the same set $S$ so that $h(k_1) = h(k_2)$, and therefore getting mapped to the same memory location.
+
+Typically, collisions do not appear once the size of the set $S$ of actual keys get close to $n$, but otherwise the probability of having a collision when hashing $m$ elements under uniform hashing is at least:
+$$1 - e^{-\frac{m(m-1)}{2n}} \approx 1 - e^{-\frac{m^2}{2n}}$$
+
+Practically, hash tables should be larger than the amount of keys to store, for instance the next power of two. There also are scaling coefficients such as 1.5 or 1.5, to avoid resizing too much and wasting space. Precomputing prime numbers is an useful option, but requires a range of about 10\% more than the number of keys.
+
+There are methods to deal with collisions: open addressing, hashing with chaining, or just not resolving them at all.
+
+Hashing with chaining arranges elements that map to the same position in a linear list, inserting at the front of the list. The average time required for an unsuccessful search is $A^- = 1 + \frac{m}{n}$, while for a successful search it is $A^+ \leq 1 + \frac{\nicefrac{m}{n}}{2}$.
+
+Open addressing, in particular, stores all objects in the table defining a function that determines the position through a permutation of all possible $n - 1$ values. If an insertion fails, a new position is searched (either through a different function or looking for the first free slot).
+
+A good choice for $h(i, j)$ to have an uniform distribution over the possible values is a modulo with a prime number.
 
 Introducing prime numbers is relevant because the size of hash table should not have factors in common with the linear component of the function, otherwise keys would be mapped to the same position. Increasing has also to be done by odd numbers, to reduce the possibility of remainder zero.
+
+Prime numbers can be generated through algorithms, of which the most basic is the prime sieve: a list of integers up to a desired number is created, and composite numbers are progressively removed until only primes are left. 
+
+For large primes used in cryptography, a random chosen range of odd numbers of the desired size is sieved against a number of relatively small primes, and the remaining are subject to primality testing (Miller-Rabin).
+
+\subsection{Fibonacci hashing}
+Fibonacci hashing is a variation of classic hashing using instead of a modulo operation, a multiplication by the golden ratio:
+$$\frac{x}{y} = \frac{x + y}{x} \implies \phi = \frac{1 + \sqrt{5}}{2}$$.
+
+The golden ratio has a close relationship with Fibonacci numbers: the previous equality, in fact, holds between every Fibonacci number and its successor.
+
+The $n^{th}$ Fibonacci number is obtained calculating $F_n = \frac{1}{\sqrt{5}}(\phi^n - \varphi^n)$, where $\phi = \frac{(1 + \sqrt{5})}{2}$ and $\varphi = \frac{(1 + \sqrt{5})}{2}$.
+
+In the context of Fibonacci hashing, it is taken the reciprocal of $\phi$, and hashing is performed multiplying the value $k$ by the integer relatively prime to $k$ which is closer to $\phi^{-1}k$. 
+
+Consecutive keys have an uniform spread distribution, therefore it is an efficient method.
+
+\subsection{Neojoin}
+Hashing is relevant in a distributed systems architecture because it can help determining how to locate relations on nodes.
+
+While performing a distributed join, tuples may join with tuples on remote nodes: relations can be repartitioned and redistributed for local joins, so that tuples will only join with the corresponding partition.
+
+The partitioning scheme defines how to assign partitions to nodes, using for instance a hash function. There are several options to implement a scheme:
+\begin{enumerate}
+	\item Minimizing network traffic, assigning a partition to the node which owns its largest part. This way, only the small fragments of a partition are sent over the network, but a schedule with minimal network traffic may have high duration;
+	\item Minimizing response time, i. e. the time from request to result. This is dominated by network duration, which depends on maximum straggler;
+	\item Minimizing maximum straggler, formulated as a NP-hard linear programming problem where nodes have the most similar possible amount of workload.
+\end{enumerate}
+
+Satisfying those constraints may lead to unused resources, for instance nodes not doing any work.
+
+\subsection{Chord hashing}
+
+
+
+
+
