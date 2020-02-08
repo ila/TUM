@@ -40,7 +40,7 @@ $$\frac{x}{y} = \frac{x + y}{x} \implies \phi = \frac{1 + \sqrt{5}}{2}$$
 
 The golden ratio has a close relationship with Fibonacci numbers: the previous equality, in fact, holds between every Fibonacci number and its successor.
 
-The $n^{th}$ Fibonacci number is obtained calculating $F_n = \frac{1}{\sqrt{5}}(\phi^n - \varphi^n)$, where $\phi = \frac{(1 + \sqrt{5})}{2}$ and $\varphi = \frac{(1 + \sqrt{5})}{2}$.
+The $n^{th}$ Fibonacci number is obtained calculating $F_n = \frac{1}{\sqrt{5}}(\phi^n - \varphi^n)$, where $\phi = \frac{(1 + \sqrt{5})}{2}$ and $\varphi = \frac{(1 - \sqrt{5})}{2}$.
 
 In the context of Fibonacci hashing, it is taken the reciprocal of $\phi$, and hashing is performed multiplying the value $k$ by the integer relatively prime to $k$ which is closer to $\phi^{-1}k$. 
 
@@ -76,6 +76,135 @@ Each peer is responsible for all keys larger than the predecessor number until i
 \section{Distributed data processing}
 Distributed databases are a great solution to optimize memory and speed, yet not every operation is supported by them. Machine learning or graph algorithms, for instance, are hard to compute on a sharded relational schema.
 
+Analysis can be implemented in several different ways, but certain tasks need to be handled in every implementation:
+\begin{itemize}
+	\item Parallelization/synchronization;
+	\item Distribution of computation and data;
+	\item Communication between nodes;
+	\item Node failures.
+\end{itemize}
+
+Creating a custom solution takes time and is error prone; functional abstractions can be used to specify computation in parallel. The runtime system, this way, manages program execution, data distribution and persistence, node failures and communication.
+
+\subsection{MapReduce}
+MapReduce is a programming model with associated implementation for processing and generating big data sets with a parallel distributed algorithm on a cluster.
+
+It is composed of:
+\begin{enumerate}
+	\item A Map procedure, which performs filtering and sorting, applied by each worker to the local data and collecting output to a temporary storage;
+	\item A Shuffle phase, where workers redistribute data based on the same output keys, so that all data with the same key is located on the same node;
+	\item A Reduce method, which executes a summary operation (such as counting) on local data in parallel.
+\end{enumerate}
+
+The model is inspired by functional programming, but its key contributions are the scalability and fault tolerance achieved by optimizing the execution engine, especially on multi-threaded implementations. 
+
+Maps can be performed in parallel, and a set of reducers can perform the reduction phase. Parallelism offers possibility of recovering from partial failure of servers or storage: the work can be rescheduled without recomputing all of it.
+
+Logically, Map takes one pair of data with a type in one data domain, and returns a list of pairs in a different domain:
+$$Map(k_1, v_1) \rightarrow list(k_2, v_2)$$
+
+The Reduce function is then applied in parallel to each group, which in turn produces a collection of values in the same domain:
+$$Reduce(k_2, list(v_2)) \rightarrow list((k_3, v_3))$$
+
+Each Reduce call typically produces either one key-value par or an empty return.
+
+Example (from Wikipedia):
+\begin{lstlisting}
+function map(String name, String document):
+	// name: document name
+	// document: document contents
+	for each word w in document:
+		emit (w, 1)
+
+function reduce(String word, Iterator partialCounts):
+	// word: a word
+	// partialCounts: a list of aggregated partial counts
+	sum = 0
+	for each pc in partialCounts:
+		sum += pc
+	emit (word, sum)
+\end{lstlisting}
+This MapReduce performs a word count on a document. Each document is split into words, and every word is counted by Map; then all pairs with the same key are put together and sent to Reduce, which sums the relative counts.
+
+MapReduce implementaton can be applied to many algorithms, such as joining of two relations or PageRank.
+
+\subsubsection{PageRank}
+PageRank is an algorithm used by Google Search to rank web pages in their search engine results, measuring the relevance of them.
+
+It works assigning a numerical weight to each element of an hyperlinked set of documents, with the purpose of obtaining its relative importance within the set.
+
+It outputs a probability distribution used to represent the likelihood that a person randomly clicking on links will arrive at any particular page. Links from a page to itself are ignored.
+
+The PageRank transferred from a given page to the targets of its outbound links upon the next iteration is divided equally among all outbound links. 
+
+The value for a page$v$  is dependent on the values for each page  in the set containing all pages linking to $v$, divided by the number of links from $v$.
+
+Computing PageRank using MapReduce is performed using the function to repeatedly multiply a vector by the matrix representing how the distribution changes after every single step.
+
+%todo
+
+\subsection{Hadoop}
+Hadoop is an open-source implementation of the MapReduce framework, written in Java (opposed to the proprietary of Google in C++). It is now an Apache project used for very large clusters to handle big data sets.
+
+\subsubsection{MapReduce}
+Hadoop MapReduce is an application on the cluster that negotiates resources with YARN: a JobTracker globally manages jobs, and every node has its own TaskTracker.
+
+\begin{enumerate}
+	\item An user submits job configuration to JobTracker;
+	\item JobTracker submits mapper tasks to TaskTrackers, scheduling computation on all available cluster nodes;
+	\item Each task works on the data local to its node;
+	\item The Shuffler moves output produced my Map among the nodes in the cluster;
+	\item Once shuffling is complete, JobTracker schedules Reduce to all nodes.
+\end{enumerate}
+
+\subsubsection{HDFS}
+Hadoop relies on a distributed file system (HDFS), the primary data storage set used by its applications. It supports the rapid transfer of data between compute nodes, breaking information down into separate blocks and distributing it.
+
+The file system ensures durability and data distribution, storing data read by Map, and pre-sorting and saving its output. 
+
+Shuffling moves data between nodes and merges pre-sorted data, and results of Reduce are again written to HDFS.
+
+HDFS is highly fault tolerant: the system replicates data multiple times, placing at least one copy on a different server rack than the others.
+
+Files are split into blocks of 64MB, and by default each block has 3 replicas, so that missing data can be reconstructed. 
+
+It follows a master-slave architecture: Name node manages file system and regulates access, while data nodes manage attached storage.
+
+I/O is boosted by striping blocks of data over multiple disks, writing in parallel. HDFS exposes append-only files to users.
+
+JobTracker is responsible to cope with failing nodes: it notices that one TaskTracker is not responsive, and its task gets reassigned to another node.
+
+If its job is in Reduce phase, the correspondent function is restarted on other TaskTrackers.
+
+\subsubsection{YARN}
+YARN stands for Yet Another Resource Negotiator, and is a redesigned resource manager and large-scale distributed operating system for Hadoop.
+
+YARN splits up the functionalities of resource management and job scheduling into separate daemons, to obtain a global resouce manager and a master for every application.
+
+The ResourceManager and the NodeManager form the data computation framework. A NodeManager is the agent in every machine which is responsible for containers, monitoring their resource usage and reporting results to the ResourceManager.
+
+The Scheduler is responsible for allocating resources to the various running applications subject to constraints such as capacity, performing no tracking of application status.
+
+\subsection{Optimizations}
+To optimize MapReduce it is possible to add a combiner, an optional class that operated by accepting input from Map and passing it to Reduce after summarizing records with the same key.
+
+It operates on each Map output key, having the same key-value output as the Reducer, and it helps segregating data into multiple groups.
+
+Folding is a function to save disk space: it analyzes a recursive data structure, and returns recombined results by recursively processing its constituent parts.
+
+Programs working well on large clusters require a deep understanding of warehouse-sized computers: different settings need different techniques.
+
+MapReduce is also a framework not suitable for all uses: not everything can be expressed through the functions it offers.
+
+A data center is usually made of computers piled in racks, and racks are connected via a switch to form a cluster.
+
+Accessing data on remote machines comes with a price: the faster is a local DRAM, but cluster DRAMs and disks are relatively slow. 
+
+In case no single machine is large enough to store all the data, it is necessary to choose between scaling up and out: a cluster of large expensive machines or a large cluster of cheap commodity machines.
+
+todo
+
+\subsection{Spark}
 
 
 % dataset api is staticly typed, dataframe is not
