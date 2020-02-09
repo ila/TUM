@@ -127,9 +127,102 @@ Line plots can be added to highlight trends connecting individual dots, since th
 
 ### Relationship between data
 
+Plots are good indicators of relationship between data:
+
+* Covariance, $\frac{1}{n-1}\sum{i=1}{n}(x_{i1} - \bar{x}_1)(x_{i2} - \bar{x}_2)$;
+* Pearson correlation, ideal to capture linear relationships but very sensitive to outliers;
+* Spearman correlation, good for both linear and monotonous non linear relationships and less sensitive to outliers'
+
+##### Multidimensional data
+
+Analysis on multidimensional data assumes quantitative variables plotted on continuous axes.
+
+* Small dimensionality: plot matrix;
+* Medium dimensionality: correlation plot;
+* High dimensionality: heat map.
+
+Heat maps can also created using hierarchical clustering based on similarity, and it can be useful to scale the data.
+
+##### Conditioning
+
+A confounder is a casual variable that influences both the dependent variable and the independent one, causing a spurious association.
+
+Correlations are often driven by confounding factors: depending on the context, they can lead to spurious associations and false interpretation. 
+
+A confounder variable, in fact, induces correlation, but it needs to be proven that variables are actually dependent. Facets allow plotting conditioning on a third variable, the potential confounder.
+
+If all three plots show correlation, it is likely to be in presence of a confounder. Conditioned by it, the other variables are uncorrelated. 
+
+Correlation does not imply causation!
+
+Categorical variables can be mapped  together with multi-way histograms, stacking observations. To compare observations, all bars having the same weight makes it easier.
+
+To compare individual values, instead, positioning with `dodge` places overlapping objects directly beside one another. 
+
+Typically the y-axis represents the response variable, while x-axis is the explanatory variable. Mathematically, they correspond to the description of the conditional distributions. 
+
+##### Colors and representation
+
+Plotting can follow default aesthetic mapping or predefined color numbers and names. Colors can also be specified by RGB or HTML codes: three number pairs for red, green and blue in hexadecimal. 
+
+Color perception is influenced by the context, and not an absolute value. The background must be consistent and contrast sufficiently with the object. 
+
+Color palettes can be defined in a categorical way, sequential (quantitative differences) or diverging with a breakpoint. 
+
+In general, plotting data can have a substantial impact even without exaggerating additional graphic features.
+
+Unnecessary text should not be present, pictures and 3D perspectives are superfluous: it can be hard to visualize values and their intersection. 
+
+Barplots (y-axis) should always start at 0, since the length is proportional to the quantities being displayed, and relatively small differences could be made to look much bigger.
+
+
+
+### Dimensionality reduction
+
+An alternative to visualize high dimension datasets is by fitting a 2D map to the data. Popular methods include PCA, U-MAP, T-SNE.
+
+Principal components analysis (`prcomp`) is a statistical procedure that uses an orthogonal transformation to convert a set of possibly correlated variables into a set of linearly uncorrelated ones.
+
+The first principal component has the largest possible variance, and each successive one has the highest variance possible under the constraint that is orthogonal to the preceding components.
+
+PCA can be thought of as fitting an n-dimensional ellipsoid to the data. The first two principal components can be plotted to accurately visualize high-dimensional data.
+
+Studying the dynamics of data, it is not known a priori how the variables can be expressed and which axes are important. 
+
+The goal of PCA is identifying the most meaningful basis to re-express the data to reveal hidden dynamics, determining which direction is the most important in terms of change of a unit. PCA aims to find another basis being a linear combination of the original one to best represent data.
+
+Information is represented with $n$ samples of $p$ variables, centered and possibly also scaled (mean 0, standard deviation 1). It is linearly transformed by a rotation matrix $W$, whose columns are the new basis vectors (principal components).
+
+The column vectors of $T = XW$ represent the projection of the data on the principal components, each of them explaining a fraction of the total variance of the data. The aim is finding the direction maximizing variance.
+
+1. The normalized matrix is expressed in terms of covariance matrix $S(X) = X^TX$;
+2. The covariance matrix is transformed in $(XW)^TXW$, where $W$ is the matrix of eigenvectors of the covariance matrix;
+3. The highest eigenvalues, representing the direction with the largest variance, are selected and a sub-matrix is extracted (after eventually transforming the matrix);
+4. The covariance of features is 0, therefore this corresponds to an orthonormal basis. The eigenvalues of $X^TX$ equal to the variance of the projection of $X$.
+
+A scree plot shows the variance in each projected direction. If the scree plot has an elbow shape it can be used to decide how many PC to use for further analysis.
+
+The biplot shows the projection of the data on the first two principle components, along with the correlation between variables.
+
+##### Multi-dimensional scaling
+
+Given a distance matrix, the aim of multi-dimensional scaling (`cmdscale`) is to construct a map that preserves the distances. The output map has coordinates with Euclidean distance. 
+
+This is typically used for low dimensional solution, and works by optimizing a stress function: $\big[ \sum_{i \neq j}(d_{ij} - ||x_i - x_j||) \big]^2$.
+
 
 
 ### Clustering
+
+Clustering is the task of dividing the population or data points into a number of groups such that data points in the same groups are more similar to other data points in the same group than those in other groups.
+
+Different algorithms perform in different ways, and are most suitable depending on the use case.
+
+##### K-means
+
+
+
+
 
 ##### Hierarchical clustering
 
@@ -144,8 +237,6 @@ It aims to calculate an inter-cluster distance between either sets or data point
 The output is a binary tree whose leaves are the data points and each node is a set that is the union of its two children nodes.
 
 Sets are merged according to the two closest elements, computing a pairwise distance matrix which gets updated after each iteration.
-
-
 
 ##### Rand index
 
