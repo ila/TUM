@@ -292,6 +292,61 @@ Its values range between 0 and 1, where 1 implies that the two partitions are id
 
 
 
+### Statistical testing
+
+Trends can sometimes be unlinked to hypotheses, therefore statistical testings are needed to assess correctness.
+
+Examples of wrong assessments:
+
+* Statistical significance, trends observed purely random, with not enough data to infer whether they are outliers or actual phenomenon;
+* Confounding, analysis not necessarily inducing correlations or correlation caused by another variable
+
+Summary statistics consists in a single number that summarizes the data and captures the trend, for instance the difference of medians or means. The larger the statistics, the stronger the trend.
+
+The hypothesis to assess is: having an infinite number of observation, would the trend still hold?
+
+This can be proved setting a null hypothesis $H_0$ assuming that there is no relationship between the two measured phenomena. Under the null hypotheses, the statistics follows a certain distribution.
+
+##### P-value and Monte Carlo schemes
+
+The p-value is the probability that the statistics would be the same or more extreme than the actual observed results. 
+
+Being extreme depends on the tail of events: for right-tail it should be greater, and so on.
+
+The null hypothesis is said to be rejected for sufficiently small p-values, generally $0.05$.
+
+The p-value does not infer the probability that the null hypothesis is true given the data, since absence of evidence is not evidence of absence, and neither the probability of the observed statistics being true.
+
+Let $m$ be the number of Monte Carlo permutations, $r = \#{T^* \geq T_{obs}}$ be the number of random permutations that produce a test statistic greater or equal to that calculated for the actual data.
+
+Then, the estimated p-value is $\hat{P} = \frac{r+1}{m+1}$.
+
+##### Confidence intervals
+
+When conducting an hypothesis test, it is necessary to assume that the data follows a normal distribution. 
+
+In many situations there is no need to assess the null hypotheses, yet it can be useful to report on the uncertainty of the estimate. A confidence interval is an interval which, would the data generation process to be repeated, would contain a parameter $\theta$ with probability $1 - \alpha$. 
+
+The empirical distribution function is a cumulative distribution function that jumps at $\frac{1}{n}$ at each of the data points, assuming observations to be independent.
+
+A single draw amounts to pick one data point with probability $\frac{1}{n}$, therefore equal to sampling with replacement. 
+
+Case resampling bootstrap approach uses sampling with replacement of  the  same size from the observed data to simulate further observations.
+
+Assuming $R$ random simulations by case resampling, each of them gives a random value for the statistics. Ranking those values, the bootstrap percentile interval is an approximation of the confidence interval.
+
+Other estimations include the t-test, z-test and F-test.
+
+If the distributional assumption does not hold, some non-parametric approaches can be used since they do not need normality.
+
+To summarize:
+
+* Hypothesis testing is performed with empirical approach and permutation testing;
+* Uncertainty assessment is made using confidence intervals and case resampling bootstraps;
+* Confounding requires conditioning on further variables.
+
+
+
 ### Multiple testing
 
 Multiple testing is a method that can be used to assess a distribution, fairness of probability or in general anything concerning multiple hypotheses.
