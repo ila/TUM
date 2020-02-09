@@ -220,16 +220,49 @@ Different algorithms perform in different ways, and are most suitable depending 
 
 ##### K-means
 
+K-means aims to partition observations into a pre-determined number of clusters in which every observation belongs to the cluster with the nearest mean.
 
+It is the most popular partitioning method, but requires knowing the value $k$ in advance. It uses Euclidean distance as metric, and variance as measure of cluster scatter.
 
+It might not always be correct, since convergence to a local minimum produces counterintuitive results. 
 
+1. Choosing an initial centroid at random;
+2. Calculating the distance between centroid and every other point;
+3. Choose $k-1$ other centroids by taking the mean value of all the samples assigned to each previous centroid;
+4. Compute difference between the old and the new centroids, and repeat steps 2 and 3 to minimize the difference.
+
+K-means does not always work in cases when a finite mixture module would be more appropriate.
+
+##### Gaussian mixture models
+
+Gaussian mixture models (`mclust`) are probabilistic frameworks allowing to determine number of clusters based on information criteria. Having $k$ estimated parameters of $L$ maximum likelihood with $n$ observations, useful estimators of quality of statistical models are:
+
+* AIC, $2k -2\log(L)$ (to minimize);
+* BIC, $\ln(n)k - 2\ln(L)$ (to minimize in general, to maximize in R).
+
+Clusters are allowed individual covariance and prior probabilities. 
+
+1. The EM algorithm's parameters are initialized randomly;
+
+2. Iterate until convergence:
+   1. Expectation step: estimate the membership (binary) using the mean and covariance (of the multivariate Gaussian of each cluster) of last iteration;
+   2. Maximization step: update the parameters of the distribution using the membership.
+
+The algorithm is based on probabilities instead of next centroids, and uses all data points to re-estimate centroids.
+
+Using the likelihood of the data alone would favor large models, therefore AIC and BIC combine the likelihood with a penalty for model complexity. 
+
+The number of parameters can be reduced imposing some constraints to the covariance matrices: equality, being spherical and of the same orientation.
 
 ##### Hierarchical clustering
+
+Hierarchical clustering (`hclust`) is an agglomerative method with a bottom-up approach that iteratively merges clusters, starting from individual points.
 
 This technique works with the following assumptions: 
 
 * Multivariate data;
 * Distance metric (Euclidean, Manhattan) between points $d(a, b)$;
+  * Mean or average linkage clustering, or UPGMA: $\frac{1}{|A| |B|} \sum_{a \in A} \sum_{b \in B} d(a, b)$;
 * The larger the distance, the less similar the data points.
 
 It aims to calculate an inter-cluster distance between either sets or data points, such as the average for elements of sets.
@@ -238,9 +271,24 @@ The output is a binary tree whose leaves are the data points and each node is a 
 
 Sets are merged according to the two closest elements, computing a pairwise distance matrix which gets updated after each iteration.
 
+To obtain a partition from a hierarchical clustering, a threshold can be decided based either on visual inspection or number of groups.
+
 ##### Rand index
 
-The purpose of this value is to compare clusterings of the same dataset with different number of clusters, trying to maximize similarity in the same set and minimize it between others. 
+$$ R = \frac{a+b}{{n}\choose{2}}$$
+
+* $S$ is a set of $n$ elements;
+* $X$ is a partition of $S$ into $k$ sets;
+* $Y$ is a partition of $S$ into $l$ sets;
+* $a$ is the number of pairs of elements in $S$ that are in the same set both in $X$ and $Y$;
+* $b$ is the number of pairs of elements in $S$ that are in different sets both in $X$ and $Y$;
+* ${n}\choose{2}$ is the total number of pairs of elements in $S$.
+
+The purpose of this value is to compare different clustering techniques of the same dataset with different number of clusters, trying to maximize similarity in the same set and minimize it between others. 
+
+It can be seen as a measure of the percentage of the correct decisions made by the algorithm.
+
+Its values range between 0 and 1, where 1 implies that the two partitions are identical. It can be applied in hierarchical clustering fixing the number of clusters.
 
 
 
