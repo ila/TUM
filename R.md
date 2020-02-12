@@ -13,8 +13,28 @@ Functions do not need all argument names: after two arguments, a variable number
 `apply(df, margin, function, ...)` helps avoiding to update the environment at every step of an iteration (for/while loop). It can apply a function to the elements of the steps, in case they are independent of each other.
 
 * `margin` specifies rows or columns (1, 2);
-* `sapply` is a variation which returns a vector;
-* `lapply` works on elements of an array (row-wise), returns a list, and can be generally used to create lists.
+* `sapply` is a variation which returns a vector, performed on the columns by default;
+* `lapply` works on elements of an array, returns a list, and can be generally used to create lists.
+
+Example:
+
+```R
+> df <- data.frame(x = 1:3, y = 9:11)
+  x  y
+1 1  9
+2 2 10
+3 3 11
+> sapply(df, sum) = apply(df, 2, sum)
+ x  y 
+ 6 30 
+> lapply(df, sum)
+$x
+[1] 6
+$y
+[1] 30
+> apply(df, 1, sum)
+[1] 10 12 14
+```
 
 Additional arguments are permitted, yet they must be explicitly stated.
 
@@ -25,6 +45,8 @@ Additional arguments are permitted, yet they must be explicitly stated.
 A data table modifies columns by reference, offering subsetting, ordering and merging in a more efficient way respect to data frames. It is faster than other external packages, and easier to read or maintain.
 
 `DT[i, j, by]` where `i` represents the subset of rows to select, `j` is the expression to calculate, and `by` the eventual grouping. More expressions can also be applied concatenating sets of square brackets. Sorting is performed through the `order` or `setorder` keywords.
+
+When `i` is not specified, a new data table is created with aggregated values.
 
 Columns are seen as variables, and usually accessed by name. It is possible to insert lists into expressions through the `.(...)` notation (alternative to list). 
 
@@ -75,9 +97,9 @@ Lists should always be converted to data tables, preferably unnested. The functi
 
 Melting and casting are essential to switch from wide to long data, or vice versa. They address variables spread across multiple columns and observations scattered across multiple rows.
 
-`melt` transforms from wide to long. It is used to remove confusing column names and turning them to attributes of observations. 
+`melt(dt, id.vars, variable.name)` transforms from wide to long. It is used to remove confusing column names and turning them to attributes of observations. 
 
-`dcast` transforms from long to wide. It is used to remove multiple appearances of observations, turning variable types into columns. 
+`dcast(dt, columns ~ element, value)` transforms from long to wide. It is used to remove multiple appearances of observations, turning variable types into columns. 
 
 `separate` and `unite` change multiple variables to one, or the opposite. For instance, aggregating two columns containing year and century, or the same column having two values. 
 
@@ -231,7 +253,7 @@ It might not always be correct, since convergence to a local minimum produces co
 3. Choose $k-1$ other centroids by taking the mean value of all the samples assigned to each previous centroid;
 4. Compute difference between the old and the new centroids, and repeat steps 2 and 3 to minimize the difference.
 
-K-means does not always work in cases when a finite mixture module would be more appropriate.
+K-means does not always work in cases when a finite mixture module would be more appropriate: clusters should have the same covariance and the same individual prior probability.
 
 ##### Gaussian mixture models
 
@@ -312,6 +334,7 @@ This can be proved setting a null hypothesis $H_0$ assuming that there is no rel
 The p-value is the probability that the statistics would be the same or more extreme than the actual observed results. 
 
 Being extreme depends on the tail of events: for right-tail it should be greater, and so on.
+Double tail events: $P = 2 * min\{p(T \leq T_{obs} | H_0), p(T \geq T_{obs} | H_0)\}$
 
 The null hypothesis is said to be rejected for sufficiently small p-values, generally $0.05$.
 
@@ -320,6 +343,8 @@ The p-value does not infer the probability that the null hypothesis is true give
 Let $m$ be the number of Monte Carlo permutations, $r = \#{T^* \geq T_{obs}}$ be the number of random permutations that produce a test statistic greater or equal to that calculated for the actual data.
 
 Then, the estimated p-value is $\hat{P} = \frac{r+1}{m+1}$.
+
+When there are many statistical tests performed, it is good to use statistical tests with analytical solutions or approximations (t-test, F-test).
 
 ##### Confidence intervals
 
@@ -345,15 +370,65 @@ To summarize:
 * Uncertainty assessment is made using confidence intervals and case resampling bootstraps;
 * Confounding requires conditioning on further variables.
 
+This method has some issues with large datasets: testing the association of every combination of variables leads to a huge number of tests to perform, with a relevant amount of them casually having sufficiently small p-value.
+
 
 
 ### Multiple testing
 
 Multiple testing is a method that can be used to assess a distribution, fairness of probability or in general anything concerning multiple hypotheses.
 
-The more inferences are made, the more likely erroneous ones are to occur, therefore it is needed a strict significant threshold for individual comparisons.
+The more inferences are made, the more likely erroneous ones are to occur, therefore it is needed a strict significant threshold for individual comparisons: p-value is not estimated using $P = \frac{r+1}{m+1}$ with $m$ permutations, and a new scalable way is necessary.
 
+##### 1 binary variable
 
+The binomial test (`binom.test`) involves understanding whether the distribution of a marker is balanced, encoding it with binary values and computing means.
+
+Its abstraction consists in $N$ independent tosses of a coin: the null hypothesis is the fairness of the coin, so $\mu = E(X_i) = p(X_i = 1)$ and $H_0 : \mu = 0.5$.
+
+Since there only are 2 possible outcomes (with supposedly equal probability), the p-value is two-sided, but this does not provide sufficient evidence for rejecting the null evidence having performed only one toss.
+
+Tossing $N$ times, instead, the outcome is a series of heads and tails having $0.5^N$ probability. The number of series with the same number of heads $T$ is ${{N}\choose{T}} = \frac{N!}{T!(N-T)!}$, therefore the total number of heads for a fair coin is ${{N}\choose{T}} 0.5^N$, following a binomial distribution.
+
+##### 2 binary variables
+
+Addressing tests concerning association between two binary variables can be performed by permuting the values for one while keeping the other fixed.
+
+The total number of observations per category is preserved: the counts summarize the contingency table entirely.
+
+Fisher's exact test (`fisher.test`) calculates the probability of obtaining a certain set of values, following the hypergeometric distribution. Having 4 observations (2 for column):
+
+$$ p(k=a|H_0) = \frac{(a+b)!(c+d)!(a+c)!(b+d)!}{a!b!c!d!n!} $$
+
+For right-tail one-sided tests, this quantity is computed and summed for all values of the statistics larger or equal than observed: $\sum_{i \geq a} p(k = i | H_0)$.
+
+An approximation of Fisher's test is the Chi-squared test.
+
+##### 1 binary, 1 continuous variable
+
+Let $x_1, \dots, x_n$ real values of the first group, and $y_1, \dots, y_n$ real values of the second group. The hypothesis is $X$ and $Y$ coming from the same distribution, therefore independent from the groups.
+
+Student's t-statistic (`t.test`) considers the ratio of the differences of sample means divided by the unbiased estimate of common standard deviation.
+
+$$ t = \frac{\bar{x} - \bar{y}}{sp \sqrt{\frac{1}{n_x} + \frac{1}{n_y}}} \qquad sp = \frac{\sum_i(x_i - \bar{x})^2 + \sum_i(y_i - \bar{y})^2}{n_x + n_y - 2}$$
+
+This test requires assumption of normal distribution. The null hypothesis states that the expected values are equal, and the t-distribution has $n_x + n_y - 2$ degrees of freedom. It does not depend on the variance, but assumes it to be equal for both samples.
+
+In the case of unequal variance, Welch's test (default option in R) assumes a slightly different degree of freedom.
+
+The Wilcoxon test (`wilcox.test`) is a non-parametric variant to check whether the two distributions are equal, lacking the normality assumption.
+
+Observed values are ranked in ascending order among both distributions, and the statistic is defined as $U_x = R_x - \frac{n_x(n_x + 1)}{2}$ where $R$ is the sum of the ranks of $x_i$. The minimum $U$ is chosen, and the distribution approximates a Gaussian. 
+
+$$ E(U) = \frac{n_xn_y}{2} \qquad Var(U) = \frac{(n_xn_y)(n_x + n_y + 1)}{12}$$
+
+##### 2 continuous variables
+
+To test association between two quantitative variables, linear regression can be useful to check whether they are correlated.
+
+Pearson coefficient (covariance divided by product of standard deviations) has a correspondent t-statistic using $r^2$ and $n-2$ degrees of freedom.
+
+Spearman's correlation makes no assumptions of the distribution, and also works for non linear distributions since it has less sensitivity to outliers.
 
 ### Classification
 
