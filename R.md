@@ -428,7 +428,73 @@ To test association between two quantitative variables, linear regression can be
 
 Pearson coefficient (covariance divided by product of standard deviations) has a correspondent t-statistic using $r^2$ and $n-2$ degrees of freedom.
 
-Spearman's correlation makes no assumptions of the distribution, and also works for non linear distributions since it has less sensitivity to outliers.
+Spearman correlation makes no assumptions of the distribution, and also works for non linear distributions since it has less sensitivity to outliers.
+
+
+
+### Statistical assessments
+
+In statistics, an effect size is a quantitative measure of the magnitude of a phenomenon. If it is small, the significance of the event is not relevant.
+
+Increasing the sample size can help detecting differences, allowing to estimate how large a sample must be to detect effects. Big data detect factors concerning small percentages of the population.
+
+In some cases, the p-value is significant, yet the estimated effect size is small, therefore it is important to report both.
+
+Confidence intervals can be set to obtain different probabilities, giving an idea of the size of the estimated, and are calculated normalizing the data according to Central Limit Theorem. 
+
+If a 95% confidence interval does not include 0, the p-value for the null hypothesis that the parameter is equal to 0 must be smaller than 0.05.
+
+Multiple testing has some indicators that can help identifying false positives:
+
+* Family-wise error rate, $P(V > 0)$, probability of having one or more false positives (usually large for large number of true null hypotheses);
+  * Supposing $m$ tests are taken, producing each a p-value $p_g$, Bonferroni adjustment chooses $\tilde{p}_g = min\{mp_g, 1\}$. Selecting all tests with $\tilde{p}_g \leq \alpha$ controls the FWER at level $\alpha$, i. e. $Pr(V > 0) \leq \alpha$ without making assumptions about dependence or quantity;
+* False discovery rate, $E[V/max(R, 1)]$, the expected fraction of false positives among all discoveries.
+
+
+
+### Linear regression
+
+A linear model (`lm`) allows to study the relationship between two continuous variables: the predictor and the outcome. 
+
+A linear model is defined as $y = \alpha + \beta x_i + \epsilon_i$ with $\epsilon \sim N(0, \sigma^2)$ independently and identically distributed.
+
+The likelihood of data can be computed using a normal distribution model: $L_(\alpha, \beta, \sigma^2) = \prod{i=1}{N} N(\epsilon_i, \sigma^2)$. Parameter estimation is performed maximizing the likelihood of data, computing the gradient and setting it to zero.
+
+Maximizing the likelihood is equivalent to minimizing the squared distance between observation and prediction.
+
+Measuring the accuracy of the model consists in:
+
+* Computing predictions;
+* Computing residuals (comparison of predictions with actual values);
+* Computing the residual sum of squares $RSS = \sum_{i=1}^{N} \hat{\epsilon_i}^2$;
+* Compare this to the total sum of squares $R^2 = 1 - \frac{RSS}{SS}$ to understand the percentage of variance explained by the model.
+
+Standard error and estimated parameters are distributed according to a t-student, assuming there is no correlation ($\beta = 0$).
+
+##### Multiple linear regression
+
+$$ y_i = \beta_0 + \sum_{j=1}^{p} \beta_j x_{ij} + \epsilon_i \qquad y = X\beta + \epsilon \qquad \epsilon \sim N(0, \Sigma) \qquad \Sigma = \sigma^2I$$
+
+Parameters can be estimated calculating the hat matrix: $\beta = (X^TX)^{-1}X^Ty$. A nested model is a special case of a general model useful to test individual predictors, setting some $\beta = 0$. Setting them all implies that only the mean $\beta_0$ can take any value.
+
+Maximizing the log-likelihood is equal to minimizing the squared distance between observation and prediction. ANOVA provides a test of whether two or more population means are equal, splitting the groups according to characteristics.
+
+An useful statistic is the ratio of the two maximized likelihoods for full and reduced models, to reject if it's too large.
+
+The distribution of the likelihood ratio test follows a F distribution, and the hypothesis is rejected if $F$ is too large.
+
+While performing ANOVA, confounders should be included in the reduced models to understand which variable has the most influence.
+
+Model selection takes care of removing unnecessary predictors:
+
+* Backward elimination starts with all predictors and removes the ones with greatest p-value;
+* Forward selection starts with no variables and chooses the ones with lowest p-value.
+
+Plotting can help checking the assumptions of linearity, independence of residual and normal distribution. 
+
+If variance is not constant, some transformations such as log or square root can be applied. If residuals are not normal, the QQ-plot will not show a linear relationship and it will lead to unreliable error rates.
+
+
 
 ### Classification
 
@@ -466,11 +532,7 @@ $$ \mu = \theta(\eta) = \frac{e^\eta}{1+e^\eta}$$
 
 ##### SVM
 
-todo
-
-##### Decision trees
-
-todo
+SVM works finding a hyperplane of $p - 1$ dimensions ($p$ features), separating the two classes and trying to maximize the margins in terms of distance to closest data points.
 
 ##### Random forests
 
