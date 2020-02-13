@@ -73,6 +73,11 @@ A finger table contains up to $m$ entries, and entry $i$ of node $n$ contains th
 
 Each peer is responsible for all keys larger than the predecessor number until its own. Introducing a factor of $2^k$, the distance always increases by 2, halving the number of hops each time.
 
+\begin{figure}[h]
+	\includegraphics[scale=0.45]{chord.png}
+	\centering
+\end{figure}
+
 \section{Distributed data processing}
 Distributed databases are a great solution to optimize memory and speed, yet not every operation is supported by them. Machine learning or graph algorithms, for instance, are hard to compute on a sharded relational schema.
 

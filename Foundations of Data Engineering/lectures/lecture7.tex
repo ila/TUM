@@ -1,41 +1,90 @@
-\section{Graph databases}
-A graph $G = (V, E)$ is a set of edges and vertices which can have different properties. Edges can also have intermediate ramifications between nodes.
+\section{Key-value storage}
+One of the benefits of this kind of storage is the lack of schema: they are defined with human readable languages (XML, SVG) for structured and semi-structured data. The possible formats vary from free text to relational models, the latter less common; data can also be compressed or uncompressed. 
 
-Useful information regarding a graph can be:
+For instance, possible choices for configuration files are:
+\begin{enumerate}
+	\item JSON, although kind of hard to write long files;
+	\item YAML, really complicated;
+	\item TOML, with minimal syntax therefore easy.
+\end{enumerate}
+
+\subsection{XML}
+XML documents have a rooted hierarchical structure named Document Object Model, where elements are declared between tags with eventual attributes. Those documents allow to store reasonably large information, queried in a declarative language (XPath, XQuery) which guarantees results appearing in the same order as they were saved. Validation requires constraints which imply the choice between a simple grammar or a more powerful one. Grammar is only defined for tags and attributes, not contents. 
+
+An XPath is the tree containing elements subject of a query: it stores information about preceding nodes, siblings, descendants, parents and ancestors in the DOM. It can be navigated through the syntax \texttt{axis::node[predicate]/@attr} also allowing retrieval of a set related to the matching node (for instance \texttt{:.} indicates parent). 
+
+Grammar definition and DTD are defined in the headers of a document, although parsing can still be difficult due to malfunctioning web pages. 
+
+\subsection{JSON}
+JSON is a language similar to XML, but closer to a relational database: its structure consists in objects and arrays recursively nested in an arbitrarily complex way. It can be used for a broad range of data types and evaluated like JavaScript (not the best practice for security issues). Keys are between quotes to avoid referencing variables. 
+
+Data can be accessed through indexes and JavaScript syntax.
+
+\subsection{Other}
+Schema is similar to XSD and has the same syntax as JSON, yet it is rarely used.
+
+Transact-SQL is the Microsoft JSON query language.
+
+\section{Resource Description Framework}
+RDF is a W3C standard to define semantics of resources (web pages) with URIs as keys, mostly used for arbitrarily connect semantics and information in a graph. 
+
+The smallest structure in RDF is a triple of \texttt{subject, predicate, object}, each of them represented as a node in the graph (or a column in a table). 
+
+Information is linked using common data or models, often categorized in a hierarchical manner. Ontologies define objects in an official way.
+
+RDF data is stored by serialization in different formats: N3 notation avoids repetition by defining URI prefixes and storing multiple predicate-object pairs without repeating the subject.
+
+Microformats annotate (X)HTML documents with RDF snippets, not very human readable. 
+
+Data types are similar to the primitives commonly found in databases and programming languages (integer, string, \dots) but can also be defined by users. 
+
+% todo owl (not good bc undecidable, exponential runtime)
+
+% capturing correlations: not all graphs are the same, therefore they take advantage of correlation: outgoing eges are behaviour, and they want nodes with similar behaviour
+% statistics are used to capture correlation
+% select distinct to see how many sets there are 
+% no distinct: if it is bound to a constant, either we look at the data - slow - or we do the maths, making estimates or relying on indexes (how common is this value?)
+
+% example: indexing looking at the first letter or attribute, and remembering how often this occurs
+% does it exist? and how often?
+% only storing the count, not the values!
+
+
+
+Similarly to domain calculus, there is no equal condition (when joining, for instance) since the check is implicit thanks to the usage of the variable two times, requesting the same identifier. Queries can be translated to relational algebra, binding every WHERE clause with a join just above in the tree.
+
+This property makes it easier to iteratively change data and schema, connecting them to other sources, but on the other side it's harder to optimize storage and queries.
+
+\section{SPARQL}
+SPARQL is the RDF query language, working with pattern matching over triples and returning the matching ones. It only contains basic CRUD functionalities with three types of data: URI, literal and blank node. The latter represents a variable with local scope, not appearing in SELECT.
+
+The subject and the predicate must always be an URI, while objects can also be literals. Selection can be over distinct or reduced values, which allows to convert inner join to left outer, ignoring how many matchings are there.
+
+SPARQL permits advanced SELECT queries such as FILTER, containment check or output as a graph. Examples of semantic information that can be queried are found on DBPedia.
+
+\subsection{Query processing}
+On a large graph, queries could be performed simulating a relation database, loading triples in a table: this approach does not work since the database is not aware of the types of stored data. 
+
+RDF graphs are usually implemented through clustered B$^+$-trees, storing triples in lexicographical order allowing good compression (encoding differences with the previous node) and fast lookup on disk.
+
+Sorting requires a definition of the ordering field: since space is optimized due to compression, it is sometimes possible to create different trees according to each possibility ($3! = 6$), leading to efficient merge joins. 
+
+Queries can be performed in linear time through the following optimizations:
 \begin{itemize}
-	\item Degree;
-	\item Centrality;
-	\item Betweeness;
-	\item todo
+	\item Extensive compression of trees;
+	\item Indexing for joins;
+	\item Information skipping large parts of data while traversing;
+	\item Encoded data.
 \end{itemize}
 
-Graph databases can be implemented using semantic data in triples, introducing properties of nodes.
+% scalable join processing on vey large rdf graphs
+% querying graph structured data
 
-There is no defined standard for structure of graphs, in fact they can also be implemented using relational databases, yet some tools are more popular then others. 
+RDF triples are closely related, disallowing independence. Soft functional dependencies are indeed very common, with bind triple patterns making the others unselective and not captured by histograms.
 
-Queries on graph databases do not strictly return a set of tuples: they allow pattern matching, algorithms, aggregation, or properties of graph and its elements.
+Cardinality estimation is not well suited for RDF data: the independence assumption does not hold (correlation is the norm), and leads to severe underestimation. Multi-dimensional histograms would help, but are really expensive to compute due to exponential growth of dimensions.
 
-\subsection{Cypher}
-Cypher is one of the most supported query languages for graphs. Its syntax allows nodes and edges to have a type along with some attributes.
-
-Neo4j, implementing Cypher, is a graph database offering dynamic visualization and machine learning algorithms, but it kind of sucks.
-
-\subsection{Pregel/Giraph}
-Pregel is Google's iterative graph processing system for distributed data, while Giraph is its open source alternative.
-
-They work using Gremlin, a functional graph traversal language, which with one operation lets a vertex modify its state and propagate information.
-
-The reason why this tool has been developed is because MapReduce systems do not allow operations on a vertex level. In addition, MapReduce requires transferring state to all nodes.
-
-\subsection{Turi}
-todo
-
-\subsection{Graph algorithms}
-BFS is one of the most important graph traversal algorithms to search a node 
-
-Dijkstra yeah we know that cmon Neumann do databases
-
-% pairing heap
+RDF is also really unfriendly for sampling, since there is no schema: triples can be diverse and unrepresentative, therefore a sample needs to be huge to be useful.
 
 
 
