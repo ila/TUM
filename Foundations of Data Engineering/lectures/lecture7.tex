@@ -1,5 +1,5 @@
-\section{Key-value storage}
-One of the benefits of this kind of storage is the lack of schema: they are defined with human readable languages (XML, SVG) for structured and semi-structured data. The possible formats vary from free text to relational models, the latter less common; data can also be compressed or uncompressed. 
+\section{Key-value models}
+This kind of storage has a lot of benefits, including the lack of schema: syntax is defined with human readable languages (XML, SVG) for structured and semi-structured data. The possible formats vary from free text to relational models, the latter less common; data can also be compressed or uncompressed. 
 
 For instance, possible choices for configuration files are:
 \begin{enumerate}
@@ -9,60 +9,72 @@ For instance, possible choices for configuration files are:
 \end{enumerate}
 
 \subsection{XML}
-XML documents have a rooted hierarchical structure named Document Object Model, where elements are declared between tags with eventual attributes. Those documents allow to store reasonably large information, queried in a declarative language (XPath, XQuery) which guarantees results appearing in the same order as they were saved. Validation requires constraints which imply the choice between a simple grammar or a more powerful one. Grammar is only defined for tags and attributes, not contents. 
+XML documents have a rooted hierarchical structure named Document Object Model, where elements are declared between tags with eventual attributes. Those documents allow to store reasonably large information, queried in a declarative language (XPath, XQuery) which guarantees results appearing in the same order as they were saved. 
 
-An XPath is the tree containing elements subject of a query: it stores information about preceding nodes, siblings, descendants, parents and ancestors in the DOM. It can be navigated through the syntax \texttt{axis::node[predicate]/@attr} also allowing retrieval of a set related to the matching node (for instance \texttt{:.} indicates parent). 
+Validation requires constraints which imply the choice between a simple grammar or a more powerful one. Grammar is only defined for tags and attributes, not contents. 
+
+An XPath is the tree containing elements subject of a query: it stores information about preceding nodes, siblings, descendants, parents and ancestors in the DOM. It can be navigated from both directions, retrieving a set related to the matching node (for instance \texttt{:.} indicates parent). 
+
+\texttt{axis::node[predicate]/@attr}
+
+XQuery is the official query language for XML, using functional programming to evaluate sequences, ordered lists of items which can be either nodes or atomic values. 
+
+It syntax can be embedded in HTML, allowing to declare variables and show elements according to conditions.
 
 Grammar definition and DTD are defined in the headers of a document, although parsing can still be difficult due to malfunctioning web pages. 
 
 \subsection{JSON}
 JSON is a language similar to XML, but closer to a relational database: its structure consists in objects and arrays recursively nested in an arbitrarily complex way. It can be used for a broad range of data types and evaluated like JavaScript (not the best practice for security issues). Keys are between quotes to avoid referencing variables. 
 
-Data can be accessed through indexes and JavaScript syntax.
+Data can be accessed through indexes and JavaScript syntax, and queried using JQuery. 
 
-\subsection{Other}
-Schema is similar to XSD and has the same syntax as JSON, yet it is rarely used.
-
-Transact-SQL is the Microsoft JSON query language.
+\texttt{.key[index] | {Name1: key1.key2, Name2: key3.key4} | select(.key == something)}
 
 \section{Resource Description Framework}
 RDF is a W3C standard to define semantics of resources (web pages) with URIs as keys, mostly used for arbitrarily connect semantics and information in a graph. 
 
+It used to be a meta-data model for resources, yet nowadays it is mostly useful to identify knowledge and semantics data, allowing new information to be added easily.
+
 The smallest structure in RDF is a triple of \texttt{subject, predicate, object}, each of them represented as a node in the graph (or a column in a table). 
 
-Information is linked using common data or models, often categorized in a hierarchical manner. Ontologies define objects in an official way.
+Arbitrary RDF datasets are linked using common data or models, often categorized in a hierarchical manner. Ontologies define objects in an official way.
 
 RDF data is stored by serialization in different formats: N3 notation avoids repetition by defining URI prefixes and storing multiple predicate-object pairs without repeating the subject.
 
-Microformats annotate (X)HTML documents with RDF snippets, not very human readable. 
+Microformats annotate (X)HTML documents with RDF snippets, but are not very human readable. 
 
 Data types are similar to the primitives commonly found in databases and programming languages (integer, string, \dots) but can also be defined by users. 
 
-% todo owl (not good bc undecidable, exponential runtime)
+OWL is an extension to RDF predicates, defining classes and properties in hierarchies along with their relationships. It is an undecidable language, therefore its runtime is exponential.
 
-% capturing correlations: not all graphs are the same, therefore they take advantage of correlation: outgoing eges are behaviour, and they want nodes with similar behaviour
-% statistics are used to capture correlation
-% select distinct to see how many sets there are 
-% no distinct: if it is bound to a constant, either we look at the data - slow - or we do the maths, making estimates or relying on indexes (how common is this value?)
-
-% example: indexing looking at the first letter or attribute, and remembering how often this occurs
-% does it exist? and how often?
-% only storing the count, not the values!
-
-
-
-Similarly to domain calculus, there is no equal condition (when joining, for instance) since the check is implicit thanks to the usage of the variable two times, requesting the same identifier. Queries can be translated to relational algebra, binding every WHERE clause with a join just above in the tree.
-
-This property makes it easier to iteratively change data and schema, connecting them to other sources, but on the other side it's harder to optimize storage and queries.
+RDF makes it easier to change data and schema, connecting nodes in an efficient way, but is hard to validate and queried.
 
 \section{SPARQL}
 SPARQL is the RDF query language, working with pattern matching over triples and returning the matching ones. It only contains basic CRUD functionalities with three types of data: URI, literal and blank node. The latter represents a variable with local scope, not appearing in SELECT.
 
 The subject and the predicate must always be an URI, while objects can also be literals. Selection can be over distinct or reduced values, which allows to convert inner join to left outer, ignoring how many matchings are there.
 
+\begin{lstlisting}
+SELECT ?n
+WHERE {
+	?p rdf:type dbo:Person
+	?p dbo:hairColor "Black"
+	?p dbo:eyeColor "Green"
+	?p dbp:name ?n
+}
+\end{lstlisting}
+
 SPARQL permits advanced SELECT queries such as FILTER, containment check or output as a graph. Examples of semantic information that can be queried are found on DBPedia.
 
+DESCRIBE allows to perform descriptive queries, retrieving all information regarding the matched sources and returning a graph.
+
+Similarly to domain calculus, there is no equal condition (when joining, for instance) since the check is implicit thanks to the usage of the variable two times, requesting the same identifier. Queries can be translated to relational algebra, binding every WHERE clause with a join just above in the tree.
+
+This property makes it easier to iteratively change data and schema, connecting them to other sources, but on the other side it's harder to optimize storage and queries.
+
 \subsection{Query processing}
+Since graph structure have no obvious schema, it can be hard to query, even using RDF notation, since many variable bindings are possible. 
+
 On a large graph, queries could be performed simulating a relation database, loading triples in a table: this approach does not work since the database is not aware of the types of stored data. 
 
 RDF graphs are usually implemented through clustered B$^+$-trees, storing triples in lexicographical order allowing good compression (encoding differences with the previous node) and fast lookup on disk.
@@ -77,8 +89,9 @@ Queries can be performed in linear time through the following optimizations:
 	\item Encoded data.
 \end{itemize}
 
-% scalable join processing on vey large rdf graphs
-% querying graph structured data
+Indexing is still not suitable enough: it is usually performed looking at the first character or attribute, without remembering how often this occurs. On the other hand, only storing the count does not allow to retrieve the values.
+
+Query optimization can be performed reducing cardinality of sets to join, but this leads to the issue of estimating cardinality.
 
 RDF triples are closely related, disallowing independence. Soft functional dependencies are indeed very common, with bind triple patterns making the others unselective and not captured by histograms.
 
@@ -86,5 +99,24 @@ Cardinality estimation is not well suited for RDF data: the independence assumpt
 
 RDF is also really unfriendly for sampling, since there is no schema: triples can be diverse and unrepresentative, therefore a sample needs to be huge to be useful.
 
+Tuples classification can be obtained using the characteristic set: unique values grouped by behavior and occurrence, assuming that triples are more homogeneous within a group. The cardinality of characteristic sets is much lower than the amount of triples.
+
+It is also possible to take advantage of correlation in a graph format: outgoing edges represent behavior, and nodes with similar properties can be extracted.
+
+Selecting distinct subjects gives an exact computation of how many sets there are, allowing to estimate a large number of joins in one step.
+
+Without using distinct, there are two possibilities: if values are bound to a constant, either manually look at the data (slow) or making estimates relying on indexes to see how common is each value.
+
+Occurrence annotations are no longer exact, but very accurate: the maximum amount of information about correlation is exploited, and characteristic sets are used to cover the query (finding operations concerning the same data).
+
+Star-shaped subqueries are hard to optimize, because of the correlation and the selectivities. In this case, counting distinct values and estimating cardinalities allow to rank the subsets.
+
+The rarest subset is joined in the last step, to reduce the number of computations for the Cartesian product.
+
+The top-down greedy algorithm to optimize runs in linear time, but does not use independence between predicates. As a remedy, lightweight statistics are constructed counting how often subgraphs appear together. 
+
+Two characteristic sets connected by an edge are defined a characteristic pair, identified with a linear scan. The problem is that the number of pairs grows quadratically with different sets, but if the pair is rare the independence assumption holds.
+
+Optimal plans are identified and removed, to then run the dynamic programming algorithm to know selectivities between subqueries.
 
 

@@ -1,11 +1,15 @@
 \section{NoSQL databases}
 NoSQL databases are an alternative to traditional relational databases in which data is placed in tables and data schema is carefully designed before the database is built. 
 
-Relational databases were seen as slow and complex, not suited for web usages, therefore NoSQL systems aim to provide a simpler and faster solution. 
+Relational databases were seen as slow and complex, not suited for web usages, therefore NoSQL systems aim to provide a simpler and faster solution, horizontally scaled to clusters of machines.
 
-NoSQL databases are especially useful for working with large sets of distributed data, providing high throughput and availability. They do not provide ACID guarantees, relying instead on BASE principles: the trade off is a more limited query functionality.
+NoSQL databases are especially useful for working with large sets of real-time distributed data, providing high throughput and availability. 
 
-Giving up on consistency implies also giving up on additional protocols such as 2PC, but often compromises are taken: groups of entities that share affinities are co-located, providing transaction support within entity groups.
+They do not provide ACID guarantees, relying instead on BASE principles: the trade off is a more limited query functionality, for instance many NoSQL do not support joining.
+
+Giving up on consistency implies also giving up on additional protocols such as 2PC, but often compromises are taken: groups of entities that share affinities are co-located, providing transaction support within entity groups. 
+
+To avoid data loss, write-ahead logging (WAL) saves changes to a log before applying them, allowing updates of a database to be done in-place.
 
 \subsection{Key-value databases}
 Key-value stores consist in associations between keys, usually primitive types, and values, which can be primitive or complex but are hardly ever directly accessed.
@@ -15,10 +19,11 @@ The API offers simple functionalities such as getting and settings, also working
 Key-value stores make extensive use of hash tables to partition the space across multiple machines, relying on distributed hash tables to know which node to contact.
 
 \subsection{MongoDB}
-MongoDB is one of the most popular key-value stores for JSON documents indexed by an attribute.
-%todo
-todo
+MongoDB is one of the most popular document-oriented database for JSON documents indexed by an unique identifier.
 
+It provides high availability with replica sets, writing and reading on the primary by default. Scaling horizontally is achieved with sharding.
+
+Aggregation can be performed in three ways: through a pipeline, MapReduce or aggregation operations, eventually attached together.
 
 \subsection{Apache Cassandra}
 Apache Cassandra is another NoSQL database system, built to be very scalable and available, sacrificing consistency. 

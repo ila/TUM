@@ -1,12 +1,14 @@
 \section{Graph databases}
 A graph $G = (V, E)$ is a set of edges and vertices which can have different properties. Edges can also have intermediate ramifications between nodes.
 
-Useful information regarding a graph can be:
+RDF is a special type of graph database; general ones can store more variants of data and have less standards.
+
+Examples of interesting properties regarding a graph are:
 \begin{itemize}
-	\item Degree;
-	\item Centrality;
-	\item Betweeness;
-	\item todo
+	\item Degree, the number of edges incident to every vertex;
+	\item Centrality, defining the most important vertices in terms of flow and cohesiveness;
+	\item Betweeness, centrality based on shortest paths;
+	\item Connectivity, the smallest number of either edges or vertices whose removal disconnects the graph.
 \end{itemize}
 
 Graph databases can be implemented using semantic data in triples, introducing properties of nodes.
@@ -15,10 +17,14 @@ There is no defined standard for structure of graphs, in fact they can also be i
 
 Queries on graph databases do not strictly return a set of tuples: they allow pattern matching, algorithms, aggregation, or properties of graph and its elements.
 
+Graphs are an essential structure to perform algorithms with wide real-life applications, such as Dijkstra and breadth-first search. although computationally heavy.
+
 \subsection{Cypher}
 Cypher is one of the most supported query languages for graphs. Its syntax allows nodes and edges to have a type along with some attributes.
 
-Neo4j, implementing Cypher, is a graph database offering dynamic visualization and machine learning algorithms, but it kind of sucks.
+Its functions are similar to SQL, implementing aggregating, pattern matching and graph properties in addition.
+
+Neo4j, implementing Cypher, is a graph database offering dynamic visualization and machine learning algorithms, but it kind of sucks (not scalable).
 
 \subsection{Pregel/Giraph}
 Pregel is Google's iterative graph processing system for distributed data, while Giraph is its open source alternative.
@@ -26,15 +32,3 @@ Pregel is Google's iterative graph processing system for distributed data, while
 They work using Gremlin, a functional graph traversal language, which with one operation lets a vertex modify its state and propagate information.
 
 The reason why this tool has been developed is because MapReduce systems do not allow operations on a vertex level. In addition, MapReduce requires transferring state to all nodes.
-
-\subsection{Turi}
-todo
-
-\subsection{Graph algorithms}
-BFS is one of the most important graph traversal algorithms to search a node 
-
-Dijkstra yeah we know that cmon Neumann do databases
-
-% pairing heap
-
-
