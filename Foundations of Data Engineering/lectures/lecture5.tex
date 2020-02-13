@@ -86,6 +86,13 @@ Analysis can be implemented in several different ways, but certain tasks need to
 
 Creating a custom solution takes time and is error prone; functional abstractions can be used to specify computation in parallel. The runtime system, this way, manages program execution, data distribution and persistence, node failures and communication.
 
+When a cluster is necessary, it is possible to use pre-configured structures:
+\begin{enumerate}
+	\item Infrastructure as a Service, externalizing resources and storage;
+	\item Platform as a Service, renting databases and web servers;
+	\item Software as a Service, using developer tools and additional packages.
+\end{enumerate}
+
 \subsection{MapReduce}
 MapReduce is a programming model with associated implementation for processing and generating big data sets with a parallel distributed algorithm on a cluster.
 
@@ -137,11 +144,33 @@ It outputs a probability distribution used to represent the likelihood that a pe
 
 The PageRank transferred from a given page to the targets of its outbound links upon the next iteration is divided equally among all outbound links. 
 
-The value for a page$v$  is dependent on the values for each page  in the set containing all pages linking to $v$, divided by the number of links from $v$.
+The value for a page $v$ is dependent on the values for each page  in the set containing all pages linking to $v$, divided by the number of links from $v$.
 
-Computing PageRank using MapReduce is performed using the function to repeatedly multiply a vector by the matrix representing how the distribution changes after every single step.
+Pseudo-code PageRank:
+\begin{enumerate}
+	\item Retrieve total number of nodes $n$;
+	\item Write initial values in each node, computed as $\frac{1}{n}$;
+	\item Find next node as $\frac{1-d}{n}$, where $d$ is the correction factor;
+	\item For each iteration of the algorithm:
+	\begin{enumerate}
+		\item Compute outgoing page rank fraction;
+		\item Add fraction to all neighbors;
+	\end{enumerate}
+	\item Swap next node and current;
+	\item Reset next reassigning it the value of $\frac{1-d}{n}$.
+\end{enumerate}
 
-%todo
+This algorithm looks at each node in the graph, computes the fraction of rank it has to pass on to neighbors, and writes it.
+
+For better performance, the value can be computed in reverse, collecting all fractions from reverse neighbors.
+
+The sequential reads are optimized for modern computers, but the random access to next node exhibits performance problems. Caches help alleviating this, since they can store most visited nodes.
+
+If the memory requirements exceed the available main memory, the system will allocate too much memory, running into several page faults. Sorting by degree will make often-accessed nodes all in the same page.
+
+The distributed version sends computed values to other nodes, but can cause overhead and network congestion. MapReduce assigns the Shuffle phase the duty of message passing.
+
+Computing PageRank using MapReduce is also performed using the function to repeatedly multiply a vector by the matrix representing how the distribution changes after every single step.
 
 \subsection{Hadoop}
 Hadoop is an open-source implementation of the MapReduce framework, written in Java (opposed to the proprietary of Google in C++). It is now an Apache project used for very large clusters to handle big data sets.
@@ -156,6 +185,10 @@ Hadoop MapReduce is an application on the cluster that negotiates resources with
 	\item The Shuffler moves output produced my Map among the nodes in the cluster;
 	\item Once shuffling is complete, JobTracker schedules Reduce to all nodes.
 \end{enumerate}
+
+Since the datasets are much larger than the main memory and processing happens on very big clusters, intermediate results must be written to disk and shuffled results should be ordered.
+
+MapReduce is however a framework not suitable for all uses: not everything can be expressed through the functions it offers, plus it is not a good fit for workloads with a lot of computation and smaller datasets.
 
 \subsubsection{HDFS}
 Hadoop relies on a distributed file system (HDFS), the primary data storage set used by its applications. It supports the rapid transfer of data between compute nodes, breaking information down into separate blocks and distributing it.
@@ -192,19 +225,77 @@ It operates on each Map output key, having the same key-value output as the Redu
 
 Folding is a function to save disk space: it analyzes a recursive data structure, and returns recombined results by recursively processing its constituent parts.
 
-Programs working well on large clusters require a deep understanding of warehouse-sized computers: different settings need different techniques.
+Programs working well on large clusters require a deep understanding of warehouse-sized computers: different settings need different techniques. In general, HDFS should be portable.
 
-MapReduce is also a framework not suitable for all uses: not everything can be expressed through the functions it offers.
+Overall, Hadoop considers hardware failure to be the norm, with applications needing streaming access on large datasets. Its model, therefore, uses a model aiming to minimize writes and keeps computation local with the data.
 
+\subsection{Scale up vs. out}
 A data center is usually made of computers piled in racks, and racks are connected via a switch to form a cluster.
 
-Accessing data on remote machines comes with a price: the faster is a local DRAM, but cluster DRAMs and disks are relatively slow. 
+Accessing data on remote machines comes with a price: the faster is a local DRAM (20GB/S), but cluster DRAMs and disks are relatively slow. 
 
 In case no single machine is large enough to store all the data, it is necessary to choose between scaling up and out: a cluster of large expensive machines or a large cluster of cheap commodity machines.
 
-todo
+A simple execution model calculates the total cost summing the expense of computation with all global data access. The data kept locally is inversely proportional to the size of cluster.
+$$ TotalCost = \frac{1ms}{n} + f \times \Big[100ns \times \frac{1}{n} + 100\mu s \times \Big(1 - \frac{1}{n}\Big) \Big]$$
+
+\begin{itemize}
+	\item Light communication: $f = 1$;
+	\item Medium communication: $f = 10$;
+	\item Heavy communication: $f = 100$.
+\end{itemize}
+
+Workloads with light communication benefit from large clusters, while large amounts of random communication impede performance. Random reads must be avoided!
 
 \subsection{Spark}
+Spark is an alternative to Hadoop which provides more expressive fault-tolerant runtime for distributed batched data analytics. It can handle more complex analysis with interactive queries processing real time streams.
 
+The purpose of a new programming model is extending the existing naive algorithms implementation:
+\begin{itemize}
+	\item Data can be outputted by sorted key;
+	\item Locality can be increased using different kinds of partitioning;
+	\item Window queries can be answered sorting by group.
+\end{itemize}
 
-% dataset api is staticly typed, dataframe is not
+The MapReduce model is extended too with complex data pipelines, but recovery mechanisms are lightweight and require less additional computation.
+
+Sparks offers additional API for more functionalities, such as Spark SQL, GraphX and MLIB.
+
+\subsubsection{RDDs}
+Spark revolves around the concept of a resilient distributed dataset (RDD), which is a fault-tolerant collection of elements that can be operated on in parallel.
+
+RDD is considered the evolution of the general Spark model, offering datasets that can be efficiently cached and manipulated. 
+
+RDDs support two types of operations: transformations, which create a new dataset from an existing one, and actions, which return a value to the driver program after running a computation on the dataset.
+
+All transformations in Spark are lazy, in that they do not compute their results right away. Instead, they just remember the transformations applied to some base dataset (e.g. a file). 
+
+They are only computed when an action requires a result to be returned to the driver program, and the dataset gets only loaded when operations are performed on it. This design enables Spark to run more efficiently.
+
+Pipelines allow to chain transformations and intermediate steps do not need to be materialized since they can just be recomputed on node failure.
+
+\subsubsection{DataFrames}
+DatFrames are dynamically strongly typed distributed collections of data organized into columns, conceptually equivalent to a table in a relational database.
+
+They can be interacted with using SQL functions, allowing query optimization and avoiding interpretation overhead, although with a limited set of functions.
+
+\subsubsection{Datasets}
+A Dataset is a combination between DataFrame and RDD, optionally weakly typed, to retain code compilation. It is still mapped as a RDD.
+
+Datasets can be created, analyzed (limited, filtered) and be subject of exploration, management or aggregation just like tables.
+
+\subsubsection{Optimization}
+RDDs track lineage information to rebuild lost data, logging everything in a graph to recompute missing or damaged partitions. Spark offers support for DAGs.
+
+Snapshots are automatically created after repartitioning transformations and managed using a LRU cache to speed up recovery.
+
+The optimizer builds a logical plan and applies transformation rules, to then generate the physical plan and select the cheapest cost model. 
+
+Spark's runtime focuses on three main points:
+\begin{itemize}
+	\item Memory Management and Binary Processing, leveraging semantics to eliminate the overhead of deserialization and garbage collection;
+	\item Cache-aware computation, using columnar storage and compression to exploit memory hierarchy;
+	\item Code generation to optimize usage of modern compilers and CPU.
+\end{itemize}
+
+Operations to take care of reading, managing ETL pipelines, training and query are performed within the same framework.
