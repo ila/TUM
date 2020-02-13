@@ -111,7 +111,7 @@ Occurrence annotations are no longer exact, but very accurate: the maximum amoun
 
 Star-shaped subqueries are hard to optimize, because of the correlation and the selectivities. In this case, counting distinct values and estimating cardinalities allow to rank the subsets.
 
-The rarest subset is joined in the last step, to reduce the number of computations for the Cartesian product.
+The rarest subsets are joined first, leaving the biggest for the last step, to reduce the number of computations.
 
 The top-down greedy algorithm to optimize runs in linear time, but does not use independence between predicates. As a remedy, lightweight statistics are constructed counting how often subgraphs appear together. 
 

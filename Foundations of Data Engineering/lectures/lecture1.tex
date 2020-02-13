@@ -1,37 +1,39 @@
+% !TeX root = ../main.tex
+
 \section{File manipulation tools}
 Analyzing a dataset is useful to get a first impression about it, decide which tools are the most suitable and understand the required hardware.
 
 Files can have a huge variety of formats, when in doubt the \texttt{file} command can be useful.
 
-CSV are plain text files containing rows of data separated by a comma, in a simple format with customizable separator. It requires quoting of separators within strings.
+\textbf{CSV} are \textit{plain text} files containing rows of data separated by a comma, in a simple format with customizable separator. It requires quoting of separators within strings.
 
-XML is a text format encoding of semi structured data, better standardized than CSV but not human writable. It is suitable for nested objects and allows advanced features, yet it is very verbose and its use is declining.
+\textbf{XML} is a text format encoding of \textit{semi-structured data}, better standardized than CSV but not human writable. It is suitable for nested objects and allows advanced features, yet it is very verbose and its use is declining.
 
-JSON is similar to XML although much simpler and less verbose, easy to write. Its popularity is growing. 
+\textbf{JSON} is similar to XML although much simpler and less verbose, easy to write. Its popularity is growing. 
 
 \subsection{Command line tools}
-Text formats are overall well-known and can be manipulated with command line tools, a very powerful instrument to perform preliminary analysis:
+Text formats are overall well-known and can be manipulated with \textbf{command line tools}, a very powerful instrument to perform preliminary analysis:
 \begin{itemize}
-	\item \texttt{cat} shows the content of one or multiple files (works with piped input as well);
+	\item \texttt{cat} shows the \textit{content} of one or multiple files (works with piped input as well);
 	\item \texttt{zcat} is \texttt{cat} for compressed files;
-	\item \texttt{less} allows paging (chopping long lines);
-	\item \texttt{grep} is useful to search text (regex goes between quotes) with options such as file formats, lines not matching and case insensitiveness;
-	\item \texttt{sort} to (merge) sort even large output;
-	\item \texttt{uniq} handles duplicates;
-	\item \texttt{tail} and \texttt{less} display suffixes and prefixes;
-	\item \texttt{sed} to edit text, match and replace characters (in-place update using the same file);
-	\item \texttt{join} to combine sorted files according to a common field;
-	\item \texttt{awk} (followed by a \texttt{BEGIN-END} block) executes a program for every line of input, such as average or sum;
+	\item \texttt{less} allows \textit{paging} (chopping long lines);
+	\item \texttt{grep} is useful to \textit{search} text through regular expressions, with options such as file formats, lines not matching and case insensitiveness;
+	\item \texttt{sort} to (merge) \textit{sort} even large output;
+	\item \texttt{uniq} handles \textit{duplicates};
+	\item \texttt{tail} and \texttt{less} display \textit{suffixes} and \textit{prefixes};
+	\item \texttt{sed} to \textit{edit} text, match and replace characters (in-place update using the same file);
+	\item \texttt{join} to \textit{combine} sorted files according to a common field;
+	\item \texttt{awk} (followed by a \texttt{BEGIN-END} block) executes a \textit{program} for every line of input, such as average or sum;
 	\item \dots
 \end{itemize}
 
 Tools can be combined through pipes, which redirect the input/output stream. Some examples are:
 \begin{itemize}
-	\item \texttt{|} to concatenate two commands (\& also pipes standard error);
+	\item \texttt{|} to concatenate two commands (\texttt{\&} also pipes standard error);
 	\item \texttt{>} to redirect to a file;
 	\item \texttt{<} to redirect from a file;
-	\item \texttt{\&\&} executes a command only if the previous one has succeeded;
-	\item \texttt{||} executes a command only if the previous one has failed;
+	\item \texttt{\&\&} executes a command only if the previous one has \textit{succeeded};
+	\item \texttt{||} executes a command only if the previous one has \textit{failed};
 	\item \texttt{;} separates multiple commands regardless of their output.
 \end{itemize}
 
@@ -41,12 +43,12 @@ Example: \texttt{diff <(sort file1) <(sort file2)}
 \subsubsection{\texttt{cat}}
 Syntax: \texttt{cat [OPTION] [FILE]}
 
-\texttt{cat} concatenates file to standard output. When the file is unspecified, it prints to terminal. It can also be used with multiple files, and different formats (binary, compressed). It is mainly used as input for other commands, since displaying large data can be computationally expensive.
+\texttt{cat} concatenates file to standard output. When the file is unspecified, it prints to terminal. It can also be used with multiple files, and different formats (binary, compressed). It is mainly used as input for other commands, since displaying large data can be \textbf{computationally expensive}.
 
 \subsubsection{\texttt{less}}
 Syntax: \texttt{less [OPTIONS]}
 
-\texttt{less} is opposite to the analog command \texttt{more}, extending it with other features. It does not have to read the entire input file before starting, so with large files it starts up faster than text editors or \texttt{cat}. 
+\texttt{less} is opposite to the analog command \texttt{more}, extending it with other features. \textit{It does not have to read the entire input file before starting}, so with large files it starts up faster than text editors or \texttt{cat}. 
 
 Commands may be preceded by decimal numbers indicating the number of rows to display/scroll, and basic pattern matching can be performed as well. 
 
@@ -68,7 +70,7 @@ Regular expressions syntax:
 	\item \texttt{\textbackslash<} and \texttt{\textbackslash>} match empty strings at the beginning and the end of a word.
 \end{itemize}
 
-Extended regular expressions treat meta-characters without needing to escape them, and are more powerful thanks to the additional commands:
+\textbf{Extended regular expressions} treat meta-characters without needing to escape them, and are more powerful thanks to the additional commands:
 \begin{itemize}
 	\item \texttt{?} matches at most one repetition;
 	\item \texttt{+} denotes one or more occurrences of previous character;
@@ -84,17 +86,17 @@ Syntax: \texttt{sort [OPTION] [FILE]}
 
 It can handle files larger than main memory, and it is very useful to prepare input for other algorithms.
 
-\subsubsection{\texttt{head}\textbackslash \texttt{tail}}
-Syntax: HEAD [OPTION] [FILE]
+\subsubsection{\texttt{head} / \texttt{tail}}
+Syntax: \texttt{HEAD [OPTION] [FILE]}
 
 Those commands print the first (last) lines of files. The default number of lines is 10, and multiple files can be read. 
 
-An integer can be specified as option to determine how many lines must be read (and skipped). Those commands are relevant to extract minimum and maximum of computations. Numbers may have a multiplier suffix, indicating bytes or related measurement units.
+An integer can be specified as option to determine how many lines must be read (and skipped). Those commands are relevant to extract \textbf{minimum} and \textbf{maximum} of computations. Numbers may have a multiplier suffix, indicating bytes or related measurement units.
 
 \subsubsection{\texttt{uniq}}
 Syntax: \texttt{uniq [OPTION] [INPUT [OUTPUT]]}
 
-\texttt{uniq} handles (adjancent) duplicates (similarly to SQL DISTINCT) in sorted input, reporting or omitting them. It also has option \texttt{-c} to count duplicates or \texttt{-u} for unique lines. With no options, matching lines are merged to the first occurrence.
+\texttt{uniq} handles (adjancent) duplicates (similarly to SQL \texttt{DISTINCT}) in sorted input, reporting or omitting them. It also has option \texttt{-c} to count duplicates or \texttt{-u} for unique lines. With no options, matching lines are merged to the first occurrence.
 
 Its main applications are grouping and counting input.
 
@@ -116,12 +118,12 @@ Options may be used to select which counts are printed: \texttt{-c} for bytes, \
 \subsubsection{\texttt{shuf}}
 Syntax: \texttt{shuf [OPTION] [FILE]}
 
-This command generates random permutations of the input lines to standard output. It is not so common, although very useful when extracting random samples and running performance tests.
+This command generates random permutations of the input lines to standard output. It is not so common, although very useful when extracting random samples and running \textbf{performance tests}.
 
 \subsubsection{\texttt{sed}}
 Syntax: \texttt{sed [OPTION] {script} [FILE]}
 
-\texttt{sed} is a stream editor to perform basic text transformations on an input stream (or file). It works by making only one pass over the input, therefore it is more efficient than scripts. It can also filter text in a pipeline.
+\texttt{sed} is a \textit{stream editor} to perform basic text transformations on an input stream (or file). It works by making only one pass over the input, therefore it is more efficient than scripts. It can also filter text in a pipeline.
 
 This command is mostly used to replace text in a file. The operations are separated by a slash, and the letters (flags) represent options.
 
