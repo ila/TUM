@@ -1,0 +1,76 @@
+\section{Introduction}
+A \textbf{cryptosystem} consists of a family of \textit{enciphering transformations} $f$, each corresponding to a choice of parameters $p$, from a set $P$ of all possible plaintext message units to a set $C$ of all possible ciphertext message units. The transformation requires:
+\begin{itemize}
+	\item An algorithm, which is the same for the whole family and supposedly publicly known;
+	\item An enciphering key $K_E$, the value of parameters $p$;
+	\item A deciphering key $K_D$.
+\end{itemize}
+The deciphering key is needed in order to compute $f^{-1}$, i.e.\ decipher the message. The transformation uses the same algorithm as encrypting, except with a different key. 
+
+A \textbf{public key} or \textbf{asymmetric cryptosystem}, by definition, has the property that someone who knows only to encipher cannot use the encipher key to find the deciphering key without a prohibitively lengthy computation: the function $f : P \rightarrow C$ is easy to compute once $K_E$ is known, but it is very hard in practice to compute the inverse function $f^{-1} : C \rightarrow P$.
+
+In mathematical terms, the inverse computation should be \textbf{infeasible}, namely so computationally intensive that it is impossible to evaluate it in any reasonable time period. 
+
+This implies that $f$ is not invertible without some additional information, therefore $f$ is an \textit{one-way function}. Most public key algorithms are in fact based on number-theoretic functions, whose goal is usually not to have a compact mathematical description between input and output.
+
+A public key cryptosystem, therefore, involves not only one key but a pair: one is public and can be publicly shared, and the other is private and its discover by a third part would compromise the security of the system.
+
+The main point of this scheme is that it is not necessary that the key possessed by the person who encrypts the message is secret. Receivers can only decrypt using their secret key.
+
+Information needed to send secret messages, therefore, can be made public without anyone being able to read the content. This makes communication possible within two parts which have never interacted before, an useful feature among modern systems with huge workloads. 
+
+\subsection{Cyclic groups and generators}
+\textbf{Cyclic groups} are a way to generalize public key algorithms within groups not necessarily constrained by a prime number. They have a key role in cryptography, since they allow many useful one-way functions which can be used to encrypt information: in fact, cryptographic functions which are hard to break should be defined within finite groups.
+
+A \textbf{group} is a set of elements $G$ together with an operation $\circ$ which combines two elements of $G$. A group has the following properties:
+\begin{enumerate}
+	\item The group operation $\circ$ is \textit{closed}: for all $a, b \in G$, it holds that $a \circ b = c \in G$;
+	\item The group operation is \textit{associative}: $a \circ (b \circ c) = (a \circ b) \circ c$ for all $a, b, c \in G$;
+	\item There is an element $1 \in G$ called the \textit{neutral element} (identity) such that $a \circ 1 = 1 \circ a = a$ for all $a \in G$;
+	\item For each $a \in G$ there exists an element $a^{-1}$ called the \textit{inverse}, such that $a \circ a^{-1} = a^{-1} \circ a = 1$;
+	\item A group $G$ is \textit{abelian} (or \textit{commutative}) if, furthermore, $a \circ b = b \circ a$ for all $a, b \in G$.
+\end{enumerate}
+Cryptography majorly relies on \textit{multiplicative groups}, where the operation $\circ$ denotes multiplication.
+
+Algorithms related to discrete logarithm problem, for example, concern the group $\mathbb{Z}^*_n$, consisting in the set of all integers $i = 0, 1, \dots, n - 1$ for which $\gcd(i, n) = 1$. $\mathbb{Z}^*_n$ forms an abelian group under multiplication modulo $n$, where the identity element is $e = 1$.
+
+Since cryptography concerns finite structures, groups also have to respect the property to have a finite number of elements, defining the \textit{cardinality} or \textit{order} of the group $G$ by $|G|$. 
+
+Every element of a group $G$ has also an order, which is the smallest positive integer $k$ such that:
+$$a^k = a \circ a \circ \dots \circ a = 1$$
+The $\circ$ operation is applied $k$ times, obtaining the identity element of $G$.
+
+Example: the order of the element $a = 3$ in the group $\mathbb{Z}^*_{11}$ is 5, since $a^5 = 1 \mod 11$. 
+
+The powers of $a$ run through the same finite sequence of remainders indefinitely, adopting a cyclic behavior. This allows to introduce cyclic groups.
+
+A group $G$ which contains an element $\alpha$ with maximum order $|G|$ is said to be \textbf{cyclic}. Elements with maximum order are called primitive or \textbf{generators}, since every element $a$ of $G$ can be written as a power $\alpha^i = a$ of this element for some $i$, so that $\alpha$ generates the entire group.
+
+For every prime $p$, $(\mathbb{Z}^*_p, \cdot)$ is an abelian finite cyclic group.
+
+Having a finite cyclic group $G$, some interesting properties hold:
+\begin{enumerate}
+	\item For every $a \in G$, it holds that:
+	\begin{enumerate}
+		\item $a^{|G|} = 1$;
+		\item The order of $a$ divides $|G|$;
+	\end{enumerate}
+	\item The number of primitive elements of $G$ is $\phi(G)$, where $\phi$ defines the Euler function (number of positive integers up to $G$ which are coprime to it);
+	\item if $|G|$ is prime, then all elements $a \neq 1$ are primitive.
+\end{enumerate}
+Those concepts have relevancy in cryptography: prime fields are widely used for building discrete logarithm cryptosystems, using the fact that in a cyclic group \textit{only element orders which divide the group cardinality} exist. 
+
+\subsubsection{Subgroups}
+\textbf{Subgroups} are subsets of cyclic groups which are groups themselves, therefore respect all the previously stated properties. 
+
+Let $(G, \circ)$ be a cyclic group. Then, every element $a \in G$ with $ord(a) = s$ is the primitive element of a cyclic subgroup with $s$ elements.
+
+As previously stated, the generator can be non-unique. An important special case are subgroups of prime order: with cardinality $q$, all elements $e \neq 1$ have order $q$ as well.
+
+If $H$ is a subgroup of $G$, then $|H|$ divides $|G|$. 
+
+To obtain a construction method for subgroups from a given finite cyclic group, only the cardinality $n$ and a primitive element are needed: then, $\alpha^{n/k}$ is computed to obtain a generator $\alpha$ of the subgroups with $k$ elements.
+
+This follows knowing that every integer $k$ which divides the cardinality $n$ there exists exactly one cyclic subgroup $H$ of $G$ of order $k$, consisting in the elements $a \in G$ satisfying $a^k = 1$. 
+
+

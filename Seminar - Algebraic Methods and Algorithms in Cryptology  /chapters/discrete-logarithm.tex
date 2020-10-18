@@ -1,0 +1,83 @@
+\section{The Discrete Logarithm problem}
+The \textbf{discrete logarithm} cryptosystem was proposed in the mid-1970s, and to this day there are no deterministically successful known attacks against it if the parameters are chosen carefully. It is the base of several public key cryptosystems taking advantage of its computational difficulty.
+
+It is a public-key cryptography algorithm which can be used for encryption, integrity check and digital signatures, binding the key to an identity. It works taking advantage of the properties of mathematical operations within groups.
+
+\textit{If $G$ is a finite group, $b$ is an element of $G$, and $y$ is an element of $G$ which is a power of $b$, then the discrete logarithm of $y$ to the base $b$ is any integer $x$ such that $b^x = y$.}
+
+Applying this statement to the finite cyclic group $\mathbb{Z}^*_p$ of order $p - 1$, taking a primitive element $\alpha \in\mathbb{Z}^*_p$ and another element $\beta \in \mathbb{Z}^*_p$, the discrete logarithm problem aims to determine the integer $1 \leq x \leq p - 1$ such that:
+$$\alpha^x \equiv \beta \mod p \qquad \rightarrow \qquad x = \log_\alpha\beta \mod p$$
+
+The discrete logarithm cryptosystem, as previously stated, relies on the fundamental fact that raising a number $b$ to a power $x$ in a large finite field is an one-way function, i.e.\ it is far more difficult to apply the inverse operation and finding $\log_bx$. 
+
+Since the domain is a finite group, such as $\mathbb{Z}^*_n$, the repeated-squaring method can be used to compute $b^x$ with time polynomial in $\log x$, but given an element $y = b^x$, finding $y$ is an open problem.
+
+\subsection{Example}
+This example considers a discrete logarithm in the group $\mathbb{Z}^*_{47}$, in which $\alpha = 5$ is a primitive element. The problem consist in finding the positive integer $x$ such that $5^x \equiv 41 \mod 47$.
+
+Even for small numbers, obtaining this value is not immediate. A brute-force attack, i.e.\ systematically trying all possible values for $x$, reveals that the result is $x = 15$.
+
+$\mathbb{Z}^*_{47}$ has order 46, which implies that its subgroups have cardinality of 23, 2 and 1. $\alpha = 2$ is an element with 23 elements, and since 23 is prime then $\alpha$ is primitive. Using prime cardinality is important in order to avoid potential attacks.
+
+When a number $a$ is not a primitive element but another generator for reasonably small $n$, computing the discrete logarithm is still doable solving a system of linear congruences.
+
+\subsection{Generalized discrete logarithm}
+Despite prime multiplicative groups increment security, the discrete logarithm applications are not limited to them and can be defined over \textit{any cyclic group}.
+
+Given a finite cyclic group $G$ with an operation $\circ$ and cardinality $n$, having a primitive element $\alpha \in G$ and another element $\beta \in G$, the generalized discrete logarithm problem is finding the integer $1 \leq x \leq n$ such that:
+$$\beta = \alpha \circ \alpha \circ \dots \circ \ alpha = \alpha^x$$
+
+$x$ always exists in both cases with $p$ and $n$, since $\alpha$ is a primitive element and can generate every other component. 
+
+However, there are cyclic groups in which cracking discrete logarithm is not difficult, since the function is not a one-way. For instance, in $G = (\mathbb{Z}_{11}, +)$ with primitive element $\alpha = 2$, the term $x$ for $\beta = 3$ can be computed with the following steps:
+\begin{enumerate}
+	\item Expressing the operation as multiplication, $x \cdot 2 \equiv 3 \mod 11$;
+	\item Inverting the primitive element $\alpha$, resulting in $x \equiv 2^{-1}3 \mod 11$;
+	\item Computing $2^{-1} \equiv 6 \mod 11$;
+	\item Obtaining $x \equiv 2^{-1}3 \equiv 7 \mod 11$.
+\end{enumerate}
+This procedure can be generalized to any additive group for arbitrary $n$ and $\alpha, \beta \in \mathbb{Z}_n$, making the \textbf{generalized discrete logarithm} computationally easy over $\mathbb{Z}_n$ since there are mathematical operations which are not in the additive group (inversion, multiplication). 
+
+Strong groups in which discrete logarithm can be used in practice to encrypt data are instead $\mathbb{Z}_p$ or the cyclic group formed by an elliptic curve.
+
+\subsection{Computational aspects}
+Despite the discrete logarithm being a strong encryption system, it requires strict constraints to be met regarding fields, length of involved factors, as well as a relevant number of exponentiation, an operation known to be expensive.
+
+An undesired consequence of the long operands of discrete logarithm is that computation is extremely arithmetically intensive: it is not uncommon that one public key operation is by 2-3 orders of magnitude slower than using a private key system. 
+
+Since the numbers involved are large, it is more efficient to reduce to modulo multiple times during the computation, with a process called modular exponentiation which relies on the Euclidean algorithm, usually a built-in function of modern programming languages. 
+
+On modern computers, such execution procedures are common, and do not consist in a problem, yet performance can be a serious bottleneck in constrained devices with small CPUs.
+
+\subsection{Security and NP-completeness}
+Since public key algorithms are based on number-theoretic functions, one distinguish feature of them is that they require arithmetic with very long operands and keys. An algorithm is said to have a ``security level of $n$ bits'' if the best known attack requires $2^n$ steps, since the key is $n$ bits long.
+
+Different security levels for discrete logarithms are:
+\begin{table}[h]
+	\centering
+	\begin{tabular}{c|c}
+		\textit{Bit lengths} & \textit{Security level} \\
+		\hline
+		1024 bit & 80 bit \\
+		\hline
+		3072 bit & 128 bit \\
+		\hline
+		7680 bit & 192 bit \\
+		\hline
+		15360 bit & 256 bit
+	\end{tabular}
+\end{table}
+
+In order to provide long-term security, i.e.\ ensure that the schema will not be cracked even with the computational power obtained with several decades of hardware development, a security level of at least 128 bit should be chosen. 
+
+Despite the existence of sophisticated algorithms running faster than a brute-force approach, and even a quantum algorithm, none of them is able to run in polynomial time. 
+
+Furthermore, efficient classical algorithms also exist in certain cases, while on the other hand there exist groups for which computing the discrete algorithm is much more difficult, therefore the domain must be chosen carefully. 
+
+\subsection{Real-life applications}
+Usage of the discrete logarithm is standardized by The Internet Key Exchange (IKE), which defines cyclic groups and their order, despite some of them being of less than 1024 bit and therefore potentially breakable. 
+
+The European Institute for System Security has furthermore established a family of practical cryptography protocols based on discrete logarithm, which were originally intended for LAN security but quickly extended their scope: nowadays, discrete logarithm is used within implementations of access control, authentication, confidentiality protection, key exchange, digital signature and distributed network security management.
+
+The most popular practical application of discrete logarithm is, however, the \textit{Diffie-Hellman key exchange}: since discrete logarithm needs extensive computational power and longer keys than symmetric encryption, it is mostly used for exchanging a private key in a secure way.
+

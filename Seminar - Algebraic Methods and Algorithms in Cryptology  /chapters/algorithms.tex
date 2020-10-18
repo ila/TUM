@@ -1,0 +1,93 @@
+\section{Algorithms}
+Defining algorithms to find the discrete logarithm in finite fields can be done supposing that all the prime factors of $n - 1$ are small, without loss of generality. This allows to assume fast algorithms exist, using $\mathbb{Z}^*_n$ as field.
+
+As from today, one of the best results in computing was achieved in 2019 by a group of researchers who announced the computation of the discrete logarithm of the number (RSA-240 + 49204), composed by 795 bit. This was obtained using a 2.1GHz CPU and took approximately 4000 core-years.
+
+There are also reports of computing a discrete logarithm within a 768-bit prime field, taking 5300 core years, using the same algorithm as the previous (Number Field Sieve).
+
+\subsection{Silver, Pohlig and Hellman algorithm}
+The Silver-Pohlig-Hellman algorithm exploits a possible factorization of the order of a group through the \textbf{Chinese Remainder Theorem}. 
+
+This applies to groups whose order is either a smooth integer or a prime power, iteratively computing the digit of the discrete logarithm by shifting out all but one unknown digit in the exponent.
+
+The prime factorization of a group with order $|G|$ can be written using its $p$-th roots as:
+$$|G| = p_1^{e_1} \cdot p_2^{e_2} \cdot \dots p_l^{e_l}$$
+Computing the discrete logarithm $x = \log_\alpha \beta$ in $G$ can be performed through a \textbf{divide-and-conquer} approach, finding smaller discrete logarithms $x_i \equiv x \mod p_i^{e_i}$ in the subgroups of order $p_i$ through some attack such as Pollard's method.
+
+Then, all $x_i$ are used applying the Chinese Remainder Theorem, determining an unique $x$ thanks to pairwise co-prime divisors. 
+
+A consequence of the properties of prime factors is that one needs to know the factorization of the group order, which is not always easy.
+
+\subsection{Index-calculus algorithm}
+The index-calculus \textbf{probabilistic} algorithm has the particularity of working only under certain assumptions, such as cyclic groups $\mathbb{Z}^*_p$ and $GF(2^m)$, and has a lot in common with integer factorization although generally uses polynomials in rings. 
+
+However, it is one of the most efficient ways to compute discrete logarithm, due to its \textit{high parallelism} involving operations independent from one another. 
+
+Here, the term \textbf{index} is a commonly used word to define the discrete logarithm: $x = ind(a) \mod q$ for some base $b$, for $b^x \equiv a \mod m$ if $b$ is a primitive root of $q$ and $\gcd(a, q) = 1$.
+
+Index-calculus depends on the property that a significant fraction of elements of $G$ can be efficiently expressed as \textbf{products of elements} of a small subset of $G$, assuming $|G|= q = p^n$ is a fairly large power of a small prime $p$. 
+
+This algorithm allows to find for any $x \in \mathbb{Z}^*_q$ the value of $x \mod q - 1$ such that $y = \alpha^x$, with $\alpha$ generator.
+
+It works in two phases: the first one consists in precomputation, since it does not depend on the element $x$ to decrypt, and only has to be carried once. An irreducible element $f \in \mathbb{Z}^*_q$ is identified, and a subset $B \subset \mathbb{Z}^*_q$ is chosen, which will serve as ``basis'' and usually consists of all monic irreducible polynomials of arbitrary degree. 
+
+Then, all discrete logarithms f $a \in B$ are computed, i.e.\ a random integer $t \in [1, q - 2]$ is chosen and then $b^t$ is computed through repeated squaring. The algorithm finds all elements $c \in \mathbb{Z}^*_q$ such that:
+$$c = b^t \mod f$$
+
+Now, the index-calculus algorithm attempts to write $c$ as:
+$$c = c_0 \prod_{a \in B} a ^{m}$$
+$m$ is the highest power of $a$ which divides $c$. One way to determine this is to run through all $a \in B$ and divide $c$ successively by $a^m$. If the constant $c_0$ is the only one remaining after the division, then $c$ has the above form; otherwise, a different random integer $t$ is chosen.
+
+Another good method to compute $c$ as products of elements $a \in B$ is using an \textit{integer factorization algorithm}, hence the close relation between these two problems.
+
+Now, supposing some $c \equiv b^t \mod f$ has been found, and $c$ has the desired type of factorization, taking the discrete logarithm of both sides allows to obtain:
+$$ind(c) - ind(c_0) \equiv \sum_{a \in B} m \cdot ind(a) \mod q - 1$$
+The \textbf{modulo} operation is introduced since the discrete logarithm is only defined modulo $q - 1$. The left side of the equivalence is known, since $ind(c) = t$, and discrete logarithms of constants are assumed to be known as well.
+
+The coefficients $m$ are also known, leaving only values $ind(a)$ and $a \in B$ to be found. 
+
+Assuming $|a| = h$, unknowns can be obtained through a linear system of equations with $h$ unknowns. Supposing integers $t$ can be chosen until a large number of different $c$ which factor into a product of $a$, eventually $h$ \textbf{independent} congruences will be found, written as:
+$$t = ind(c_0) \equiv \sum_{a \in B} m \cdot ind(a) \mod q - 1$$
+Here, \textit{independent} implies that the determinant of the coefficient matrix $\{m\}$ is prime to $q - 1$.
+
+The system of unknowns can then be solved, completing the first stage of index-calculus. Precomputation gives a large set of all the discrete logs of $a \in B$, from which to calculate any other discrete log.
+
+The final stage is performed supposing $x$ is the message whose discrete logarithm should be computed, and that the previous phase has already given all values of $ind(a),\ \forall\ a \in B$.
+
+A random integer $t$ is once again chosen, and $y = xb^t$ is computed, i.e.\ the unique element $y \in \mathbb{Z}^*_q$ satisfying $y \equiv xb^t \mod f$.
+
+As in the first stage, $y$ has to be factored into a constant $y_0$ times the product of powers of $a$, with $a \in B$. If not, another $t$ is picked, and so on, until an integer is obtained such that:
+$$y = y_0 \prod_{a \in B} a ^{m}$$
+
+As soon as this happens, the algorithm can terminate:
+$$ind(x) = ind(y) - t \qquad \and \qquad ind(y) = ind(y_0) + \sum_{a \in B} m \cdot ind(a)$$
+All the terms are known, therefore a message can be decrypted. Furthermore, advances in research have significantly sped up the process in finding discrete logs.
+
+This algorithm allows to obtain a runtime which is not exponential in the bit length of the order, but \textbf{subexponential}. This can once again be compared to integer factorization: the order of magnitude of time needed to solve the discrete log problem for $q = p^n$ which is $k$ bits long is the same as factoring a $k$-bit number. 
+
+In order to provide a security of 80 bits, an attacker has thus to perform $2^{80}$ steps, therefore the prime $p$ of a discrete logarithm in $\mathbb{Z}^*_p$ should be at least 1024 bit long; for $GF(2^m)$, index-calculus is even more powerful, making these groups \textit{unusable} in practice.
+
+\subsection{Number Field Sieve}
+The Number Field Sieve algorithm, based on index-calculus, is currently the fastest known algorithm for finding both discrete logarithms and \textit{integer factoring}, and the method used to break the record on the 795-bit value previously mentioned. 
+
+The key idea of the Number Field Sieve, starting from integer factorization consists in \textbf{iteratively finding divisors within a field}. Assuming $q$ is a composite number, the algorithm generates pairs such that:
+$$x \equiv y \mod q$$
+
+$\gcd(x - y, q)$ is a non-trivial divisor of $q$ with probability 0.5, and after finding several pairs, $q$ can be factorized.
+
+The previous equation can also be stated including prime numbers $p_i$ and their power within the factorization, i.e.:
+$$x = p_1^{n_1} \cdot p_2^{n_2} \cdot \dots \cdot p_m^{n_m}$$
+
+This approach is used while computing discrete logarithm: when enough elements have been found, the linear system of equations is solved, and the logarithm is consecutively applied such that $\log(p_i) = a_i$. Therefore, if some element $b$ can be expressed as $b = p_1^{n_1} \cdot p_2^{n_2} \cdot \dots \cdot p_k^{n_k}$, then its discrete logarithm consists in:
+$$\log(b) = n_1\log(p_1) \cdot n_2\log(p_2) \cdot \dots \cdot n_k\log(p_k)$$
+
+Given integers $a$ generator of $\mathbb{Z}^*_q$, $b$, $n$ and a prime number such that $p^q = n$, $x$ solving $a^x \equiv b \mod q$, the algorithm attempts to find two monic polynomials $y_1$ and $y_2$ having the property:
+$$y_1 \equiv 0 \mod p \qquad \land \qquad y_2 \equiv 0 \mod p$$
+
+Denoting with $\lambda_i \in \mathbb{C}$ the root of $y_i$, then holds that $y_i$ is the minimal polynomial of $\lambda_i$ and it is possible to define fields in which it is ensured the unique factorization.
+
+Having $y_i(\lambda_i) = 0$, then it is again possible to express $y_i$ as a combination of powers which can be used to reduce polynomials and define their complex product within the algebraic \textit{number complex field}. This can be mapped to the original field, while trying to compute couples of integer values which are squares of another number, to also be able to factorize in $\mathbb{Z}^*_q$.
+
+The system obtained with all the factors is then solved, usually using the Chinese Remainder Theorem.  
+
+

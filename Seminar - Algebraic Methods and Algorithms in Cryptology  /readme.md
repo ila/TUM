@@ -1,0 +1,1 @@
+This repository contains the seminar report for the course Algebraic Methods and Algorithms in Cryptology. Specifically, my topic was the Discrete Logarithm. There are both the slides and the paper.

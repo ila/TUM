@@ -1,0 +1,54 @@
+\section{Other attacks}
+Attacks against discrete logarithm involve finding the integer $x$ for a given $\alpha$ and $\beta$ in $G$ such that:
+$$\beta = \alpha \circ \alpha \circ \dots \circ \ alpha = \alpha^x$$
+
+In 1997, a lower bound for discrete logarithms was given: any generic algorithm that solves with high probability the problem must perform at least $\Omega(p^{1/2})$ group operations, where $p$ is the largest prime dividing the cardinality of the group. The same result holds for non cyclic groups and Diffie-Hellman protocol.
+
+The exact difficulty of computing this is still unknown: despite the existence of algorithms, there could be better or more powerful ones which still are undiscovered (similarly to integer factorization). 
+
+Generic algorithms are methods which only rely on the group operation $\circ$, without needing further algebraic structure. This property makes them applicable in any cyclic group.
+
+\subsection{Brute force search}
+Brute-force is the most naive and costly generic algorithm to obtain the discrete logarithm $\log_\alpha\beta$: all powers of the generator $\alpha$ are computed \textbf{successively}, until the result equals $\beta$.
+
+For a random logarithm $x$, on average the correct solution is expected to be found after checking \textit{half of the possible values}. This gives a complexity of $O(|G|)$, linear in the cardinality of the group.
+
+To avoid this kind of attack to be successful, therefore, the cardinality of groups must be sufficiently large, without any other particular measure. 
+
+In the case of $\mathbb{Z}^*_p$ with $p$ prime, approximately $\frac{p-1}{2}$ tests are required to compute the discrete logarithm, meaning that $|G| = p - 1$ should be in the order of at least $2^{80}$ to make a brute force infeasible using the modern hardware.
+
+\subsection{Shank's method}
+Shank's method is another generic algorithm which allows to reduce the time of a brute force search, at the trade off of occupying more storage. It is a meet-in-the-middle attack, storing intermediate values by trying to successively crack the multiple steps of discrete logarithm encryption.
+
+The procedure is based on rewriting the discrete logarithm in a two-digit representation:
+$$x = x_gm = x_b \qquad 0 \leq x_g, x_b < m$$
+The value $m$ is chosen to be approximately the square root of the cardinality of the set, i.e.\ $m = \lceil{\sqrt{|G|}}\rceil$. Discrete logarithm can then be stated as $\beta = \alpha^x = \alpha^{x_gm + x_b}$ which leads to:
+$$\beta \cdot (\alpha^{-m})^{x_g} = \alpha^{x_b}$$ 
+The core idea of the algorithm is using a divide-and-conquer approach to find $x_a$ and $x_b$ separately, in two phases:
+\begin{enumerate}
+	\item Baby-step, where all the values $\alpha^{x_b}$ with $0 \leq x_b < m$ are computed and stored with approximately $m \approx \sqrt{|G|}$ operations;
+	\item Giant-step, in which the program checks for all $x_g$ in $0 \leq x_g < m$ whether this condition is fulfilled: 
+	$\beta \cdot (\alpha^{-m})^g \stackrel{?}{=} \alpha^{x_b}$ for some stored entry $\alpha^{x_b}$ that was computed during the previous step.
+\end{enumerate}
+In case of a match, i.e.\ $\beta \cdot (\alpha^{-m})^{x_g, 0} = \alpha^{x_b, 0}$ for some pair $(x_{g, 0}, x_{b, 0})$ the discrete logarithm is:
+$$x = x_{g, 0}m + x_{b, 0}$$
+Further speed up the method can be obtained using efficient lookup schemes, such as \textbf{hash tables} which allow constant time search.
+
+This algorithm has a total computational time and space of $O(\sqrt{|G|})$, which means that in a group of order $2^{80}$ an attacker would approximately need $2^{40}$ operations, easily obtainable with modern hardware.
+
+Direct consequence of this is that groups need to have a cardinality of at least $|G| \geq 2^{160}$, to make Shank's method have a complexity of $2^{80}$ and therefore be infeasible. In case of prime groups $G = \mathbb{Z}^*_p$, $p$ must have a length of at least 160 bit; using prime groups is advised since otherwise Shank's method would have an even smaller complexity. 
+
+\subsection{Pollard's Rho method}
+Pollard's Rho method has the same computational time as Shank's algorithm, yet constant space requirements. It is based on the \textbf{birthday paradox}, concept related to the higher likelihood of collisions found between random attack attempts and a fixed degree of permutations.
+
+The basic idea consists in pseudo-randomly generate ($\rho$ represents randomness) group elements of the form $\alpha^i \cdot \beta^j$, keeping track of values $i$ and $j$, to then continue until obtaining a collision:
+$$\alpha^{i_1} \cdot \beta^{j_1} = \alpha^{i_2} \cdot \beta^{j_2}$$
+Substituting $\beta = \alpha^x$ and comparing the exponents on both sides of the equation, the collision leads to the following formula:
+$$i_1 + xj_1 \equiv i_2 + jx_2 \mod |G| \qquad \rightarrow \qquad x \equiv \frac{i_2 - i_1}{j_1 - j_2} \mod |G|$$ 
+The second part allows to find the discrete logarithm. Furthermore, additional methods to speed up computations such as the Extended Euclidean Algorithm and Floyd's cycle-finding algorithm.
+
+Its computational time is approximately $O(\sqrt{n})$, while used together with Silver-Pohlig-Hellman it can achieve $O(\sqrt{p})$ where $p$ is the largest prime factor of $n$.
+
+The practical importance of Rho's method is it being the best-known algorithm in \textit{elliptic curve group}s, making 160 bit operands very popular within this cryptography; however, it is not the most powerful attack for discrete logarithm and it does not work well in a distributed environment.
+
+

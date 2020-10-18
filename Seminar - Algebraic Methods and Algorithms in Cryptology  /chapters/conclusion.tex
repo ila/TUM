@@ -1,0 +1,33 @@
+\section{Comparison with integer factorization}
+While computing discrete logarithms within a field and computing the integer factorization of a composite number are distinct problems, they share some characteristics:
+\begin{itemize}
+	\item Both concern cases of the small subgroup problem for finite commutative groups;
+	\item Both are NP-hard problems, despite the existence of efficient algorithms on quantum computers;
+	\item Both have been extensively used to construct strong encryption systems still valid today.
+\end{itemize}
+
+Furthermore, some algorithms to break integer factorization also have practical application in solving discrete logarithms, such as index-calculus. Shank and Pollard, on the other hand, have both developed different methods to solve the two problems.
+
+Solving the discrete logarithm problem would actually solve the integer factorization problem, and vice versa, for the two following reasons:
+\begin{enumerate}
+	\item One system can be reduced to the other, since they both work on groups using the modulo operation;
+	\item Both are assumed to be in the same computation class of NP, therefore solving any NP-hard problem would imply there exist an efficient way to consequently solve all the others.
+\end{enumerate}
+
+Since the RSA cryptography extensively rely on integer factorization, it is considered equally hard to break as the discrete logarithm. Both algorithms, therefore, are considered strong enough for safe encryption purposes and have similar performance.
+
+The nature of Diffie-Hellman, however, makes it susceptible to man-in-the-middle attacks, since it does not authenticate involved parts during the exchange and requires additional confirmation.
+
+RSA, on the other hand, allows digital signatures, although still needs the exchange of a public key beforehand. 
+
+\section{Final considerations}
+Discrete logarithm has been proved to be secure against both active and passive attacks: the only effective way to break this problem would be to come up with new algorithms, since the key length can be arbitrarily increased to resist modern hardware. 
+
+However, there are some problems:
+\begin{itemize}
+	\item Is Decisional Diffie-Hellman equally hard as discrete logarithm, when dealing with preprocessing attacks?
+	\item Is quantum computing an efficient way to reduce computational time?
+	\item Would attacks on elliptic curves also influence discrete logarithm?
+\end{itemize}
+
+Having these open questions allow space for urther research and development, while still ensuring computation infeasibility. 
