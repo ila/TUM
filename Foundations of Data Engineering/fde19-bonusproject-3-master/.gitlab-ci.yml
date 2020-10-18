@@ -1,0 +1,59 @@
+stages:
+    - test
+    - benchmark
+
+test:
+    stage: test
+    script: 
+        - mkdir -p build/debug
+        - cd build/debug
+        - cmake -DCMAKE_BUILD_TYPE=Debug ../..
+        - make -j8
+        - ./test_all
+    cache:
+        key: "$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
+        paths:
+            - build/debug
+        policy: pull-push
+    tags:
+        - "fdedi"
+
+benchmark:
+    stage: benchmark
+    script: 
+        - mkdir -p build/release
+        - cd build/release
+        - cmake -DCMAKE_BUILD_TYPE=Release ../..
+        - make -j8
+        - /data/delivery/measureBacon ./main
+    cache:
+        key: "$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
+        paths:
+            - build/release
+        policy: pull-push
+    tags:
+        - "fdedi"
+
+clear_cache_test:
+    stage: test
+    script:
+        - rm -rf ./build/*
+    cache:
+        key: "$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
+        paths:
+            - build/
+        policy: pull-push
+    when: manual
+    allow_failure: true
+
+clear_cache_benchmark:
+    stage: benchmark
+    script:
+        - rm -rf ./build/*
+    cache:
+        key: "$CI_JOB_STAGE-$CI_COMMIT_REF_NAME"
+        paths:
+            - build/
+        policy: pull-push
+    when: manual
+    allow_failure: true

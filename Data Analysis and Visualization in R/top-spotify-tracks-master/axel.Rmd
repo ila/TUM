@@ -1,0 +1,304 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+clean_rows_name <- function(char){
+  partial_clean_names <- function(.data, unique = FALSE) {
+    n <- if (is.data.frame(.data)) colnames(.data) else .data
+    
+    n <- gsub("%+", "_pct_", n)
+    n <- gsub("\\$+", "_dollars_", n)
+    n <- gsub("\\++", "_plus_", n)
+    n <- gsub("-+", "_Minus_", n)
+    n <- gsub("\\*+", "_star_", n)
+    n <- gsub("#+", "_cnt_", n)
+    n <- gsub("&+", "_and_", n)
+    n <- gsub("@+", "_at_", n)
+    
+    n <- gsub("[^a-zA-Z0-9_]+", "_", n)
+    n <- gsub("([A-Z][a-z])", "_\\1", n)
+    n <- tolower(trimws(n))
+    
+    n <- gsub("(^_+|_+$)", "", n)
+    
+    n <- gsub("_+", "_", n)
+    
+    if (unique) n <- make.unique(n, sep = "_")
+    
+    if (is.data.frame(.data)) {
+      colnames(.data) <- n
+      .data
+    } else {
+      n
+    }
+  }
+  
+  char %>% 
+    partial_clean_names() %>% 
+    str_replace_all('_', ' ') %>% 
+    toTitleCase() %>% 
+    str_replace_all(' i ', ' I ') %>% 
+    str_replace_all(' Minus ', '- ') %>% 
+    StrCap() %>% 
+    return()
+}
+
+
+# Package
+pacman::p_load(here, data.table, magrittr, tidyverse, janitor,
+               ggplot2, ggthemes, tools,  DescTools)
+
+
+# Read
+spotify_data <- 
+  fread(here('data.csv'))
+
+# Clean
+spoti_clean <- 
+  spotify_data %>% 
+  filter(Region == 'global') %>% 
+  clean_names() %>% 
+  mutate(
+    date = as.Date(date, '%Y-%m-%d'),
+    year = year(date),
+    month = month(date),
+    track_name = clean_rows_name(track_name),
+    artist = clean_rows_name(artist),
+    track_name = ifelse(str_detect(track_name, 'Despacito') == T, 'Despacito', track_name),
+    general_name = paste0(artist, ': ', track_name)
+    ) %>%
+  filter(track_name != '' & artist != '')      # Rows without a name/artist
+
+# We select the top 1 position songs
+tops_prev <- 
+  spoti_clean %>%
+  filter(position == 1) %>% 
+  select(general_name) %>% 
+  unique() 
+
+tops <- 
+  tops_prev %>% 
+  bind_cols(
+    colors = rainbow(nrow(tops_prev))
+  ) 
+  
+# Sum all the objects with the same features
+general_data <- 
+  spoti_clean %>%  
+  group_by(general_name, artist, track_name,  date, region, year, month) %>% 
+  summarise(streams = sum(streams)) %>% 
+  ungroup()
+
+# Select the top
+top_tracks <- 
+  general_data %>% 
+  filter(general_name %in% (tops %>% select(general_name) %>% pull())) %>% 
+  inner_join(tops)
+
+top_positions <- 
+  general_data %>% 
+  group_by(date) %>% 
+  mutate(
+    max = ifelse(max(streams) == streams, 1, 0)) %>% 
+  ungroup() %>% 
+  filter(max ==1) %>% 
+  inner_join(tops) %>% 
+  arrange(date) %>% 
+  mutate(
+    general_name = factor(general_name, levels = unique(top_tracks$general_name))
+  ) 
+
+# Plot
+top_tracks %>%
+  arrange(date) %>% 
+  mutate(
+    general_name = factor(general_name, levels = unique(top_tracks$general_name))
+  ) %>% 
+  ggplot(aes(x = date, y = streams, color = general_name, group = general_name)) +
+  geom_line(show.legend = FALSE, size = 0.6, alpha = 0.3) +
+  geom_line(data = top_positions,
+            aes(
+              x = date,
+              y = streams
+              ),
+            size = 0.8
+            ) +
+  labs(title = "Top songs in Spotify",
+       subtitle = 'jan.2017 - jan.2018') +
+  theme(
+    axis.title = element_blank(),
+    
+    axis.text.x = element_text(size = 10, color = "gray20", angle = 0),
+    axis.text.y = element_blank(),
+    
+    axis.ticks.x = element_blank(),
+    axis.ticks.y = element_blank(),
+    
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    
+    legend.title = element_text(size=10, color = "gray30", face="bold"),
+    legend.text = element_text(size=8, color = "gray30", face="bold"),
+    legend.background = element_blank(),
+    legend.key = element_blank()
+  ) +
+  scale_color_discrete(name = "Song names:")
+  
+
+
+
+
+#################################################################
+#                                                               #
+#                             Objective:                        #
+#     Create a model capable of predicting the probability      #
+#  of a song becoming top hit (at least position no. 30) based  #
+#                        on their features.                     #
+#                                                               #
+#            Model used: Logistic Regresseion                   #
+#                                                               #
+#                                                               #
+#                                         Upload in 02/04/2019  #
+#################################################################
+
+# We create a seed for replation purpose
+set.seed(123)
+
+
+# Read ----------------------------------------------------------
+
+# Feautres
+spotify_features <- 
+  fread(here('featuresdf.csv'))
+
+# Top positions data
+spotify_data <- 
+  fread(here('data.csv'))
+
+
+# Data preparation ----------------------------------------------
+
+# Clean data
+spoti_clean <- 
+  spotify_data %>% 
+  #filter(Region == 'global') %>% 
+  sample_n(0.7*nrow(spotify_data), replace = FALSE) %>%   # Sample of 40%
+  clean_names() %>% 
+  mutate(
+    date = as.Date(date, '%Y-%m-%d'),
+    year = year(date),
+    month = month(date),
+    track_name = clean_rows_name(track_name),
+    artist = clean_rows_name(artist),
+    track_name = ifelse(str_detect(track_name, 'Despacito') == T, 'Despacito', track_name), # Problems detected with this song, merging.
+    general_name = paste0(artist, ': ', track_name),
+    id = substr(url, 32, nchar(url)-1)                    # Id for joining features vs position
+  ) %>%
+  filter(track_name != '' & artist != '')
+
+# Cleaning features
+features_clean <- 
+  spotify_features %>% 
+  clean_names() %>% 
+  mutate(
+    name = clean_rows_name(name),
+    artists = clean_rows_name(artists),
+    name = ifelse(str_detect(name, 'Despacito') == T, 'Despacito', name),
+    general_name = paste0(artists, ': ', name)
+  ) %>%
+  filter(name != '' & artists != '')                      # Rows without a name/artist
+
+
+# Songs best position achieved code
+tops_achieved <- 
+  top_spotify %>% 
+  filter(region == 'global') %>% 
+  select(id, position) %>% 
+  unique() %>% 
+  group_by(id) %>% 
+  summarise(min_position = min(position)) %>% 
+  ungroup() %>% 
+  arrange(min_position)
+
+# Counting per position
+data_plot <- 
+  tops_achieved %>% 
+  group_by(min_position) %>% 
+  summarise('Number of Tracks' = n()) %>% 
+  ungroup() %>% 
+  mutate(cum_position = cumsum(`Number of Tracks`))
+
+# Plots the Number of songs rank by its position
+library(ggthemes)
+data_plot %>% 
+  ggplot(aes(x = min_position, y = cum_position)) +
+  geom_point(color = 'darkblue', size = 0.2) +
+  geom_rangeframe() +
+  theme_tufte() +
+  geom_vline(xintercept = 25, color = 'darkred', size = 1)
+  
+
+# Logistic Model 
+# Data preparation
+position_test <- 
+  tops_achieved %>% 
+  inner_join(features_clean %>% 
+              select(danceability, energy, loudness, mode, speechiness, 
+                     acousticness, instrumentalness, liveness, valence, 
+                     key, id)) %>% 
+  mutate(
+    state = ifelse(min_position < 25, 1, 0),                # Threshold for analysis
+    state = factor(state),
+    mode = factor(mode)
+    ) %>% 
+  as.data.table()
+
+# Training set
+model_train_test <- 
+  position_test %>% 
+  sample_n(0.6*nrow(position_test), replace = FALSE) %>%     # 50% used
+  unique()
+
+input_model <- 
+  model_train_test %>% 
+  select(-id, -min_position)
+
+
+# Logistic fitting
+logit_complete_test <- 
+  glm(state ~ . -1, 
+      data = input_model, 
+      family = "binomial")
+summary(logit_complete_test)
+
+# Test Set
+model_test_test <- 
+  position_test %>% 
+  filter(!(id %in% model_train_test$id))                   # 'IDs' didn't use during the training stage
+
+# Prediction employing the test set
+pred_test <- predict(logit_complete_test, model_test_test, type="response")
+
+
+# Reviewing results obtained
+output_test <- 
+  cbind(model_test_test, pred_test) %>% 
+  mutate(
+    yhat_test = ifelse(pred_test > 0.5, 1, 0),
+    acc = ifelse(state == yhat_test, 1, 0)
+  ) %>% 
+  as.data.table()
+
+output_test$acc %>% sum / nrow(output_test)
+
+
+output_test %>% 
+  filter(state == 1) %>% 
+  nrow()
+
+output_test %>% 
+  filter(state == 0) %>% 
+  nrow()
+

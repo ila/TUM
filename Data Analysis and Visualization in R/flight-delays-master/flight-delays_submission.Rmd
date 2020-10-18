@@ -1,0 +1,737 @@
+---
+title: "Case Study I: 2015 Flight Delays and Cancellations"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+```{r include=FALSE}
+# Configure standard settings for knitr in this .Rmd
+knitr::opts_chunk$set(echo = TRUE,
+                      error = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+# Introduction and goals
+This case study aims to perform quality assessment, regression and clustering on a dataset published by DOT's Bureau of Transportation Statistics containing information obtained in 2015 about the on-time performance of domestic flights operated by large air carriers.
+
+To address different correlation metrices, two external datasets with passengers per airport and weather data is added.
+
+# Environment preparation
+```{r setup, results="hide"}
+# install pacman if not already installed
+if(!require("pacman")) install.packages("pacman")
+# check all required packages, install if necessary and then load them
+pacman::p_load(ggplot2, GGally, corrplot, scales, gridExtra, tidyr,
+              lubridate, grid, ggpubr, RColorBrewer, dplyr, visNetwork,
+              ggforce, waffle, reshape2, cluster, fpc, NbClust, 
+              data.table, network, ggraph, factoextra, maps, mapproj)
+```
+
+# Data input
+```{r data-input}
+# setting file path once (easier to change for testing on multiple machines)
+csv_path = "data/"
+image_path = "images/"
+
+# dataset imports into a data frame
+airlines <- fread(paste(csv_path, "airlines.csv", sep=""))
+airports <- fread(paste(csv_path, "airports.csv", sep=""))
+flights <- fread(paste(csv_path, "flights.csv", sep=""))
+passengers <- fread(paste(csv_path, "passengers-per-airport.csv", sep=""))
+```
+First considerations about input show in the raw dataset:
+
+* 14 airlines;
+* 322 airports;
+* 5 819 079 flights.
+
+This information needs to be subject of cleansing and quality checks.
+
+# Structure of Data and Quality Assessment 
+```{r data-cleansing}
+nrow(flights[complete.cases(flights), ])
+nrow(airlines[complete.cases(airlines), ]) 
+nrow(airports[complete.cases(airports), ]) 
+```
+Only 20% of data is complete on flights: this is likely because in case of no delay there is NA, therefore to obtain a more comprehensive insight it is possible to check whether there are NA in the other columns (the first 23).
+```{r structure-of-data-1}
+nrow(flights[complete.cases(flights[, 1:23]), ])
+```
+This gives a better result. Now it is a good idea to zoom on the incomplete values and understand which columns they belong to.
+```{r structure-of-data-2}
+# which columns actually have NA (or infinite)?
+na_inf_airlines <- apply(airlines, 2, function(x) any(is.na(x) | is.infinite(x)))
+
+# extraction of column names
+# apply returns a named logical vector of which the true columns are extracted
+names(na_inf_airlines[na_inf_airlines])  # null (nothing is missing)
+
+na_inf_airports <- apply(airports, 2, function(x) any(is.na(x) | is.infinite(x)))
+names(na_inf_airports[na_inf_airports])  
+na_inf_flights <- apply(flights, 2, function(x) any(is.na(x) | is.infinite(x)))
+names(na_inf_flights[na_inf_flights])  # delay, departure, arrival
+```
+The preliminary result on a first check on null values gives that the overall presence of complete information is good: airlines are all present, while only 3 airports are missing just latitude or longitude. Since the analysis does not concern spatial analysis of airports and the information can be obtained through external sources, all airports can be used.
+
+Flights are concerned by the biggest amount of missing data: this is either due to inaccuracy, or (rather) to lack of flight delay (or specific kinds of delay). 
+
+More information on the weight of NA on flights needs to be therefore acquired. Since departure and arrival time are essential fields for analysis, all flights with NA must be removed.
+
+# Data Preprocessing 
+```{r data-preprocessing-1}
+flights <- flights[complete.cases(flights$DEPARTURE_TIME)]
+flights <- flights[complete.cases(flights$ARRIVAL_TIME)]
+# 5 726 566
+```
+After completing assessment of null and zero values, it is necessary to perform an evaluation of the correctness of information.
+
+Some flights have origin or destination airport not present in the dataset, hence they must be removed as well.
+```{r data-preprocessing-2}
+# removing incorrect IATA codes
+flights <- flights[flights$ORIGIN_AIRPORT %in% airports$IATA_CODE]
+flights <- flights[flights$DESTINATION_AIRPORT %in% airports$IATA_CODE]
+
+nrow(flights)
+
+nrow(flights[flights$AIRLINE %in% airlines$IATA_CODE, ]) # same number (all correct)
+```
+## Exploratory analytics
+After removing incorrect values, it is possible to begin analysing delays with simple statistics.
+```{r exploratory-analytics-1}
+# checking how many flights left/arrived with delay
+nrow(flights[complete.cases(flights$DEPARTURE_DELAY)])
+nrow(flights[complete.cases(flights$ARRIVAL_DELAY)])
+
+# further checking whether the dataset contains zero
+nrow(flights[which(flights$DEPARTURE_DELAY == 0), ])
+nrow(flights[which(flights$ARRIVAL_DELAY == 0)])
+
+# checking negative values on departure and arrival delay
+nrow(flights[which(flights$DEPARTURE_DELAY < 0), ])
+nrow(flights[which(flights$ARRIVAL_DELAY < 0)])
+nrow(flights[which(flights$DEPARTURE_DELAY < 0 & flights$ARRIVAL_DELAY < 0), ])
+```
+Since research is focussed on flight delays, information about flights arriving on time or early can be removed.
+```{r exploratory-analytics-2}
+# keeping flights that leave late or arrive late
+flights <- flights[which(flights$DEPARTURE_DELAY > 0 | flights$ARRIVAL_DELAY > 0), ]
+```
+Considerations:
+
+* Most flights leave and arrive with delay;
+* A small part of the flights leaves or arrives in advance, but hardly ever both at the same time;
+* It happens more often that a flight arrives with delay rather than leaves.
+
+Counting the number of flights with delays per airline gives:
+```{r exploratory-analytics-3}
+flights[ARRIVAL_DELAY > 0, .N, by = AIRLINE][order(-N)]
+```
+Having available information related to months and days gives a good opportunity to perform time series analysis. An instance of that is weather delays, which is briefly shown below to be looked into in the further part of the work.
+```{r exploratory-analytics-4}
+avg_delay_month <- flights[WEATHER_DELAY > 0, mean(WEATHER_DELAY),  by = MONTH]
+
+avg_delay_month$MONTH <- as.factor(avg_delay_month$MONTH)
+
+ggplot(avg_delay_month, aes(x=MONTH, y=V1)) + 
+  labs(x="Month", y="Average weather delay in minutes") + 
+  geom_bar(stat="identity")
+```
+Mean and variance are also potentially interesting indicators to show anomalies and general trends.
+```{r exploratory-analytics-5}
+# 5 airports with the biggest number of incoming flights
+flights[, .N, by = DESTINATION_AIRPORT][order(-N)][1:10]
+
+# mean and standard deviation of number of incoming flights
+mean(flights[, .N, by = DESTINATION_AIRPORT]$N)
+sd(flights[, .N, by = DESTINATION_AIRPORT]$N)
+
+# same thing with outcoming flights
+flights[, .N, by = ORIGIN_AIRPORT][order(-N)][1:10]
+
+mean(flights[, .N, by = ORIGIN_AIRPORT]$N)
+sd(flights[, .N, by = ORIGIN_AIRPORT]$N)
+```
+In presence of a null value, there are two feasible choices: replacing them with 0 (no delay) or ignoring them while computing statistics.
+```{r exploratory-analytics-6}
+# mean arrival and departure delay (without NA)
+mean(flights$DEPARTURE_DELAY, na.rm = TRUE)
+mean(flights$ARRIVAL_DELAY, na.rm = TRUE)
+
+# mean arrival and departure delay (assuming NA = 0)
+flights0 <- copy(flights)  # copy to avoid reference
+flights0[is.na(flights0)] <- 0
+mean(flights0$DEPARTURE_DELAY)
+mean(flights0$ARRIVAL_DELAY)
+```
+The two results for mean and standard deviation are similar: to understand what dataset to use, it can be seen how many NA values get replaced in practice.
+```{r exploratory-analytics-7}
+flights[(is.na(ARRIVAL_DELAY)), .N, ]
+flights[(is.na(DEPARTURE_DELAY)), .N, ]
+flights[(DEPARTURE_DELAY == 0), .N, ]
+flights[(ARRIVAL_DELAY == 0), .N, ]
+```
+The number of missing values is a very small percentage compared to the total amount of available data. Those, however, need to be taken into account and filtered while performing analysis and statistics on delays.
+```{r exploratory-analytics-8}
+# mean arrival and departure delay for each airport
+mean(flights$DEPARTURE_DELAY, na.rm = TRUE)
+mean(flights$ARRIVAL_DELAY, na.rm = TRUE)
+
+# mean arrival and departure delay for each airline
+flights[, mean(DEPARTURE_DELAY), by = AIRLINE][order(-V1)]
+flights[, mean(ARRIVAL_DELAY), by = AIRLINE][order(-V1)]
+
+# airlines with their number of delayed arrivals
+flights[(DEPARTURE_DELAY > 0), .N, by = AIRLINE][order(-N)]
+flights[(ARRIVAL_DELAY > 0), .N, by = AIRLINE][order(-N)]
+```
+After performing the first general analysis, it is possible to begin with more detailed results.
+
+
+# Map of all Airports in the U.S. with number of flights as weights
+In order to obtain a great overview about the data we proceed to generate a point map with connections in between flights, these for descriptive analysis purposes.
+**Unfortunately the Map isn't correctly shown in the output PDF. The edges are missing. Please run the following code snippet in RStudio if interested in the correct graphical representation of the Map.**
+```{r map}
+set.seed(123)
+flights_samp <- sample_n(flights, nrow(flights)*0.005)
+
+data_maps <- 
+  flights_samp %>% 
+  inner_join(
+    airports %>% 
+      select(IATA_CODE,  LATITUDE,  LONGITUDE) %>% 
+      set_names(c('air_orig', 'lat_orig', 'long_orig')),
+    by = c('ORIGIN_AIRPORT' = 'air_orig')
+  ) %>% 
+  left_join(
+    airports %>% 
+      select(IATA_CODE,  LATITUDE,  LONGITUDE) %>% 
+      set_names(c('air_dest', 'lat_dest', 'long_dest')),
+    by = c('DESTINATION_AIRPORT' = 'air_dest')
+  ) %>% 
+  select(FLIGHT_NUMBER, ORIGIN_AIRPORT, lat_orig, long_orig)
+
+connections_flight <- 
+  flights_samp %>% 
+  inner_join(
+    airports %>% 
+      select(IATA_CODE,  LATITUDE,  LONGITUDE) %>% 
+      set_names(c('air_orig', 'lat_orig', 'long_orig')),
+    by = c('ORIGIN_AIRPORT' = 'air_orig')
+  ) %>% 
+  left_join(
+    airports %>% 
+      select(IATA_CODE,  LATITUDE,  LONGITUDE) %>% 
+      set_names(c('air_dest', 'lat_dest', 'long_dest')),
+    by = c('DESTINATION_AIRPORT' = 'air_dest')
+  ) %>% 
+  select(contains('long_'), contains('lat_')) %>% 
+  drop_na()
+
+total_maps <- 
+  data_maps %>%
+  group_by(ORIGIN_AIRPORT, lat_orig, long_orig) %>% 
+  count() %>% 
+  ungroup() %>% 
+  unique() %>% 
+  arrange(n) %>% 
+  as.data.table() %>% 
+  drop_na() %>% 
+  filter(n > quantile(n, 0.5)) %>% 
+  left_join(
+    airports %>% 
+      select(-LATITUDE, -LONGITUDE),
+    by = c('ORIGIN_AIRPORT' = 'IATA_CODE')
+  ) %>% 
+  unique()
+
+
+usa <- map_data("world") # we already did this, but we can do it again
+ggplot() + 
+  geom_polygon(data = usa, 
+               aes(x=long, y = lat, group = group),
+               colour = "gray60", fill = 'gray92') +
+  coord_map("polyconic", xlim=c(-160, -60), ylim=c(10, 60)) +
+  geom_point(data = total_maps, 
+             aes(x=long_orig, y = lat_orig, size = n),
+             color = 'steelblue',
+             alpha = 0.35) +
+  theme(
+    panel.background = element_rect(fill = "white"),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    
+    axis.ticks.x = element_blank(),
+    axis.ticks.y = element_blank(),
+    
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank(),
+    
+    legend.position="none"
+    ) +
+  geom_segment(
+    data = connections_flight ,
+    aes(x = long_orig, y = lat_orig, xend = long_dest, yend = lat_dest),
+    size = 0.0005, alpha = 0.002, color = 'red4'
+    ) 
+```
+
+# Network of U.S. airports that highlights centrality of a few big airports
+After performing a point map visualization, it was concluded that the most viable option was to analyze the data as a whole network. The next plot highlight the most relevant airports within the United States territory. The nodes represents the airportes, meanwhile, the number of flights are shown by the links of the network. It can be observed that the nearer one node is from another, the more connections these airports have.  
+
+**The Network is interactive and therefore can't be compiled to a PDF. Therefore we excluded it. Please run the following code snippet in RStudio if interested in the interactive network.**
+```{r network}
+general_data <- 
+  flights_samp %>% 
+  inner_join(
+    airports %>% 
+      select(IATA_CODE,  LATITUDE,  LONGITUDE) %>% 
+      set_names(c('air_orig', 'lat_orig', 'long_orig')),
+    by = c('ORIGIN_AIRPORT' = 'air_orig')
+  ) %>% 
+  left_join(
+    airports %>% 
+      select(IATA_CODE,  LATITUDE,  LONGITUDE) %>% 
+      set_names(c('air_dest', 'lat_dest', 'long_dest')),
+    by = c('DESTINATION_AIRPORT' = 'air_dest')
+  ) %>% 
+  select(YEAR, AIRLINE, FLIGHT_NUMBER, ORIGIN_AIRPORT, 
+         DESTINATION_AIRPORT, lat_orig, long_orig, lat_dest, long_dest)
+
+general_flights_orig <- 
+  general_data %>% 
+  group_by(ORIGIN_AIRPORT, DESTINATION_AIRPORT) %>% 
+  summarise(flights_orig = n()) %>% 
+  ungroup() %>% 
+  select(ORIGIN_AIRPORT, DESTINATION_AIRPORT, flights_orig) %>% 
+  arrange(ORIGIN_AIRPORT, DESTINATION_AIRPORT)
+
+general_flights_dest <- 
+  general_data %>% 
+  group_by(DESTINATION_AIRPORT, ORIGIN_AIRPORT) %>% 
+  summarise(flights_dest = n()) %>% 
+  ungroup() %>% 
+  select(ORIGIN_AIRPORT, DESTINATION_AIRPORT, flights_dest) %>% 
+  arrange(DESTINATION_AIRPORT, ORIGIN_AIRPORT)
+
+
+
+# PLOTS
+nodes_prev <- 
+  general_data %>% 
+  select(ORIGIN_AIRPORT) %>% 
+  unique() %>% 
+  set_names("airports") %>% 
+  rbind(general_data %>% 
+          select(DESTINATION_AIRPORT) %>% 
+          unique() %>% 
+          set_names("airports")) %>% 
+  arrange(airports) %>% 
+  unique()
+
+links_prev <- 
+  general_flights_orig %>% 
+  left_join(general_flights_dest,
+            by = c("ORIGIN_AIRPORT" = "DESTINATION_AIRPORT",
+                   "DESTINATION_AIRPORT" = "ORIGIN_AIRPORT")) %>% 
+  set_names(c("departure_airport", "arrival_airport", "num_departures", "num_arrivals"))
+
+
+nodes <- 
+  nodes_prev %>% 
+  left_join(
+    links_prev %>% 
+      replace(., is.na(.), 0) %>% 
+      mutate(total = num_departures + num_arrivals) %>% 
+      group_by(departure_airport) %>% 
+      summarise(total_airport = sum(total)) %>% 
+      ungroup(),
+    by = c("airports" = "departure_airport")
+  ) %>% 
+  set_names(c("id", "total")) %>% 
+  mutate(
+    total = if_else(is.na(total), 0, total),
+    max_total = max(total, na.rm = T),
+    min_total = min(total, na.rm = T),
+    #value = (1-(max_total - total)/(max_total - min_total))*10000,
+    value = total*200,
+    title = id
+  ) 
+
+links <- 
+  links_prev %>% 
+  select(departure_airport, arrival_airport, num_departures) %>% 
+  set_names(c("from", "to", "flights"))
+
+
+#as_data_frame(net, what="edges")
+#as_data_frame(net, what="vertices")
+
+nodes_ <-
+  nodes %>% 
+  #setnames(c('id', 'total', 'max_total', 'min_total', 'value', 'total_stn_1')) %>% 
+  filter(value > quantile(value, 0.9)) %>% 
+  arrange(desc(value)) %>% 
+  mutate(
+    label = id
+    #shape='circle'
+    #font.size = (value/max(value))
+    )
+
+nod_unique <- 
+  nodes_$id %>%
+  unique()
+
+edges <- 
+  links %>% 
+  filter(from %in% nod_unique, to %in% nod_unique) 
+
+
+visNetwork(nodes_, edges,  width = 800) %>% 
+# visInteraction(dragNodes = FALSE, dragView = FALSE, zoomView = FALSE) %>% 
+  visPhysics(solver = "forceAtlas2Based", forceAtlas2Based = list(gravitationalConstant = -15)) %>% 
+  visNodes(color = list(background = '#CCE5FF', border = "black")) %>% 
+  visEdges(color = list(color = 'rgba(1,1,1,0.15)', highlight ="black"),
+           font = list(strokeWidth = 0.5),
+           smooth = list(roundness = 1)) %>% 
+  addFontAwesome() %>% 
+  visLayout(randomSeed = 12)
+```
+# Correlation between size of an airport and average delay of flights
+## Passengers data set
+The data set for all airports in the U.S. was collected from the Federal Aviation Administration. It includes the passenger count for each airport in the U.S. in 2015.
+
+First, the data set is read and briefly analysed for all airports in the U.S ("passengers-per-airport.csv"). There are 9 airports with no passengers data found, when combining the passengers data set with the original data set. Cross-checking with Wikipedia, none of them is in the top 60 (2017/2018) of U.S. airports by passengers boarding count. This means all missing airports are smaller airports, which could be expected.
+```{r corr-pass-1}
+# yearly passengers per airport
+passengers <- fread(paste(csv_path, "passengers-per-airport.csv", sep=""))
+head(passengers)
+
+pass_small <- passengers[,c(4,9)]
+setnames(pass_small,"Locid", "IATA_CODE")
+setnames(pass_small,"CY 15 Enplanements", "passengers_count")
+pass_small[, passengers_count := as.numeric(gsub(",", "", passengers_count))]
+
+airports_pass <- merge(airports, pass_small, by="IATA_CODE", all.x = TRUE)
+
+# checking for NAs
+# result: for some airports there is no passengers_count and for some no lat/long data
+airports_pass[!complete.cases(airports_pass)]
+sum(!complete.cases(airports_pass))
+nrow(airports)
+
+# deleting all airports that don't have a passenger count
+nrow(airports_pass)
+airports_pass <- airports_pass[complete.cases(airports_pass[,passengers_count])]
+```
+
+Next, it is a good idea to visualize some interesting graphs with the passengers data, including correlation.
+
+We start with looking at how the passengers data looks like:
+```{r corr-pass-2}
+colnames(airports_pass)
+head(airports_pass[order(passengers_count)])
+ggplot(airports_pass, aes(x=passengers_count,y=)) +
+  geom_histogram(bins = 30) +
+  scale_x_log10(breaks=c(1000, 10000, 100000, 1000000, 10000000), labels = scales::comma) +
+  labs(x = 'Number of passengers of an airport',
+       y = 'Number of airports',
+       title = 'Histogram: Most U.S. airports have 80.000 to 1.000.000 passengers')
+
+```
+
+Then we do some data manipulation for later use, e.g. calculate how many flights start at an airport.
+```{r corr-pass-3}
+# extracting the relevant columns of flights
+flights_small <- flights[,.(ORIGIN_AIRPORT, DESTINATION_AIRPORT, DEPARTURE_DELAY, ARRIVAL_DELAY)]
+
+# calculating number of flights per airport
+origin_airport_numflights <- flights_small[,.(FLIGHTS_COUNT = .N), by = ORIGIN_AIRPORT]
+
+# calculating mean delay per airport
+origin_airport_delay <- flights_small[, .(mean_D_DELAY = mean(DEPARTURE_DELAY,na.rm=T)), by = ORIGIN_AIRPORT]
+
+# calculating mean delay per airport, ignoring negative delay (flight left too early)
+origin_airport_delay_pos <- flights_small[DEPARTURE_DELAY > 0, 
+                            .(mean_D_DELAY = mean(DEPARTURE_DELAY,na.rm=T)),
+                            by = ORIGIN_AIRPORT]
+
+# Merge the number of flights with passenger count per airport
+origin_airport_numflights_pass <- merge(origin_airport_numflights,airports_pass,by.x="ORIGIN_AIRPORT",by.y="IATA_CODE") 
+origin_airport_numflights_pass <- origin_airport_numflights_pass[,c("ORIGIN_AIRPORT", "FLIGHTS_COUNT", "passengers_count")]
+origin_airport_numflights_pass <- origin_airport_numflights_pass[,pass_per_flight := passengers_count/FLIGHTS_COUNT]
+
+# merge the delay with the passengers count per airport
+origin_airport_delay_pass <- merge(origin_airport_delay, airports_pass, by.x="ORIGIN_AIRPORT", by.y="IATA_CODE")
+origin_airport_delay_pos_pass <- merge(origin_airport_delay_pos, airports_pass, by.x="ORIGIN_AIRPORT", by.y="IATA_CODE") 
+```
+
+The 20 biggest airports in the U.S.:
+```{r corr-pass-4}
+# order airports by number of passengers in 2015
+airports_pass_ordered <- airports_pass[order(-passengers_count)]
+
+# plot 20 biggest airports in the U.S.
+ggplot(airports_pass_ordered[1:20], aes(reorder(IATA_CODE,-passengers_count),passengers_count)) +
+  geom_bar(stat='identity') + 
+  labs(y = "Number of passengers",
+       x = "Airport",
+       title = "20 biggest airports in the U.S. by passengers") +
+  scale_y_continuous(labels = scales::comma)
+```
+
+## Correlation between number of passengers and total number of flights starting at an airport
+```{r corr-pass-5}
+str(origin_airport_numflights_pass)
+ggplot(origin_airport_numflights_pass, aes(x=passengers_count, y=FLIGHTS_COUNT)) +
+  geom_point() +
+  annotate("text", x=1420500, y=450, label="GUM") + # 334 flights
+  annotate("text", x=87321, y=45, label="ITH") +    # 34 flights
+  scale_x_log10(labels = scales::comma) +
+  scale_y_log10(labels = scales::comma) +
+  labs(x = "Number of passengers of an airport",
+       y = "Number of flights starting at an airport",
+       title = "Two outliers for passengers per flight")
+```
+The airports "GUM" (Guam International Airport) and "ITH" (Ithaca Tompkins Regional Airport) look interesting because they have not enough flights for their number of passengers.
+```{r}
+origin_airport_numflights_pass[ORIGIN_AIRPORT == "ITH" | ORIGIN_AIRPORT =="GUM"]
+airports[IATA_CODE == "ITH" | IATA_CODE == "GUM"]
+```
+
+## Correlation between number of passengers and mean delay of flights
+When including negative delay (meaning the flight started early) only a small positive correlation between the number of passengers and the mean departure delay can be seen. But when only including positive delay (meaning real delay, the flight started too late) a stronger negative correlation can be seen in the data. It can be argued that including only positive delay is the better metric, because the goal is to see when flights are delayed and not when the leave early.
+```{r corr-pass-6}
+ggplot(origin_airport_delay_pass, aes(passengers_count,mean_D_DELAY)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se=F) +
+  scale_x_log10(labels = scales::comma) +
+  labs(x = 'Number of passengers',
+       y = 'Mean of departure delay (incl. negative delay)',
+       title = 'Correlation of departure delay and size of an airport')
+
+ggplot(origin_airport_delay_pos_pass, aes(passengers_count,mean_D_DELAY)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se=F) +
+  scale_x_log10(labels = scales::comma) +
+  labs(x = 'Number of passengers',
+       y = 'Mean of departure delay (excl. negative delay)',
+       title = 'Correlation of departure delay and size of an airport')
+```
+
+# Correlation between weather data and delay in Chicago
+## Correlation between weather delay and departure delay or flight time delay 
+To find out if the weather delay is caused by the weather of departure airports or the weather of arrival airports, we calculate the correlation between weather delay and departure delay, and the correlation between weather delay and flight time delay.  
+```{r corr-weather-1}
+# delete cancelled and diverted flights
+flights1 <- subset(flights0, CANCELLED ==  0 & DIVERTED == 0)
+
+# plotting departure delay caused by wheather
+flights_weatherdly <- flights1[flights1$WEATHER_DELAY > 0]
+
+cor(flights_weatherdly$DEPARTURE_DELAY, flights_weatherdly$WEATHER_DELAY)
+
+ggplot(flights_weatherdly, 
+  aes(flights_weatherdly$WEATHER_DELAY, flights_weatherdly$DEPARTURE_DELAY)) + 
+  geom_point(size=0.1) + 
+  geom_smooth(method = "lm", se=F) +
+  labs(x = 'Weather delay',
+       y = 'Departure delay',
+       title = 'Departure delay caused by weather')
+```
+Correlation between departure delay and weather delay is 0.75. we can see a high correlate through the scatter plot.
+
+We calculate the flight time delay to measure the weather delay caused by bad weather of arrival airports. 
+```{r corr-weather-2}
+# calculating flight time delay
+flights_weatherdly$FLIGHTTIME_DELAY <- flights_weatherdly$ARRIVAL_DELAY -
+  flights_weatherdly$DEPARTURE_DELAY
+
+# plotting flight time daley cause by wheather
+cor(flights_weatherdly$FLIGHTTIME_DELAY, flights_weatherdly$WEATHER_DELAY)
+ggplot(flights_weatherdly, 
+  aes(flights_weatherdly$WEATHER_DELAY, flights_weatherdly$FLIGHTTIME_DELAY)) + 
+  geom_point(size=0.1) + 
+  labs(x = 'Weather delay',
+       y = 'Flight time delay discard departure',
+       title = 'Flight time delay caused by weather')
+
+```
+Correlation between flight time delay and weather delay is close to 0. Since the weather of arrival airports has a slight effect on weather delays, we can simply look at the weather of departure airports.
+
+##Find the airport with the most weather delayed flights
+After having a general assessment of how weather delay behaves, it is possible to zoom on specific airports.
+```{r corr-weather-3}
+# finding worst wheater airport
+org_airport <- table(flights_weatherdly$ORIGIN_AIRPORT)
+
+airport_sort <- sort(org_airport, decreasing = T)
+barplot(airport_sort[1:20],
+        xlab="Airport", 
+        ylab="Number of delayed flights due to weather", 
+        main="Top 20 airports with the most flights delayed due to weather", 
+        ylim=c(0, 10000))
+```
+The airport with the biggest weather delay is ORD (Chicago O'Hare). Since daily weather data is publicly available, weather delay can be crossed with weather during the year.
+
+The daily weather data set for Chicago O'Hare international airport was collected from wunderground.com. It recorded daily weather of Chicago O'Hare international airport including temperature, dew point, humidity, wind speed, pressure, and precipitation.
+```{r corr-weather-4}
+# importing daily ORD weather
+ORD_weather <- fread(paste(csv_path, "weatherORD.csv", sep=""))
+
+# weather delay ORD departure flight
+ORD_departure_flight <- subset(flights_weatherdly, ORIGIN_AIRPORT == "ORD")
+
+# joining the datasets
+ORD_departure_flight$MONTH <- as.integer(ORD_departure_flight$MONTH)
+ORD_departure_flight <- left_join(ORD_departure_flight, 
+                                  ORD_weather, by = c("MONTH", "DAY"))
+
+barplot(table(ORD_departure_flight$MONTH),
+        xlab="Month", 
+        ylab="Delayed flights due to weather", 
+        main="Weather delayed flights number in each month at airport ORD",
+        ylim=c(0, 2500))
+```
+It is clear to see that the mostly delayed flights are in January and February. For those months, it is possible to see what influenced the most the delays.
+
+##Correlation between delays and weather factors
+```{r corr-weather-5}
+ORD_departure_Jan <- subset(ORD_departure_flight, MONTH == 1)
+ORD_departure_Feb <- subset(ORD_departure_flight, MONTH == 2)
+
+# correlation between delay and wheather
+res3 <- cor(ORD_departure_Jan$DEPARTURE_DELAY, ORD_departure_Jan %>% select(33:48))
+round(res3, 2)
+corrplot(res3, 
+         tl.cex = 0.8, 
+         tl.col = "gray29", 
+         cl.pos = "n", 
+         title = "Correlation between weather factors and weather delay")
+
+#res4 <- cor(ORD_departure_Feb$DEPARTURE_DELAY, ORD_departure_Feb %>% select(33:48))
+#round(res4, 2)
+
+```
+For delayed flights in January, departure delay has a higher correlation with minimum temperature, minimum dew point, maximum wind speed, and maximum pressure.
+The delay flights in February has no correlation with any of these weather factors. (Still need more research in this part.)
+```{r corr-weather-6}
+# correlation matrix of weather factors
+cor_weather <- ORD_weather %>% select(3:18)
+res <- cor(cor_weather)
+corrplot(res, tl.cex = 0.8, tl.col = "gray29")
+```
+Since temperature, dew point, and maximum pressure have a high correlation according to the correlation matrix, we choose only minimum dew point and maximum wind speed as independent variables of the regression model.
+```{r corr-weather-7}
+# Regression analysis
+Jan_two_var <- lm(DEPARTURE_DELAY ~ Dew_Point_Min + Wind_Speed_Max, 
+                  data = ORD_departure_Jan)
+summary(Jan_two_var)
+
+```
+
+
+# Additional Analyses with the data set
+## Catch-Up Rate of different airlines
+The purpose of this analysis is understanding whether a flights which leaves late is able to arrive on time (catch-up with the delay).
+```{r catch-up-rate}
+# extracting flights with departure delay but arrival on time
+dep_dly_arrv_ontime <- subset(flights1, DEPARTURE_DELAY > 15 & ARRIVAL_DELAY <= 15)
+catchup_count <- table(dep_dly_arrv_ontime$AIRLINE)
+
+# extracting flights with noticeable departure delay
+dep_dly <- subset(flights1, DEPARTURE_DELAY > 15)
+delay_count <- table(dep_dly$AIRLINE)
+
+# catch-up rate of airlines
+sort((catchup_count/delay_count)*100, decreasing = T)
+```
+UA has a catch-up rate of almost 30%, which means flights departing more than 15 minutes late have 30% probability to still arrive on time.
+
+## Clustering
+Clustering of airports can be performed using:
+
+* Average distance of outcoming flights;
+* Average number of outcoming flights;
+* Average number of incoming flights;
+* Average number of passengers.
+
+This will likely group the airports in big/small, and delays can be compared according to the clusters.
+```{r clustering-1}
+passengers <- select(airports_pass, IATA_CODE, passengers_count)
+
+flights_cluster <- flights[, .(as.integer(mean(DISTANCE, na.rm = TRUE))), by = .(ORIGIN_AIRPORT)]
+
+outcoming_flights <- flights[ , .N, by = ORIGIN_AIRPORT]
+names(outcoming_flights)[1] <- "IATA_CODE"
+
+incoming_flights <- flights[ , .N, by = DESTINATION_AIRPORT]
+names(incoming_flights)[1] <- "IATA_CODE"
+
+names(flights_cluster)[1] <- "IATA_CODE"
+
+flights_cluster <- merge(flights_cluster, passengers, by = "IATA_CODE")
+flights_cluster <- merge(flights_cluster, incoming_flights, by = "IATA_CODE")
+flights_cluster <- merge(flights_cluster, outcoming_flights, by = "IATA_CODE")
+
+flights_cluster <- na.omit(flights_cluster)
+flights_cluster$passengers_count <- as.integer(flights_cluster$passengers_count)
+
+# converting to data frame because of row naming
+flights_cluster <- data.frame(flights_cluster)
+row.names(flights_cluster) <- flights_cluster$IATA_CODE
+flights_cluster$IATA_CODE <- NULL
+
+colnames(flights_cluster) <- c("Distance", "Passengers", "Incoming flights", "Outcoming flights")
+
+```
+The chosen clustering algorithm is k-means, since it is a simple approach and data is suitable. To calculate the number of clusters, NbClust offers different indexes.
+```{r clustering-2}
+# different indexes to calculate k
+ncluster <- NbClust(flights_cluster, min.nc=2, max.nc=20, method="centroid")
+
+# 4 clusters
+set.seed(1234)
+clusters <- kmeans(flights_cluster, centers=4, iter.max=100, nstart=25)
+
+clusters$size
+clusters$centers
+
+# plotting clusters
+fviz_cluster(clusters, data = flights_cluster)
+```
+A feasible criteria for grouping is:
+
+* Medium/big airports with long distance flights (16);
+* Medium airports (28);
+* Huge airports (4);
+* Small airports (265).
+
+```{r clustering-3}
+nrow(flights[ORIGIN_AIRPORT %in% rownames(flights_cluster[clusters$cluster == 1, ])])
+mean(flights[ORIGIN_AIRPORT %in% rownames(flights_cluster[clusters$cluster == 1, ])]
+     $DEPARTURE_DELAY, na.rm = TRUE)
+  
+nrow(flights[ORIGIN_AIRPORT %in% rownames(flights_cluster[clusters$cluster == 2, ])])
+mean(flights[ORIGIN_AIRPORT %in% rownames(flights_cluster[clusters$cluster == 2, ])]
+     $DEPARTURE_DELAY, na.rm = TRUE)
+
+nrow(flights[ORIGIN_AIRPORT %in% rownames(flights_cluster[clusters$cluster == 3, ])])
+mean(flights[ORIGIN_AIRPORT %in% rownames(flights_cluster[clusters$cluster == 3, ])]
+     $DEPARTURE_DELAY, na.rm = TRUE)
+
+nrow(flights[ORIGIN_AIRPORT %in% rownames(flights_cluster[clusters$cluster == 4, ])])
+mean(flights[ORIGIN_AIRPORT %in% rownames(flights_cluster[clusters$cluster == 4, ])]
+     $DEPARTURE_DELAY, na.rm = TRUE)
+```
+It can be seen that despite the negative correlation between number of passengers and flight delays, the mean of departure delay is similar for each cluster. The interesting values are related to the number of outcoming flights: just 16 airports (5%) are the origin of 36% of flights.
+
+265 small airports only concern 424 589 flights.
+
+# Conclusion
+After assessing the structure and quality of the data, several flight-entries were excluded from further analysis. Including flights from unknown airports and flights with missing departure or arrival time. Furthermore, the analysis shows that most flights in the U.S. start at very few big airports. 
+Correlating the captured delays of flights with external datasets for passengers per airport and weather in Chicago lead to two conclusions: First, the size of an airport seems to positively impact the mean delay at that airport. Meaning there is a negative correlation between size of an airport and mean delay of flights starting at that airport. Second, unsurprisingly, the real weather in Chicago correlates with the weather delay of flights in Chicago, with low temperature, high wind speed and high pressure being the most important factors.
