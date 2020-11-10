@@ -72,6 +72,27 @@ Optimization approaches can be:
 \subsection{Query Execution}
 Query execution is the last step, the one directly benefiting from optimization. In reality, operators can perform extremely specialized operations, treating data as bags (sets with duplicates) or streams.
 
+\subsubsection{Relational and physical algebra}
+Relational algebra for query optimization includes the operators of projection, selection and join, plus some additional ones such as mapping and grouping.
 
+However, this does not imply an implementation, which can have a great impact, hence less abstract operators are needed due to stream nature of data (and not sets):
+\begin{itemize}
+	\item Sort, according to criteria;
+	\item Temp, which materializes the input stream making further reads cheaper and releasing memory afterwards;
+	\item Ship, sends the input stream to a different host (for distributed computing).
+\end{itemize}
 
+Furthermore, there are different kind of joins having different characteristics:
+\begin{itemize}
+	\item Nested Loop Join, the textbook implementation which is very slow (quadratic) but supports all predicates;
+	\item Blockwise Nested Loop Join, reading chunks of the first column in memory and then the second one once (requires memory, can be improved using hashing). The left side is read $\frac{\abs{L}}{\abs{M}}$ times, which asymptotically is the same as above but in practice much faster;
+	\item Sort Merge Join, scanning each column only once, but requiring sorted input ($O(n\log n)$ plus linear runtime assuming no duplicates on at least one side);
+	\item Hybrid Hash Join, partitioning columns and joining them in memory (linear time, but working only for equi-joins).
+\end{itemize}
+
+Hash Join is usually the fastest, but with very large amount of data sorting might be more efficient. Nested Loop Join works well when one of the sides has only one tuple.
+
+Other operators also have different implementations, such as aggregation sorting and hashing, whose speed depends on the algorithm (quick sort, heap sort etc.) and can rely or not on memory.
+
+Physical algebra is hence the output of the query optimizer, since it fixes the exact execution runtime and does not stop to the general approach like relational algebra. It mainly helps to select which operator to use before running the query, so that optimization leads to more efficient plans.
 

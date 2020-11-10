@@ -1,0 +1,35 @@
+% !TeX root = ../notes.tex
+
+\section{Textbook Query Optimization}
+Textbook query optimization involves techniques to perform a rough first optimization, which however is quite simple. There is a series of steps to translate raw SQL into logical and physical plans, each of them transforming input in a more optimal form.
+
+The output is going to be executable, but still to be improved by non-trivial methods.
+
+\subsection{Algebra and tuples}
+Plain relational algebra is not sufficient itself: it needs to be revisited ensuring correctness (producing the same result) within a formal model. The most relevant problem to tackle is deciding whether two algebraic expressions are the same, but this in difficult in practice.
+
+For instance, performing a selection before a join might be correct (and faster) in case the considered criterion is equality, but can give a different result than selecting after an outer join. 
+
+To remedy this issue, it is possible to guarantee that two expressions are equivalent, not accepting false positing yet allowing false negatives. 
+
+A formal definition of tuple is an unordered mapping from attribute names to values of a domain. A schema consists in a set of attributes with domain $A(t)$.
+
+Tuple operations are:
+\begin{itemize}
+	\item Concatenation, attaching one tuple to another regardless of ordering (union);
+	\item Projection, producing a notation $t.a$ in which it is possible to access single values or multiple $t_{|\{a, b\}}$, getting a subset of the schema.
+\end{itemize}
+
+A set of tuples with the same schema forms a relation. Sets naturally do not comply with real data, since they not allow duplicates, but are used for simplicity.
+
+In most cases, sets and bags can be used interchangeably, but the optimizer considers different semantics: logical algebra operates on bags, physical algebra on streams and sets are only considered after an explicit duplicate elimination.
+
+Set operations are the classic ones of union, intersection and difference, yet are subject to schema constraints. On bags, operations are performed on frequencies. 
+
+There are also free variables, which first must be bounded to be evaluated: they are essentials for predicates and algebra expressions, such as dependent joins. 
+
+It is important to note that projection removes duplicates within sets, while keeping them in bags.
+
+There are equivalences for selection and projection useful to derive whether a different ordering produces the same output. For instance, applying selection twice is the same as applying it once with two criteria plus an AND. Commutative property also holds.
+
+
