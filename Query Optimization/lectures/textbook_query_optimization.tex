@@ -102,5 +102,57 @@ Sort merge join might outperform the hash join if the amount of data is much lar
 
 Materializing, on the other side, is quite relevant for nested loop joins: the first pass is expensive, but the afterwards ones are way cheaper, making it essential for multiple consumers. 
 
+\subsection{Join Ordering}
+Join ordering focuses on conjunctive queries with simple predicates of the type $a_1 = a_2$ where the latter can be either an attribute or a constant (commonly algorithms assume join between attributes).
+
+Relations may include selections or complex building blocks, however for simplicity filtering is ignored; having operators other than equality might cause differences within the query planner.
+
+Ordering basically means choosing which relation to be joined first, placing entities in a graph and adding an edge whenever a predicate from a node is joined to another. 
+
+This kind of schema is defined as a query graph, in which edges consist in predicates and self loops represent equality with a constant. Usually cycles are pushed down, since algorithms only assume attributes. 
+
+Based on the query graph it is possible to obtain an overview of the complexity of the problem: there are different shapes which are treated differently. 
+
+\begin{figure}[h]
+	\includegraphics[scale=1.5]{query_graph.png}
+	\centering
+\end{figure}
+
+\begin{enumerate}
+	\item Chains are the simplest kind of query, fairly common in practice;
+	\item Cycles (cyclic) are a chain with a closing edge, the easiest example of cycles;
+	\item Stars are mostly used in data warehouse, in which the center table has large dimension and the ones outside are relatively small, quite different to solve;
+	\item Cliques are instances in which every relation is joined with all the others, and are the hardest to optimize causing the worst runtime;
+	\item Trees are acyclic queries even if the level of nesting can be high;
+	\item Grids are also fairly hard and interesting for research.
+\end{enumerate}
+
+Joins are represented with join trees, binary trees with operators as inner nodes and relations as leaves. The most common type is unordered (not distinguish left from right) without cross product, however algorithms might produce other variants.
+
+There furthermore are different kinds of trees:
+\begin{itemize}
+	\item Left-deep tree, in which joins only happen on the left side, easy to represent and implement through hash tables ($n!$ trees with cross products);
+	\item Right-deep tree ($n!$);
+	\item Zig-zag tree, a combination of the previous ($n!2^{n-2}$);
+	\item Bushy tree, a full binary tree (non-linear, harder to find optimal solutions but can be the most efficient in some cases, $n!C(n-1) = \frac{(2n-2)!}{(n-1)!}$ where $C$ represents a Catalan number).
+\end{itemize}
+It is relevant to notice that the number of leaf combinations and unlabeled trees grows exponentially, and increases even more with a flexible structure. However, nodes can often be swapped from left to right.
+
+Another important information about joins is their selectivity: 
+$$f_{i, j} = \frac{\abs{R_i \bowtie_{p_{i, j}} R_j}}{\abs{R_i \times R_j}}$$
+This depends on whether the attributes are a key, and gives an estimation of the result cardinality with the aid of assumptions and statistics.
+
+Given a join tree, the cardinality can be computed recursively as the productory of the selectivity function multiplied by the size of both relations. This allows easy calculations only requiring base cardinalities and independence of predicates:
+$$C_{out}(T) = \begin{cases}
+0 & T\text{ is a leaf} \\
+\abs{T} + C_{out}(T_1) + C_{out}(T_2) & T = T_1 \bowtie T_2
+\end{cases}$$
+This formula sums up the sizes of intermediate results, which are the ones causing more works. There are basic specific cost functions for joins, to be summed to the cost of single relations. 
+
+Algorithms are mainly designed for left-deep trees, and some of the cost functions do not work in practice, for instance in the case of cross products. Therefore, those indicators are mainly theoretical and work under strict assumptions. However, join ordering is a main factor regardless of the chosen cost methods.
+
+A cost function is called symmetric if $C_{impl}(e_1 \bowtie^{impl} e_2) = C_{impl}(e_2 \bowtie^{impl} e_1)$. Commutativity can be ignored.
+
+An ASI (Adjacent Sequence Interchange) is a set of properties classifying functions. Both these concepts can be exploited during optimization.
 
 
