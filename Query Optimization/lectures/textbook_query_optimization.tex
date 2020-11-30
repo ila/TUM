@@ -153,6 +153,79 @@ Algorithms are mainly designed for left-deep trees, and some of the cost functio
 
 A cost function is called symmetric if $C_{impl}(e_1 \bowtie^{impl} e_2) = C_{impl}(e_2 \bowtie^{impl} e_1)$. Commutativity can be ignored.
 
-An ASI (Adjacent Sequence Interchange) is a set of properties classifying functions. Both these concepts can be exploited during optimization.
+Most of the time, algorithms for query optimization tend to avoid cross products, despite the enormous number of possibilities to build a join tree: the only exception regards small relations.
 
+\subsubsection{Chains}
+Chains usually originate a left-deep tree: leaves can be ordered according to different degrees of freedom, as long as all the relations are joined. 
 
+The number of possible left-deep trees can be defined recursively:
+$$\begin{cases}
+f(0) = 0 \\
+f(1) = 1 \\
+f(n) = 1 + \sum_{k=1}^{n-1} f(k-1) \cdot (n - k)
+\end{cases}$$
+Adding $R_n$ to all possible join trees can be done at any position following $R_{n-1}$. There are $n - k$ join trees for $R_n$, plus one assuming it can be placed before $R_{n-1}$ in the case of $k=1$. For $R_{n-1}$ to be at $k$, $R_{n-k} - \dots R_{n-2}$ must be below it.
+
+Solving the recurrence gives the closed form $f(n) = 2^{n-1}$, still exponential yet much less than the case with cross products.
+
+A generalization to zig-zag can be made expecting the same result.
+
+Bushy trees, on the other hand, are not so easy to obtain: each subtree must contain a subchain to avoid cross products, hence single relations should not be added. It is possible to create a whole chain $R_1 - \dots R_n$, cut it and place it under another subtree, always considering commutativity.
+
+This gives the formula:
+$$ f(n) = \begin{cases}
+1 & n < 2 \\
+\sum_{k=1}^{n-1} 2f(k) \cdot f(n-k) & n \geq 2
+\end{cases}$$
+Having more than 2 relations implying performing a cut at some point $k$ and placing $k$ on the left side, $n - k$ on the right side. A factor of 2 indicates swapping the two sides. 
+
+This gives the closed form $f(n) = 2^{n-1}C(n-1)$.
+
+\subsubsection{Stars}
+Star queries have the constraint that one relation must be in the center; all the others can be ordered arbitrarily. This leads to the following formulas:
+\begin{itemize}
+	\item Left-deep: $2 \cdot (n - 1)!$, since there are $n - 1$ choices for a join partner and a factor of 2 for commutativity;
+	\item Zig-zag: $2 \cdot (n - 1)! \cdot 2^{n-2}$, in which the last factor represent the possibility to swap left and right for each subtree;
+	\item Bushy trees: not possible since they require the first relation to be available. 
+\end{itemize}
+
+\subsubsection{Cliques}
+Cliques are a schema which do not care about cross products, since every relation is connected to the other, hence the number of possibilities is the same as the one obtained allowing cross products. 
+
+Still, complexity is very high and runtime is bad, although the worst case usually does not happen. 
+
+\subsection{Greedy heuristics}
+Regardless of the methods and the inclusion of cross products, the search space is in general quite large when the number of relations is larger than 10, and polynomial time is hard to achieve. Some cost functions do not even have a proof of complexity.
+
+Due to the size of the search space, greedy heuristics are ways to easily construct a potential tree in a fast time: they are most suitable for large queries, but often do not give the best result.
+
+Algorithms assume no cross products within left-deep trees, and known cardinalities (or some other weight function).
+
+\subsubsection{GreedyJoinOrdering-1}
+This algorithm returns a set of ordered relations to be joined according to a cost function in a bushy tree structure. 
+
+The output is given starting from the minimum-weight relation, removes it and searches for the new minimum. 
+
+This method is simple, but not that good in practice: it assumed fixed weight (not depending on the size, for instance) and does not support optimization within intermediate results. 
+
+\subsubsection{GreedyJoinOrdering-2}
+This variant also considers the previous set of relations, computing relative weights based on the existing tree. 
+
+In this case, however, the very first relation has a large relative weight and a major impact on the choices made afterwards. 
+
+\subsubsection{GreedyJoinOrdering-3}
+To tackle this problem, a double loop is introduced in which not only the set of relations is scanned, but also every relation is tested as a starting one. Then, all computed results are compared and the minimum among them is returned. 
+
+This method is overall the best one and is implemented in some systems, but it is still not optimal.
+
+\subsubsection{Greedy Operator Ordering}
+Intermediate join trees must be combined to obtain larger trees: since some algorithms construct left-deep structures and others return bushy trees, those can be attached if the result is minimal.
+
+Trees with the smallest weight are iteratively joined and then removed by the set of possibilities. 
+
+\subsection{IKKBZ}
+IKKBZ is a polynomial time algorithm for join ordering without cross products, producing left-deep trees under some assumptions: acyclic graphs, ASI cost functions and a fixed join technique.
+
+The algorithm will ultimately compute a rank for each predicate, based on its selectivity, obtaining an optimal evaluation order. 
+
+After the first steps, however, the remaining arguments are independent on the size of the relations.
