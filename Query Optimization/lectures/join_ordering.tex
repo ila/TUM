@@ -195,15 +195,16 @@ If $A \rightarrow B$ and $rank(B) \leq rank(A)$, then it is possible to find an 
 The continued process of building a compound relation until no more contradictory sequences exist is called normalization; the opposite is denormalization.
 
 \subsubsection{The algorithm}
-IKKBZ works performing the following steps for each relation:
+IKKBZ works performing the following steps for each relation, considering it as a root node:
 \begin{enumerate}
 	\item Calculates the precedence graph;
-	\item Executes the subprocedure;
+	\item Executes the subprocedure of finding the subtree all of whose children are chains, and normalizing it, then merging the chains;
 	\item The relation returned by the previous step is added to the set.
 \end{enumerate}
-The algorithm then returns the minimum of the sets according to the cost function.
+The algorithm stops when all trees are single chains, then returns the minimum of the sets according to the cost function.
 
-The subprocedure constructs a left-deep tree (chain) from the precedence graph, performing a normalization operation and merging based on the rank in ascending order.
+The subprocedure constructs a left-deep tree (chain) from the precedence graph, performing a normalization operation and merging based on the rank in ascending order. Normalization happens when there is a contradictory sequence, i. e. one chain has bigger rank than the following.
 
-Normalization works by taking $r$ and $c$ such that $rank(r) > rank(c)$ and swapping them with a compound relation representing both. This allows to merge relations that would have been reordered if only considering the rank, obtaining the actual ascending order.
+This works by taking $r$ and $c$ such that $rank(r) > rank(c)$ and swapping them with a compound relation representing both. This allows to merge relations that would have been reordered if only considering the rank, obtaining the actual ascending order.
 
+In case the graph contains cycles, it is possible to preprocess it with algorithms such as Minimum Spanning Tree to find a suitable representation to run IKKBZ.
