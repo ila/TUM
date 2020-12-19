@@ -208,3 +208,101 @@ The subprocedure constructs a left-deep tree (chain) from the precedence graph, 
 This works by taking $r$ and $c$ such that $rank(r) > rank(c)$ and swapping them with a compound relation representing both. This allows to merge relations that would have been reordered if only considering the rank, obtaining the actual ascending order.
 
 In case the graph contains cycles, it is possible to preprocess it with algorithms such as Minimum Spanning Tree to find a suitable representation to run IKKBZ.
+
+\subsection{Maximum Value Precedence}
+Maximum Value precedence is useful in those cases where IKKBZ fails, such as cyclic queries. It runs in polynomial time as well, employing a graph theoretic approach to calculate in how many ways joins can be scheduled.
+
+The algorithm requires a join graph, similar to the ones discussed before, which will be modified later, hence the definition must be extended: edges are assigned an order, and predicates are used to identify sets.
+
+If there exists an edge between the predicates $p_1$ and $p_2$, and they belong to the same relation, two directed edges are added in the graph. 
+
+If $p_1$ is connected to $p_2$ and $p_2$ is connected to $p_3$, there will be a so called virtual edge connecting $p_1$ and $p_3$: eventually, all nodes will be connected with either physical or virtual edges, forming a clique.
+
+\begin{wrapfigure}{R}{0.45\textwidth}
+	\vspace{-27pt}
+	\includegraphics[width=0.48\textwidth]{MVP.png}
+	\vspace{-50pt}
+\end{wrapfigure}
+
+For instance, every spanning tree in the directed join graph leads to a join tree: first of all edges are added in both direction, and then one of them gets removed, giving a directed acyclic graph which can easily give a join order (without distinguishing left and right).
+
+MVP has the advantage of also producing bushy trees, however it does not guarantee optimality of the spanning tree; furthermore, the output might not correspond to an effective join tree.
+
+Despite the incorrect representation, it is simple to fix this kind of errors, but there is no specific way to produce the best join tree.
+
+To remedy the uncertainty, some additional rules are introduced to identify an effective spanning tree. The following conditions must be satisfied:
+\begin{enumerate}
+	\item $T$ must be binary (no nodes can have more than two children);
+	\item For all inner connected nodes $(u, v)$, $R(T(u)) \cap R(v) \neq \emptyset$ (they must have predicates in common);
+	\item For all $(u_1, v)$, $(u_2, v)$ one of the following holds:
+	\begin{enumerate}
+		\item $((R(T(u_1)) \cap R(v))) \cap ((R(T(u_2)) \cap R(v))) = \emptyset$ (they have a different relation in common);
+		\item $(R(T(u_1)) = R(v)) \land (R(T(u_2)) = R(v))$ (the relations in common are the same between pairs).
+	\end{enumerate}
+\end{enumerate}
+An effective spanning tree corresponds to a valid join tree, despite the definition not being intuitive. Given this, the rest of the assumptions is simple: if every predicate involves two relations and an equi-join condition, then $R(u) \cap R(v)$ contains only a single relation.
+
+Let $v$ be that relation, then $R_i \bowtie_v R_j$ is abbreviated by $\bowtie_v$.
+
+The next step is adding weight to the edges, obtaining a weighted directed join graph. Each weight is calculated with the formula:
+$$w_{u, v} = \frac{\abs{\bowtie_u}}{R(u) \cap R(v)}$$
+This means that each edge has a weight depending on the relation they have in common and the join cardinality. The intuition implies that a join is executes before another, the given relation becomes available and the edge weight can explain how the cardinality changes, i. e. how many tuples are generated.
+
+This value can be bigger or smaller than 1, and can make the total cost bigger or smaller (the input size changes by a factor of $w_{u, v}$). For virtual edges, the weight is 1 by default. 
+
+It is relevant to notice that the weight function used by MVP is the same one as $s_i$ in IKKBZ. However, it can also be chosen arbitrarily.
+
+Of course, a weight smaller than 1 reduces the cost of following join operations. Furthermore, weights change over time depending on a partial spanning tree: 
+$$w(p_{i, j}, S) = \frac{|\bowtie_{p_{i, j}}^S|}{\abs{R_i \bowtie_{p_{i, j}} R_j}}$$
+$\bowtie_{p_{i, j}}^S$ is the result of the join after all joins preceding $p_{i, j}$ in $S$ have been executed. If the spanning tree is empty, the cost is merely equal to the cost of a simple join. 
+
+\subsubsection{The algorithm}
+The algorithm works in two phases:
+\begin{enumerate}
+	\item Taking the edges with weight smaller than 1, trying to reduce the work for latter operators as soon as possible;
+	\item Adding the remaining edges, potentially causing an increase of the load, yet as late as possible.
+\end{enumerate}
+MVP takes as input a weighted directed join graph and builds two priority queues, one with largest weights (phase 1) and one with smallest (phase 2). 
+
+The working graph is initially just a set of predicates with no edges, and then the two phases are ran.
+
+The first phase modifies the state of a working tree, taking the head of the priority queue (the most expensive) and finding the joins which could make it cheaper, adding nodes with smaller weight while still keeping the graph acyclic.
+
+If there is no such edge, the element is swapped from the first queue to the second; else, the edge to be added to the working tree will be the one which maximizes the difference within costs (minimizes the new cost). Weights are then recomputed. 
+
+Phase 2 is called when the second queue is non-empty, again considering edges which respect the acyclic property. The procedure tries to minimize the additional cost caused by adding joins. 
+
+To effectively modify the working tree, an update function changes the state by performing unions of sets with edges and removal from the graph yet to consider. If there are two incoming physical edges, they are replaced with virtual ones. 
+
+This also ensures the binary property, removing all cases in which a node could have two parents and handling eventual duplicates. However, there is still no guarantee of optimality. 
+
+\subsection{Dynamic Programming}
+Dynamic programming approaches can be useful to obtain more insights on possible orders with cost function. Since this kind of algorithm is a macro class, they can be defined on any input and give any output (bushy, left-deep).
+
+These work thanks to an optimality principle: if an option is cheaper than another, the latter can be discarded and the best solution is found only considering the set of further possibilities generated by the first.
+
+Formally, let $T$ be an optimal join tree for relations $R_1, \dots, R_n$. Then, every subtree $S$ of $T$ is an optimal join tree for the relations contained in it.
+
+Despite some hypothetical concerns of sub-optimality and the presence of physical properties which may alter the result, in practice this property holds.
+
+\begin{wrapfigure}{L}{0.49\textwidth}
+	\vspace{-10pt}
+	\includegraphics[width=0.5\textwidth]{search_space.png}
+	\vspace{-40pt}
+\end{wrapfigure}
+
+The strategy works starting with a single relation and generating larger trees with a bottom-up strategy, reusing previous intermediate results.
+
+A possible dynamic programming algorithm calculates the cost functions when joining either on the left or right side (bushy usually works better) for each applicable join implementation. 
+
+The outcome will be a list of pairs with their cost, of which the minimum is chosen and propagated through following iterations.
+
+The search space gets therefore reduced whenever an option is discarded, hence the number of combinations is never exponential.
+
+In the case of linear trees, there is a basic strategy finding the optimal $T$ by joining all optimal $T'$ with $T \setminus T'$, with $|T| = |T'| + 1$.
+
+The most common algorithm constructs the optimal left-deep tree from an empty table mapping the set of relations ($2^R$) to the join tree. 
+
+For each relation, the optimal tree is built, starting from size 1 and increasing the subsets by adding those of smaller size having the optimal solution of the subproblem.
+
+
