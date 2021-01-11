@@ -390,8 +390,58 @@ All nodes are considered in descending order and emitted (since each is a connec
 
 Expansion is performed similarly to DP-sub, looking in the neighborhood among possible combinations. The set of valid nodes increases over time, allowing more degrees of freedom.
 
+To achieve idealistic runtime, set operations should be performed in constant time, but in the general case this is not expected and a linear delay might happen; in practice, values are encoded as integers to gain speed, yet this only works in the order of 64 relations.
 
+Another solution is using bitsets, implementations with dynamic memory and variable size. This does not guarantee constant time either, even if allocating enough bits should never cause a resize.
 
+\subsection{Complex queries}
+There are cases in which the query graph is particularly complicated, such as $abs(r_1.f + r_3.f) = abs(r_4.g + r_6.g)$. This kind of operation generates a hyper-graph, connecting more than two relations at once: common algorithms cannot be applied. DPSize does not consider the query graph, so it could be used, but it does not have optimal runtime.
 
+A hypergraph is a non-empty set of nodes and edges where a hyperedge is an unordered pair of non-empty proper subsets with empty intersection. They have a total order via an arbitrary relation, to avoid enumerating multiple times, or breadth-first search.
 
- 
+The approach is similar as for regular graphs, starting with one node and recursively expanding. However, hyperedges have a many-to-many relationship, and an additional choice of where to expand must be taken, while still guaranteeing DP order. The DP table can be tested to check if nodes into subsets are connected, implying an entry already exists. 
+
+For instance, it is impossible to join a set of relations with only one relation which is connected by a hyperedge, since it means some information is lacking and a cross product would be necessary. Therefore, the single relation is recursively expanded checking for connections.
+
+A minor change to solve this issue is choosing a representative for each hyperedge, leading to the last node in total order, so that duplicates are prevented. Checks for connectedness are still required, because this method leads to temporarily disconnected graphs which must be further expanded.
+
+Another interesting case involves non-inner joins (either outer or unnesting), not freely reorderable (performing an inner join before an outer will reduce the number of output tuples, and vice versa). 
+
+There are compatibility matrices stating whether two join operations are commutative assuming syntax constraints, i. e. $(R \circ_1 S) \circ_2 T \equiv R \circ_1 (S \circ_2 T)$. For instance, full outer joins can be swapped with themselves. 
+
+Using this information, it is easy to figure out which operations are permitted. For each operator, the syntactic eligibility set (SES) is built, a set of relations which must be in the input; then, the total eligibility set (TES) is constructed in a bottom-up way, starting with SES and checking for conflicts in selectivity. If this is the case, another TES is added, capturing reordering restrictions. 
+
+The output obtained adding TES encodes the necessity of certain relations while constructing hyperedges, eliminating invalid reorderings.
+
+\subsubsection{Simplifying the query graph}
+The dynamic programming approach always considers minimal number of join-pairs, so it is not expected to get a better runtime for exact solutions. The set of possibilities is limited, and algorithms perform slowly for certain query graphs (stars), but the complexity is most likely the best to be achieved.
+
+There are ways to recognize whether the problem is too complicated to be solved with DP, and simplify (from an optimizer point of view) the query graph until it gets tractable. 
+
+Some possibilities of course are going to be ruled out if edges are removed, hence safe modifications are preferred, using a greedy method for simpler problems and then performing DP on intermediate results. 
+
+To effectively decrease the search space size, some joins (shrinking) can be forced to be performed first, halving the number of potential plans with each restriction. 
+
+The steps to be performed are:
+\begin{enumerate}
+	\item Examine all joins that have a relation in common (neighboring);
+	\item Check that a pair can be swapped of order (needs a fast cycle checker, trying to construct a topological ordering);
+	\item Compute the ordering benefit with different heuristics;
+	\item Retain the pair with maximal ordering benefit, maintaining priority queues to speed up repeated simplification;
+	\item Return the query graph in which the edge corresponding to the join is changed.
+\end{enumerate}
+This method is more restrictive, hence simpler. 
+
+The ordering benefit can be estimated in several ways. One approach is to maximize the following:
+$$\text{orderingBenefit}(X \bowtie_1 R_1, X \bowtie_2 R_2) = \frac{C((X \bowtie_1 R_1) \bowtie_2 R_2)}{C((X \bowtie_2 R_2) \bowtie_1 R_1)}$$
+$C$ is an arbitrary cost function, for instance $C_{out}$ when no other information is available.
+
+The program should also know when to stop simplifying: this is achieved when memory or time constraints are satisfied, along with counting the number of connected subgraphs or bounding through memory consumption.
+
+Counting is fast, but not immediate, and cannot be performed after every simplification: a reasonable choide is 10 000 connected subgraphs.
+
+The full optimization algorithm runs first of all computing a list of query graphs, in which the elements are the same graph after each step, performing simplifications until a total order is reached; to find a specific plan, binary search is employed and then DPhyp is ran on each of them.
+
+After the optimal simplification is obtained, dynamic programming is used to get the ultimate result.
+
+Simplification heuristics are subject to mistakes, hence performing too many probably means at some point the cost will increase, and it would be best to stop earlier. This problem is NP-hard.
