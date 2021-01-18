@@ -318,6 +318,8 @@ This representation can be seen as a binary number in which a digit is 1 if the 
 
 An alternative algorithm to generate linear trees uses integer order to fill the dynamic programming table, calculating all combinations for each $2 \leq i \leq 2^n-1$ and finding all subsets such that their binary representation is 1.
 
+To get a labeling, an intuitive way is to perform a breadth-first search on the tree picking any arbitrary root (any labeling is however accepted).
+
 The real implementation does not perform any mathematical operation, since each $i$ already represents a set. 
 
 Then, for each relation in the subset, the cost is added to smaller sub-problems, similarly to the previous approach. The last bit of the set gets removed after every iteration.
@@ -445,3 +447,70 @@ The full optimization algorithm runs first of all computing a list of query grap
 After the optimal simplification is obtained, dynamic programming is used to get the ultimate result.
 
 Simplification heuristics are subject to mistakes, hence performing too many probably means at some point the cost will increase, and it would be best to stop earlier. This problem is NP-hard.
+
+\subsection{Search Space Linearization}
+The effectiveness of this method comes from the huge variety of possible queries to be performed in the real world, of which most are small, but some can arrive up to thousands of relations.
+
+Reducing the search space is essential, but greedy algorithms do not perform that well on large graphs. On the other hand, dynamic programming has exponential runtime and a lot of assumptions, so a large search space leads to NP-hard problems. 
+
+Furthermore, there are no guarantees that running a computationally expensive procedure leads to the best join plan: often benchmarks fail to represent the real world: a tradeoff between speed and performance is necessary.
+
+To summarize, the decision flow chooses the following approaches:
+\begin{itemize}
+	\item Dynamic programming for easy query graphs:
+	\begin{itemize}
+		\item DPhyp with $\leq 10k$ DP entries, guaranteeing an optimal plan yet not very powerful:
+		\begin{itemize}
+			\item Up to 100 relations for chains;
+			\item 14 relations for cliques.
+		\end{itemize}
+		\item GOO/DPhyp if linearization is impossible;
+	\end{itemize}
+	\item LDP for medium ones;
+	\item Greediness (still in a limited way, keeping in mind restrictions) to achieve a reasonable optimization time.
+\end{itemize}
+
+Complexity is measured with both time and space requirements, and it strictly depends on the structure of the query graph.
+
+Search space linearization (LDP) is a technique working for medium-sized queries (in the order of a hundred relations), always assuming no cross products to improve performance. 
+
+The main goal is to transform a complicated query graph in a chain, since most algorithms perform badly on cliques. Assuming the order of relations in the optimal plan is known, LDP generates the optimal plan from the linearization in polynomial time, and combines solutions for subchains of increasing size.
+
+The optimal order can be obtained through IKKBZ in quadratic runtime, so it is indeed possible to run LDP. The result is as least as good as the best left-deep plan, and the optimal bushy plan can be discovered with further steps.
+
+However, a runtime of $O(n^3)$ is still too large for wide query graphs, so a combined approach is taken:
+\begin{enumerate}
+	\item The query plan is build through a greedy algorithm, such as GOO;
+	\item The $k$ most expensive trees are iteratively optimized again using dynamic programming.
+\end{enumerate}
+
+LDP is useful to increase the factor $k$ up to 100, obtaining a reasonable plan. For small number of relations, however, DPhyp still performs the best. 
+
+\subsection{Generating Permutations}
+Generating permutation is a lightweight algorithm: it does not require a DP table, and the solution can be found even without completing the enumeration of possibilities. This allows very low space consumption, imposing stricter time requirements (stop if time runs out).
+
+This can be achieved considering left-deep trees: those are permutations of the relations to be joined, which can be generated directly. To make the process cheaper, some permutations can be ignored applying the DP reasoning (if a solution is better than another, there is no point extending the latter).
+
+A sequence is only explored if exchanging the last two relations does not result in a cheaper alternative. 
+
+The algorithm performs a recursive search while comparing the costs of adding a relation in the end or earlier in the chain, making the optimal plan better after each iteration. 
+
+Since modifications are performed in-place, the occupied memory is linear; however, it potentially runs for a long time, and some constraints need to be placed. An instance of the worst case scenario is when a tie occurs, since the algorithm must explore both alternatives. 
+
+\subsection{Transformative Approaches}
+This technique is used among modern commercial DBMS (SQL server), but it is likely not the best approach. 
+
+The main idea is to directly apply properties and equivalences to construct new query plans, yet this raises plenty of problems: there is no order, the optimal solution must be guaranteed and such. 
+
+To restrict the combinations, only a few possibilities are considered: commutativity, associativity and join exchange. Furthermore, two arbitrary relations can be swapped, or cyclic rotations can be performed. 
+
+It is possible to obtain the optimal solution just applying commutativity and left/right associativity (RS-0), however the other rules allow a smaller number of steps hence a quicker runtime.
+
+In practice, the output is easily sub-optimal: the whole search space is to be considered and the same plan can be generated more than once. 
+
+A memoization approach is introduced to remember the intermediate solutions, using pointers to class and expanding their relative members.
+
+The rule set is therefore extended (RS-1) to repeatedly disable and enable some transformations depending on the step which has just been performed, managing to avoid duplicates. 
+
+
+
