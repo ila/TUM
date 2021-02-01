@@ -512,5 +512,135 @@ A memoization approach is introduced to remember the intermediate solutions, usi
 
 The rule set is therefore extended (RS-1) to repeatedly disable and enable some transformations depending on the step which has just been performed, managing to avoid duplicates. 
 
+\subsection{Generating Random Join Trees}
+Constructing a random join tree is quite useful in practice: assuming the cost is random, it is possible to find a solution which is really close to the optimal one, and allows to get information about the distribution.
 
+In this case, considering cross products make the problem simpler, but the uniformity of join trees (having the same probability for each tree) is a challenge.
 
+To help this, the concepts of ranking and unranking are introduced:
+\begin{itemize}
+	\item A ranking is a mapping $f : S \rightarrow [0, n[$;
+	\item An unranking is a mapping $f : [0, n[ \rightarrow S$.
+\end{itemize}
+The idea is to generate random numbers to them map them to the corresponding join tree. Both functions should be bijective for this to work, however the function must also be able to unrank in a fast way.
+
+A trivial mapping would just be generating all possible trees and incrementing a counter, but this method is not efficient: the solution set should be smaller.
+
+Random permutations can be applied as a starting point for the algorithm, shuffling an array (for each element in descending order, swap it with a random one up to its position) to generate a left-deep tree. 
+
+In the first call, there are $n$ choices of random elements $r_{n-1}, \dots, r_0$ where $0 \leq r_i \leq i$, in the second one there are $n - 1$ and so on, obtaining a number of $n!$ sequences with an one-to-one relationship with the set of all permutations.
+
+Unranking works trying to find a sequence from the initial value, which is independent from previous ones: $r_{n-1} \equiv r \mod n$ is set, and the swap is performed. $r' = \lfloor r/n\rfloor$ is defined and iteratively unranked to construct a permutation of $n - 1$ elements. 
+
+Bushy trees are obtained in a similar way, yet using a Catalan number $b$ (the amount of different trees) to obtain the relations, and applying the previous procedure with another random value $p$ smaller than $n!$. Unranking works attaching the relations in order $p$.
+
+To encode trees, whenever an inner node is encountered a left bracket (1) is added, and when a leaf node is encountered a right bracket (0) is added, except for the last one. Brackets are then substituted with the respective binary value, and the relations correspond to the position of 1s starting from left. 
+
+Unranking binary trees also has an unique correspondence with Dyck words (sequences with proper brackets): to count how many possibilities are there, it is possible to plot them knowing that the first character must be a left bracket, and last one a right bracket. A tree is any path in the grid from $(0, 0)$ to $(2n 0)$.
+
+The number of different paths from $(0, 0)$ to $(i, j)$ can be computed with the following formula:
+$$p(i, j) = \frac{j+1}{i+1} {{i+1}\choose{\frac{1}{2}(i+j)+1}}$$
+These numbers are the Ballot numbers (useful for elections!). Hence, all the paths from beginning to end are $p(2n - i, j)$, which is indeed a Catalan number. Choices which have not been taken are subtracted by the rank at each iteration.
+
+The decision of upwards or downwards is as easy as flipping a coin, but this does not respect a uniform probability since there are more trees starting with a left brackets, and going down is not possible in all cases. 
+
+The procedure works in five steps:
+\begin{enumerate}
+	\item List merges (notation, specification);
+	\item Join tree construction;
+	\item Standard Decomposition Graph;
+	\item Counting;
+	\item Unranking.
+\end{enumerate}
+A list $l'$ is the projection of a list $L$ on $P$ if $l'$ contains all the elements of $L$ respecting $P$ in the same order. A list merge $L$ is the union of two disjoint lists, both obtained from $L$.
+
+A merge of two lists whose respective lengths are $l_1$ and $l_2$ is equivalent to an array of non-negative integers whose sum is equal to $l_1$. 
+
+Therefore, the number of decomposition of any non-negative integer in a sequence of non-negative integers with $\sum_{i=1}^{k} \alpha_k = n$ is ${n+k-1}\choose{k-1}$.
+
+The number of possible merges is ${l_1+l_2}\choose{l_2}$, but this is too expensive to be computed all the iterations, hence it is split in two parts which are then materialized. 
+
+To establish a bijection, the set $S$ is partitioned into disjoint smaller sets: when ranking $x \in S_k$, first the local rank is computed, obtaining $rank(x) = \sum_{i=0}^{k-1} \abs{S_i} + local-rank(x, S_k)$.
+
+The rank can be interpreted as the number of elements in every previous bucket which have not been chosen plus the local ordering of the element in the current set. 
+
+Unranking simply consists in computing $r' = r - \sum_{i=0}^{k-1} \abs{S_i}$, i. e. subtracting all the partitions which have not been taken yet. 
+
+Each possible merge is partitioned into subsets, each having an increasing number of elements. In each of them, there are $M(l_1 - j, l_2 - 1)$ elements. To unrank a value, its partition is firstly computed, setting $k = min_j r \leq \sum_{i=0}^{j} M(j, l_2 - 1)$ and $\alpha_0 = l_1 - k$. The new rank is then updated and used for the next iteration.
+
+If the query graph is cyclic, there does not exist a way to generate trees with random probability; not allowing cross products implies choosing only relationships which are connected, introducing bias. 
+
+Another representation of join trees works through anchored lists:
+\begin{itemize}
+	\item If $T$ is a single leaf node, then $L = <>$;
+	\item if $T = T_1 \bowtie T_2$ and a leaf $v$ occurs in $T_2$, then $L = <T_1 | L_2>$ where $L_2$ is the anchored list representation of $T_2$.
+\end{itemize}
+Here, left and right are not distinguished, since there is no way to remember the direction. Leafs are inserted introducing insertion pairs, couples $(T', k)$ of lists and rank in which only one node (missing from $T$) is inserted at position $k$. This is a bijective mapping.
+
+\subsubsection{Standard Decomposition Graph}
+A STD describes the possible constructions of join trees. It uses two kind of nodes:
+\begin{itemize}
+	\item $+$ for leaf insertion;
+	\item $*_w$ for merging subtrees whose only common leaf is $w$.
+\end{itemize}
+This is done with three steps:
+\begin{enumerate}
+	\item Picking an arbitrary root node;
+	\item Transforming the query graph into a tree;
+	\item Calling the algorithm which turns the query graph into a SDG, looking at how many child nodes there are and performing leaf insertions with one input, else merging to obtain two new $+$ nodes.
+\end{enumerate}
+
+\subsection{QuickPick}
+QuickPick is useful to have a first insight into what the search space looks like, building pseudo-random trees by randomly select edges. This algorithm is easy to implement and quite fast, however it loses uniformity: the usual way to take advantage of it is running it multiple times and picking the best output.
+
+It works without cross products, since each edge must join two relations, and can output any kind of tree shape. If an edge connects two subtrees, it is replaced with a join until only one tree is left. 
+
+Failure of the procedure can happen if cycles exist in the graph. Furthermore, some trees are more likely to exist than others, since sometimes swapping two edges makes no difference among the structure.
+
+To check whether an edge connects two relations in different subtrees, an approach similar to Kruskal's algorithm is used: through an union-find data structure it is possible to do this efficiently.
+
+\subsection{Metaheuristics}
+Metaheuristics are general optimization strategies working well for even large problems, but are unaware of the real issue and just rely on computational power.
+
+It is not proven how well they perform or what kind of problem they solve, but they are widely used by modern DBMS.
+
+\subsubsection{Iterative improvement}
+The iterative improvement approach starts with a random tree, applies some rules to improve (e. g. transformative approaches) and stops only when no further improvement is possible. If the tree after the random modifications gets worse, the change is undone. 
+
+Metaheuristichs work trying to find an optimal, and have the consequence of risking to get stuck into a local minimum: usually a time limit is implemented so that the procedure always terminates, and there are different start points to generate multiple results.
+
+Cross products could be generated by accidentally swapping two relations which are not linked, hence a method similar to QuickPick is used, manipulating edges instead of nodes.
+
+IKKBZ can be used with an acyclic query graph to obtain the optimal left-deep tree, which is then compared with the iterative improvement result.
+
+\subsubsection{Simulated annealing}
+Simulated annealing is another approach which allows moving from a local minimum even if the solution gets worse, defining a probability based on the temperature for the worse tree to be swapped with the current best one. 
+
+The only problem is optimizing temperature and time, picking initial values and thresholds to decrease or rise the temperature, yet there are some rule of thumbs working well in practice.
+
+Simulating annealing is often used along with iterative improvement, using the latter to find a local minima and the former to try and find a better plan.
+
+\subsubsection{Tabu search}
+Tabu search sets some nodes in the graph as forbidden, to extend the search space trying to find different solutions. The cheapest results among all neighbors are chosen, even if they are worse than the current one, forcing the algorithm to never go back. This is useful to avoid cycles.  
+
+The size of the tabu set is fixed, otherwise it might eventually contain all the relations: whenever the size is exceeded, the oldest node is removed and allowed back into the search space. 
+
+\subsubsection{Genetic algorithms}
+Genetic algorithms function in the same way as a population model, based on survival of the fittest. Join trees are elements which generate successors by crossover or mutation, only keeping the best trees.
+
+The problem with this simulation is finding an encoding between trees and population, especially representing crossover and mutation. There are two different possibilities: 
+\begin{itemize}
+	\item Ordered list, showing a tree as a permutation of numbers and joining them from left to right, implementing the bushy variant naming edges instead of nodes;
+	\item Ordinal number, starting with a natural order:
+	\begin{itemize}
+		\item For left-deep trees, finding the index of the first relation to be joined, setting the first character in the chromosome string as $i$ and removing it from the list;
+		\item For bushy trees, encoding in bottom-up, left-to-right, looking at two positions at once and again removing them, but replacing them with a third symbol to describe the tree.
+	\end{itemize}
+\end{itemize}
+Crossover is simulated either by subsequence exchange or subset exchange, generating permutations such that the order of appearance is respected or simply swapping elements of equal length.
+
+A mutation, on the other hand, randomly alters a character in the encoding, hence a swap can be considered a mutation as well.
+
+The algorithm is implemented with a selection phase, sorting trees by cost and keeping the best, and then crossover and mutations are applied with a given rate. This increases the population, so selection needs to be performed again until the maximum number of iterations is reached.
+
+Like other metaheuristics, parameters rely on human hand-made benchmarking.
