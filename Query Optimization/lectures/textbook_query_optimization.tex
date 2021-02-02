@@ -3,28 +3,40 @@
 \section{Textbook Query Optimization}
 Textbook query optimization involves techniques to perform a rough first optimization, which however is quite simple. There is a series of steps to translate raw SQL into logical and physical plans, each of them transforming input in a more optimal form.
 
-The output is going to be executable, but still to be improved by non-trivial methods.
+The output is going to be \textit{executable}, but still to be improved by non-trivial methods.
 
 \subsection{Algebra and tuples}
-Plain relational algebra is not sufficient itself: it needs to be revisited ensuring correctness (producing the same result) within a formal model. The most relevant problem to tackle is deciding whether two algebraic expressions are the same, but this in difficult in practice.
+Plain relational algebra is not sufficient itself: it needs to be revisited ensuring \textbf{correctness} (producing the same result) within a formal model. The most relevant problem to tackle is \textbf{deciding whether two algebraic expressions are the same}, but this in difficult in practice.
 
 For instance, performing a selection before a join might be correct (and faster) in case the considered criterion is equality, but can give a different result than selecting after an outer join. 
 
 To remedy this issue, it is possible to guarantee that two expressions are equivalent, not accepting false positing yet allowing false negatives. 
 
-A formal definition of tuple is an unordered mapping from attribute names to values of a domain. A schema consists in a set of attributes with domain $A(t)$.
+A formal definition of \textbf{tuple} is an unordered mapping from attribute names to values of a domain. A schema consists in a set of attributes with domain $A(t)$.
 
 Tuple operations are:
 \begin{itemize}
-	\item Concatenation, attaching one tuple to another regardless of ordering (union);
-	\item Projection, producing a notation $t.a$ in which it is possible to access single values or multiple $t_{|\{a, b\}}$, getting a subset of the schema.
+	\item \textbf{Concatenation}, attaching one tuple to another regardless of ordering (union);
+	\item \textbf{Projection}, producing a notation $t.a$ in which it is possible to access single values or multiple $t_{|\{a, b\}}$, getting a subset of the schema.
 \end{itemize}
 
-A set of tuples with the same schema forms a relation. Sets naturally do not comply with real data, since they not allow duplicates, but are used for simplicity.
+A set of tuples with the same schema forms a \textbf{relation}. Sets naturally do not comply with real data, since they not allow duplicates, but are used for simplicity.
 
-In most cases, sets and bags can be used interchangeably, but the optimizer considers different semantics: logical algebra operates on bags, physical algebra on streams and sets are only considered after an explicit duplicate elimination.
+In most cases, sets and bags can be used interchangeably, but the optimizer considers different semantics: logical algebra operates on \textit{bags}, physical algebra on \textit{streams} and sets are only considered after an \textit{explicit duplicate elimination}.
 
-Set operations are the classic ones of union, intersection and difference, yet are subject to schema constraints. On bags, operations are performed on frequencies. 
+\begin{figure}
+	\begin{minipage}{0.45\textwidth}
+		\hspace{-2mm}
+		\includegraphics[width=0.82\textwidth]{equivalences_1.png}
+	\end{minipage}
+	\begin{minipage}{0.5\textwidth}
+		\hspace{-10mm}
+		\includegraphics[width=1.2\textwidth]{equivalences_2.png}
+	\end{minipage}
+	\vspace{-15pt}
+\end{figure}
+
+Set operations are the classic ones of union, intersection and difference, yet are \textbf{subject to schema constraints}. On bags, operations are performed on frequencies. 
 
 There are also free variables, which first must be bounded to be evaluated: they are essentials for predicates and algebra expressions, such as dependent joins. 
 
@@ -33,7 +45,7 @@ It is important to note that projection removes duplicates within sets, while ke
 There are equivalences for selection and projection useful to derive whether a different ordering produces the same output. For instance, applying selection twice is the same as applying it once with two criteria plus an AND. Commutative property also holds.
 
 \subsection{Canonical Query Translation}
-The canonical query translation transforms SQL into algebra expressions. The first approach involves some restrictions: it assumes no duplicates without aggregation and set operations.
+The canonical query translation transforms SQL into \textbf{algebra expressions}. The first approach involves some restrictions: it assumes no duplicates without aggregation and set operations.
 
 The first step is translating the FROM clause:
 $$F = \begin{cases}
@@ -58,16 +70,16 @@ W & \text{there is no GROUP BY clause} \\
 HAVING is basically the same as WHERE, with the filter predicate on top of $G$.
 
 \subsection{Logical Query Optimization}
-Once obtained the relational algebra, equivalences span the potential search space and new expressions are derived thanks to them. Of course equivalence can be applied in both ways, hence it is relevant to decide which one works better, and conditions have to be checked as well. This, however, makes the search more expensive since there are plenty of alternatives.
+Once obtained the relational algebra, equivalences span the \textit{potential search space} and new expressions are derived thanks to them. Of course equivalence can be applied both ways, hence it is relevant to decide which one works better, and conditions have to be checked as well. This, however, makes the search more expensive since there are plenty of alternatives.
 
 To speed the process up, sometimes some equivalences are ignored, even the simplest ones (for instance when choosing the join algorithm).
 
-Query plans can only be compared if there is a cost function, often needing details which are not available merely through relational algebra (what kind of join is being used): logical query optimization is still a heuristic and requires additional steps, since it is not enough to determine the runtime.
+Query plans can only be compared if there is a cost function, often needing details which are not available merely through relational algebra (what kind of join is being used): logical query optimization is still a \textbf{heuristic} and requires additional steps, since it is not enough to determine the runtime.
 
 Most algorithms, therefore, use the following strategy:
 \begin{itemize}
-	\item Organization of equivalences into groups;
-	\item Directing equivalences, deciding the preferred side and rewriting rules to apply them sequentially to the initial expression, trying to reduce the size of intermediate results.
+	\item Organization of equivalences into \textbf{groups};
+	\item \textbf{Directing equivalences}, deciding the preferred side and rewriting rules to apply them sequentially to the initial expression, trying to reduce the size of intermediate results.
 \end{itemize}
 For example, a projection on the output of a join can be preferred to a join of a projection. It is important to keep in mind that tuples are being removed in the process, and this only applies in certain circumstances (regular expressions, high selectivity of join).
 
@@ -78,23 +90,23 @@ To summarize, the phases are:
 	\item Breaking up conjunctive selection predicates, since simpler predicates can be moved around easier;
 	\item Pushing selections down, reducing the number of tuples early;
 	\item Introducing joins, which are cheaper than cross product (linear time);
-	\item Determining join order;
+	\item Determining join order, a usually NP-hard problem which is tackled with different approaches;
 	\item Introducing and pushing down projections, removing redundant attributes.
 \end{itemize}
-Some SQL queries have limitations: selections sometimes cannot be pushed down, since there might be no join predicate between tables. Choosing a different join order allows further push down. 
+Some SQL queries have limitations: selections sometimes cannot be pushed down, since there might be no join predicate between tables (cross product). Choosing a different join order allows further push down. 
 
 \subsection{Physical Query Optimization}
 Physical query optimization adds execution information to the plan, allowing actual cost calculation and optimizing over data structures, access path and operator implementation.
 
 Data may be sorted or materialized, introducing results which can be reused and deciding where to store them.
 
-First of all, the access path is selected: lookup can be done through index or table scan, depending on the selectivity (fraction of the data satisfying the clause): in general, above 10\% a table scan is recommended. 
+First of all, the access path is selected: lookup can be done through \textbf{index} or \textbf{table scan}, depending on the selectivity (fraction of the data satisfying the clause): in general, above 10\% a table scan is recommended. 
 
 Scanning a table might be efficient since tuples are stored adjacent in memory; using index, instead, involves traversing a tree multiple times starting from the root. 
 
 Sometimes it is useful to just store in cache the output of a view, but that also depends on the query plan: intermediate results should actually be reused.
 
-Operator selection is replacing a logical operator with a physical one, according to semantic restrictions (most operators require equi-join).
+\textbf{Operator selection} is replacing a logical operator with a physical one, according to semantic restrictions (most operators require equi-join).
 
 A blockwise nested loop join is generally better than a natural join; sort merge join and hash join are better than both. In general, hash join is the best if not reusing sorts. This process must be performed for all operators: sort join requires ordered tuples, distributed databases need local data and there are multiple ways to model the properties (hashing).
 
