@@ -10,4 +10,4 @@ These are class notes and there is no assurance that the material is correct and
 
 Of course I expect you to comply with the TUM Code of Conduct and not copy. Anyway, there is the license, so it is illegal to copy regardless if you care or not about TUM rules.
 
-Pull requests are always welcome (especially for mainstream machine learning courses).
+Pull requests are always welcome (especially for mainstream machine learning courses). This repository already contains merged code, so keep in mind I am not the only author, mainly for the Query Optimization assignments.
