@@ -1,0 +1,250 @@
+\documentclass[11pt, a4]{article}
+\usepackage[a4paper,
+            left=2cm,right=1cm]{geometry}
+\usepackage{ulem}
+\usepackage{qtree}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{marvosym}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{forest}
+%multi-row
+\usepackage{multirow}
+\usetikzlibrary{positioning}
+\newcommand\tab[1][0.5cm]{\hspace*{#1}}
+
+%% define left/right/full outer join symbols
+\def\ojoin{\setbox0=\hbox{$\bowtie$}%
+  \rule[-.02ex]{.25em}{.4pt}\llap{\rule[\ht0]{.25em}{.4pt}}}
+\def\leftouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie}}
+\def\rightouterjoin{\mathbin{\bowtie\mkern-5.8mu\ojoin}}
+\def\fullouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie\mkern-5.8mu\ojoin}}
+\def\join{\bowtie}%
+\newcommand*{\QEDB}{\null\nobreak\hfill\ensuremath{\square}}%
+\newcommand{\car}[1]{\tiny\textcolor{red}{#1}}
+
+\setcounter{section}{8}
+\begin{document}
+\title{Exercise Sheet 9}
+
+\section{Exercise Sheet 9}
+\subsection{Exercise 1}
+
+\subsubsection{linearize the search space}
+\begin{forest}
+[$R_4$
+    [$R_3$,edge=-> 
+        [$R_2$,edge=->
+            [$R_5$,edge=-> ]
+            [$R_0$,edge=->
+                [$R_1$,edge=-> ]
+            ]
+        ]
+    ]
+]
+\end{forest}
+\vspace{.2cm}\\
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+Relation & n & s & C & T & rank\\
+\hline
+$R_3$ & 40 & 0.3 & 12 & 12 & $\frac{11}{12} = 0.9167$\\
+$R_2$ & 50 & 0.2 & 10 & 10 & $\frac{9}{10} = 0.9$\\
+$R_5$ & 55 & 0.2 & 11 & 11 & $\frac{10}{11} = 0.9091$\\
+$R_0$ & 20 & 0.2 & 4 & 4 & $\frac{3}{4} = 0.75$\\
+$R_1$ & 10 & 0.1 & 1 & 1 & $0$\\
+\hline
+\end{tabular}
+\vspace{.8cm}\\
+merge $R_0$ and $R_1$\\
+\begin{forest}
+[$R_4$
+    [$R_3$,edge=-> 
+        [$R_2$,edge=->
+            [$R_5$,edge=-> ]
+            [$R_{0,1}$,edge=-> ]
+        ]
+    ]
+]
+\end{forest}
+\vspace{.2cm}\\
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+Relation & n & s & C & T & rank\\
+\hline
+$R_3$ & 40 & 0.3 & 12 & 12 & $\frac{11}{12} = 0.9167$\\
+$R_2$ & 50 & 0.2 & 10 & 10 & $\frac{9}{10} = 0.9$\\
+$R_5$ & 55 & 0.2 & 11 & 11 & $\frac{10}{11} = 0.9091$\\
+$R_{0,1}$ &  &  & 8 & 4 & $\frac{3}{8} = 0.375$\\
+\hline
+$R_0$ & 20 & 0.2 & 4 & 4 & $\frac{3}{4} = 0.75$\\
+$R_1$ & 10 & 0.1 & 1 & 1 & $0$\\
+\hline
+\end{tabular}
+\vspace{.2cm}\\
+\begin{forest}
+[$R_4$
+    [$R_3$,edge=-> 
+        [$R_2$,edge=->
+            [$R_{0,1}$,edge=->
+                [$R_5$,edge=-> ]
+            ]
+        ]
+    ]
+]
+\end{forest}
+\tab$\longrightarrow$ denormalizing $\longrightarrow$\tab
+\begin{forest}
+[$R_4$
+    [$R_3$,edge=-> 
+        [$R_2$,edge=->
+            [$R_0$,edge=->
+                [$R_1$,edge=->
+                    [$R_5$,edge=-> ]
+                ]
+            ]
+        ]
+    ]
+]
+\end{forest}
+
+\subsubsection{perform linearized DP}
+$R_4 \tab R_3 \tab R_2 \tab R_0 \tab R_1 \tab R_5$\\
+%% $R_4 \tab R_3 \tab R_2 \tab R_5 \tab R_0 \tab R_1$\\
+\\
+Two Relations:\\
+$(R_4 \join R_3) \tab R_2 \tab R_0 \tab R_1 \tab R_5 \tab\tab \{R_3, R_4\} \tab C_{out} = 600$\\
+$R_4 \tab (R_3 \tab R_2) \tab R_0 \tab R_1 \tab R_5 \tab\tab \{R_2, R_3\} \tab C_{out} = 400$\\
+$R_4 \tab R_3 \tab (R_2 \tab R_0) \tab R_1 \tab R_5 \tab\tab \{R_0, R_2\} \tab C_{out} = 200$\\
+$R_4 \tab R_3 \tab R_2 \tab (R_0 \tab R_1) \tab R_5 \tab\tab \{R_0, R_1\} \tab C_{out} = 20$\\
+$R_4 \tab R_3 \tab R_2 \tab R_0 \tab (R_1 \tab R_5) \tab\tab \{R_1, R_5\} \tab$ \Lightning\\
+Three Relations:\\
+$(R_4 \join (R_3 \join R_2)) \tab R_0 \tab R_1 \tab R_5 \tab\tab \{R_2, R_3, R_4\} \tab C_{out} = 6400$\\
+\sout{$((R_4 \join R_3) \join R_2) \tab R_0 \tab R_1 \tab R_5 \tab\tab \{R_2, R_3, R_4\} \tab C_{out} = 6600$}\\
+$R_4 \tab (R_3 \join (R_2 \join R_0)) \tab R_1 \tab R_5 \tab\tab \{R_0, R_2, R_3\} \tab C_{out} = 1800$\\
+\sout{$R_4 \tab ((R_3 \join R_2) \join R_0) \tab R_1 \tab R_5 \tab\tab \{R_0, R_2, R_3\} \tab C_{out} = 2000$}\\
+$R_4 \tab R_3 \tab (R_2 \join (R_0 \join R_1)) \tab R_5 \tab\tab \{R_0, R_1, R_2\} \tab C_{out} = 220$\\
+\sout{$R_4 \tab R_3 \tab ((R_2 \join R_0) \join R_1) \tab R_5 \tab\tab \{R_0, R_1, R_2\} \tab C_{out} = 400$}\\
+$R_4 \tab R_3 \tab R_2 \tab (R_0 \join (R_1 \join R_5)) \tab\tab \{R_0, R_1, R_5\} \tab$ \Lightning\\
+$R_4 \tab R_3 \tab R_2 \tab ((R_0 \join R_1) \join R_5) \tab\tab \{R_0, R_1, R_5\} \tab$ \Lightning\\
+Four Relations:\\
+$(R_4 \join (R_3 \join (R_2 \join R_0))) \tab R_1 \tab R_5 \tab\tab \{R_0, R_2, R_3, R_4\} \tab C_{out} = 24400$\\
+\sout{$(R_4 \join R_3) \join (R_2 \join R_0) \tab R_1 \tab R_5 \tab\tab \{R_0, R_2, R_3, R_4\} \tab C_{out} = 24800$}\\
+\sout{$((R_4 \join (R_3 \join R_2)) \join R_0) \tab R_1 \tab R_5 \tab\tab \{R_0, R_2, R_3, R_4\} \tab C_{out} = 30400$}\\
+$R_4 \tab (R_3 \join (R_2 \join (R_0 \join R_1)) \tab R_5 \tab\tab \{R_0, R_1, R_2, R_3\} \tab C_{out} = 1820$\\
+\sout{$R_4 \tab (R_3 \join R_2) \join (R_0 \join R_1) \tab R_5 \tab\tab \{R_0, R_1, R_2, R_3\} \tab C_{out} = 2020$}\\
+\sout{$R_4 \tab ((R_3 \join (R_2 \join R_0)) \join R_1) \tab R_5 \tab\tab \{R_0, R_1, R_2, R_3\} \tab C_{out} = 3400$}\\
+$R_4 \tab R_3 \tab ((R_2 \join (R_0 \join R_1)) \join R_5) \tab\tab \{R_0, R_1, R_2, R_5\} \tab C_{out} = 2420$\\
+Five Relations:\\
+$(R_4 \join (R_3 \join (R_2 \join (R_0 \join R_1))) \tab R_5 \tab\tab \{R_0, R_1, R_2, R_3, R_4\} \tab C_{out} = 24000 + 1820 = 25820$\\
+\sout{$((R_4 \join R_3) \join (R_2 \join (R_0 \join R_1))) \tab R_5 \tab\tab \{R_0, R_1, R_2, R_3, R_4\} \tab C_{out} = 24000 + 220 + 600 = 24820$}\\
+\sout{$((R_4 \join (R_3 \join R_2)) \join (R_0 \join R_1)) \tab R_5 \tab\tab \{R_0, R_1, R_2, R_3, R_4\} \tab C_{out} = 24000 + 6400 + 20 = 30420$}\\
+\sout{$((R_4 \join (R_3 \join (R_2 \join R_0))) \join R_1) \tab R_5 \tab\tab \{R_0, R_1, R_2, R_3, R_4\} \tab C_{out} = 24000 + 24400 = 48400$}\\
+\sout{$R_4 \tab (R_3 \join ((R_2 \join (R_0 \join R_1)) \join R_5)) \tab\tab \{R_0, R_1, R_2, R_3, R_5\} \tab C_{out} = 17600 + 2420 = 20020$} \\
+$R_4 \tab ((R_3 \join (R_2 \join (R_0 \join R_1))) \join R_5) \tab\tab \{R_0, R_1, R_2, R_3, R_5\} \tab C_{out} = 17600 + 1820 = 19420$ \\
+Six Relations:\\
+\sout{$(R_4 \join ((R_3 \join (R_2 \join (R_0 \join R_1))) \join R_5)) \tab\tab \{R_0, R_1, R_2, R_3, R_5\} \tab C_{out} = 264000 + 19420 = 283420 $}\\
+{\color{red}$((R_4 \join R_3) \join ((R_2 \join (R_0 \join R_1)) \join R_5)) \tab\tab \{R_0, R_1, R_2, R_3, R_5\} \tab C_{out} = 264000 + 600 + 2420 = 267020 $}\\
+\sout{$((R_4 \join (R_3 \join (R_2 \join (R_0 \join R_1))) \join R_5) \tab\tab \{R_0, R_1, R_2, R_3, R_5\} \tab C_{out} = 264000 + 25820 = 289820$} \\
+
+
+\subsubsection{perform a full DP}
+Size = 2:\\
+$\{R_0, R_1\}$\\
+\tab $(R_0 \bowtie R_1) \tab C_{out} = 20$\\
+\\
+$\{R_0, R_2\}$\\
+\tab $(R_0 \bowtie R_2) \tab C_{out} = 200$\\
+\\
+$\{R_2, R_3\}$\\
+\tab $(R_2 \bowtie R_3) \tab C_{out} = 400$\\
+\\
+$\{R_2, R_5\}$\\
+\tab $(R_2 \bowtie R_5) \tab C_{out} = 550$\\
+\\
+$\{R_3, R_4\}$\\
+\tab $(R_3 \bowtie R_4) \tab C_{out} = 600$\\
+\\
+Size = 3:\\
+$\{R_0, R_1, R_2\}$\\
+\tab $(\{R_0, R_1\} \bowtie R_2) \tab C_{out} = 220$\\
+\tab \sout{$(\{R_0, R_2\} \bowtie R_1) \tab C_{out} = 400$}\\
+\\
+$\{R_0, R_2, R_5\}$\\
+\tab $(\{R_0, R_2\} \bowtie R_5) \tab C_{out} = 2'400$\\
+\tab \sout{$(\{R_2, R_5\} \bowtie R_0) \tab C_{out} = 2'600$}\\
+\\
+$\{R_0, R_2, R_3\}$\\
+\tab $(\{R_0, R_2\} \bowtie R_3) \tab C_{out} = 1'800$\\
+\tab \sout{$(\{R_2, R_3\} \bowtie R_0) \tab C_{out} = 2'000$}\\
+\\
+$\{R_2, R_3, R_5\}$\\
+\tab $(\{R_2, R_3\} \bowtie R_5) \tab C_{out} = 4'800$\\
+\tab \sout{$(\{R_2, R_5\} \bowtie R_3) \tab C_{out} = 4'950$}\\
+\\
+$\{R_2, R_3, R_4\}$\\
+\tab $(\{R_2, R_3\} \bowtie R_4) \tab C_{out} = 6'400$\\
+\tab \sout{$(\{R_3, R_4\} \bowtie R_2) \tab C_{out} = 6'600$}\\
+\\
+Size = 4:\\
+$\{R_0, R_1, R_2, R_5\}$\\
+\tab $(\{R_0, R_1, R_2\} \bowtie R_5) \tab C_{out} = 2'420$\\
+\tab \sout{$(\{R_0, R_2, R_5\} \bowtie R_1) \tab C_{out} = 4'600$}\\
+\tab \sout{$(\{R_0, R_1\} \bowtie \{R_2, R_5\}) \tab C_{out} = 2'770$}\\
+\\
+$\{R_0, R_1, R_2, R_3\}$\\
+\tab $(\{R_0, R_1, R_2\} \bowtie R_3) \tab C_{out} = 1'820$\\
+\tab \sout{$(\{R_0, R_2, R_3\} \bowtie R_1) \tab C_{out} = 3'400$}\\
+\tab \sout{$(\{R_0, R_1\} \bowtie \{R_2, R_3\}) \tab C_{out} = 2'020$}\\
+\\
+$\{R_0, R_2, R_3, R_5\}$\\
+\tab \sout{$(\{R_0, R_2, R_5\} \bowtie R_3) \tab C_{out} = 20'000$}\\
+\tab $(\{R_0, R_2, R_3\} \bowtie R_5) \tab C_{out} = 19'400$\\
+\tab \sout{$(\{R_2, R_3, R_5\} \bowtie R_0) \tab C_{out} = 22'400$}\\
+\\
+$\{R_0, R_2, R_3, R_4\}$\\
+\tab \sout{$(\{R_0, R_2, R_3\} \bowtie R_4) \tab C_{out} = 25'800$}\\
+\tab \sout{$(\{R_2, R_3, R_4\} \bowtie R_0) \tab C_{out} = 30'400$}\\
+\tab $(\{R_0, R_2\} \bowtie \{R_3, R_4\}) \tab C_{out} = 24'800$\\
+\\
+$\{R_2, R_3, R_4, R_5\}$\\
+\tab \sout{$(\{R_2, R_3, R_4\} \bowtie R_5) \tab C_{out} = 72'400$}\\
+\tab \sout{$(\{R_2, R_3, R_5\} \bowtie R_4) \tab C_{out} = 70'800$}\\
+\tab $(\{R_2, R_5\} \bowtie \{R_3, R_4\}) \tab C_{out} = 67'150$\\
+\\
+Size = 5:\\
+$\{R_0, R_1, R_2, R_3, R_4\}$\\
+\tab \sout{$(\{R_0, R_1, R_2, R_3\} \bowtie R_4) \tab C_{out} = 25'820$}\\
+\tab \sout{$(\{R_0, R_2, R_3, R_4\} \bowtie R_1) \tab C_{out} = 48'800$}\\
+\tab $(\{R_0, R_1, R_2\} \bowtie \{R_3, R_4\}) \tab C_{out} = 24'820$\\
+\tab \sout{$(\{R_2, R_3, R_4\} \bowtie \{R_0, R_1\}) \tab C_{out} = 30'420$}\\
+\\
+$\{R_0, R_1, R_2, R_3, R_5\}$\\
+\tab \sout{$(\{R_0, R_1, R_2, R_5\} \bowtie R_3) \tab C_{out} = 20'020$}\\
+\tab $(\{R_0, R_1, R_2, R_3\} \bowtie R_5) \tab C_{out} = 19'420$\\
+\tab \sout{$(\{R_0, R_2, R_3, R_5\} \bowtie R_1) \tab C_{out} = 37'000$}\\
+\tab \sout{$(\{R_2, R_3, R_5\} \bowtie \{R_0, R_1\}) \tab C_{out} = 22'420$}\\
+\\
+$\{R_0, R_2, R_3, R_4, R_5\}$\\
+\tab \sout{$(\{R_0, R_2, R_3, R_5\} \bowtie R_4) \tab C_{out} = 45'800$}\\
+\tab \sout{$(\{R_0, R_2, R_3, R_4\} \bowtie R_5) \tab C_{out} = 51'200$}\\
+\tab \sout{$(\{R_2, R_3, R_4, R_5\} \bowtie R_0) \tab C_{out} = 93'550$}\\
+\tab $(\{R_0, R_2, R_5\} \bowtie \{R_3, R_4\}) \tab C_{out} = 29'400$\\
+\\
+Size = 6:\\
+$\{R_0, R_1, R_2, R_3, R_4, R_5\}$\\
+\tab \sout{$(\{R_0, R_1, R_2, R_3, R_4\} \bowtie R_5) \tab C_{out} = 288'820$}\\
+\tab \sout{$(\{R_0, R_1, R_2, R_3, R_5\} \bowtie R_4) \tab C_{out} = 283'420$}\\
+\tab \sout{$(\{R_0, R_2, R_3, R_4, R_5\} \bowtie R_1) \tab C_{out} = 293'400$}\\
+\tab \sout{$(\{R_2, R_3, R_4, R_5\} \bowtie \{R_0, R_1\}) \tab C_{out} = 331'170$}\\
+\tab $(\{R_0, R_1, R_2, R_5\} \bowtie \{R_3, R_4\}) \tab C_{out} = 267'020$\\
+\\
+Finally the best query is:\\
+$(((R_0 \bowtie R_1) \bowtie R_2) \bowtie R_5) \bowtie (R_3 \bowtie R_4)$\
+
+
+\subsubsection{compare}
+Both algorithms come up with an optimal solution. The cost is the same, the join tree is not.
+
+\end{document}
