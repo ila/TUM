@@ -1,0 +1,88 @@
+\documentclass[12pt]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{lipsum}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{setspace}
+\usepackage[superscript]{cite}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{amsmath}
+
+\input{./commons.tex}
+
+% change margins within the geometry package and eventually the font size
+
+\begin{document}
+	
+\begin{flushright}
+	\today
+\end{flushright}
+{\Large \textbf{Assignment 1}}
+	
+{\large Query Optimization}
+	
+\textsc{Ilaria Battiston - 03723403} \\
+\textsc{Mareva Zenelaj - 03736071}
+	
+\rule{\linewidth}{0.5pt}
+	
+\section{First exercise}
+\subsection{SQL and relational calculus}
+
+\subsubsection{SQL}
+\begin{lstlisting}[language=SQL]
+SELECT DISTINCT Studenten.MatrNr, Name
+FROM Studenten, Hoeren, (
+	SELECT VorlNr
+	FROM Studenten, Hoeren
+	WHERE Name = 'Schopenhauer'
+	AND Studenten.MatrNr = Hoeren.MatrNr) Tmp
+WHERE Studenten.MatrNr = Hoeren.MatrNr
+AND Hoeren.VorlNr = Tmp.VorlNr
+AND Name <> 'Schopenhauer'
+	
+SELECT DISTINCT PersNr, Name
+FROM Professors, Vorlesungen, (
+	SELECT VorlNr, COUNT(MatrNr)
+	FROM Hoeren
+	GROUP BY VorlNr
+	HAVING COUNT(MatrNr) > 1) Tmp
+WHERE Professors.PersNr = Vorlesungen.gelesenVon
+AND Vorlesungen.VorlNr = Tmp.VorlNr
+\end{lstlisting}
+
+\newpage
+\subsubsection{Tuple calculus}
+Here we assume that the data structures are sets, therefore contain no duplicates.
+
+$\{s\ : \ \{MatrNr,\ Name\}\ |\ s \in \text{Studenten} \land s.name \neq \text{'Schopenhauer'} \\
+\land \exists h \in \text{Hoeren}(s.MatrNr = h.MatrNr) \\
+\land \exists v \in (\{v\ |\ \text{Hoeren} \land \exists s \in (\text{Studenten} \land s.name = \text{'Schopenhauer'} \land s.MatrNr = v.MatrNr)\} \\ 
+\land v.VorlNr = h.VorlNr)
+\}$
+
+$\{p\ : \ \{PersNr,\ Name\}\ |\ p \in \text{Professoren} \\
+\land \exists v \in \text{Vorlesungen}(p.PersNr = v.gelesenVon) \\
+\land \exists c1,\ c2 \in (\{c1,\ c2\ |\ \text{Hoeren} \\
+\land c1.MatrNr \neq c2.MatrNr \land c1.VorlNr = c2.VorlNr \}) \\ 
+\land c1.VorlNr = v.VorlNr\}$
+
+\subsection{Relational algebra}
+Here we assume that the data structures are sets, therefore contain no duplicates.
+
+$\sigma_{S.Name \neq \text{'Schopenauer'}} \\
+(S \times \sigma_{S.MatrNr = H.MatrNr} \\
+(H \times \sigma_{H1.VorlNr = H.VorlNr} \\
+(H1 \times \sigma_{H1.MatrNr = S1.MatrNr \land S1.Name = \text{'Schopenhauer'}}(S1))))$
+
+$\sigma (P \times \sigma_{P.PersNr=V.gelesenVon} \\
+(V \times (\sigma_{V.VorlNr=H1.VorlNr} \\ 
+(H1 \times \sigma_{H1.MatrNr \neq H2.MatrNr \land H1.VorlNr = H2.VorlNr}(H2)))))$
+	
+\end{document}

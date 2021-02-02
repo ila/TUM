@@ -1,0 +1,89 @@
+\section{Accessing the data}
+Optimization has of also an hardware component: accessing the data has to be done efficiently, measuring and modeling physical costs. 
+
+Older devices store memory in a stack of rotating disks on which an arm writes data with its head. Each disk is divided in tracks and sectors.
+
+Since the disk is rotating, reading is only possible where the head is, making this operation quite slow since it is impossible to jump. On SSD, this is indeed implemented.
+
+A good approximation of the seek time among $d$ cylinders is:
+$$seektime(d) = \begin{cases}
+	c_1 + c_2\sqrt{d} & d \leq c_0 \\
+	c_3 + c_4d & d> c_0
+\end{cases}$$
+Constants indicate the maximum number of cylinders where no coast take place, i. e. the point in which the head can be efficient. 
+
+The square is introduced because in the low part of hardware the distance is less, hence the head moves faster. On the other hand, the formula is linear if the distance is short.
+
+Since the current position on the disk is unpredictable, it is difficult to produce single cot estimation, however modeling many accesses gives a somewhat accurate measurement. 
+
+Parameters are aggregated, introducing average latency time (for positioning) and sustained read/write assuming a sequential scan. 
+
+The time a disk needs to read and transfer $n$ bytes is approximately $D_{lat} + \frac{n}{D_{srr}}$. Examples of these values are given below:
+% todo picture
+
+Database developers, as introduced before, distinguish between random and sequential access. The latter is faster, since it assumes data only needs to be read in sequence after finding its position, while a random access implies seeking the location of each page (the smallest portion which can be read, generally 8kb).
+
+This has consequences in practice: for instance, an index may be efficient only if a small portion of the data is accessed, else there is a risk for the whole structure to be traversed with a random access behavior. On the other hand, it could be expensive to perform a scan if there are many pages involved. 
+
+A proposed cost function to calculate sequential scan time is: 
+$$5ms + \frac{\abs{page\_size}}{\abs{bandwidth}} * \#pages$$
+Now, the problem becomes estimating the bandwidth, the number of needed pages and their cost. These can vary between different use cases, or be influenced by indexes. 
+
+More parameters are introduced for a better overview, assuming a uniform distribution of the tuples:
+\begin{itemize}
+	\item $N$, number of tuples (items) in relation $R$;
+	\item $m$, number of pages (buckets) in which tuples of $R$ are stored ($m = 1$ all pages are accessed);
+	\item $B$, tuples for page (blocking factor;
+	\item $k$, number of distinct TID ($k = 1$ implies one page is accessed).
+\end{itemize}
+The probability to request a set with $k$ items is $\frac{1}{{{N}\choose{k}}}$, because of the uniformity assumption.
+
+\subsection{Yao's formula}
+Considering $m$ buckets with $n$ items, then there is a total of $N = nm$ items. Randomly selecting $k$ items give a number of qualifying buckets which is:
+$$y^{N, m}_n(k) = m * y^N_n(k)$$
+$$y^N_n(k) = \begin{cases}
+	[1 - p] & k \leq N - n \\
+	1 & k > N - n
+\end{cases}$$
+$y^N_n(k)$ is the probability that bucket $n$ contains at least one tuple, and $p$ is the probability that a bucket contains none of the $k$ items.
+$$p = \frac{{{N-n}\choose{k}}}{{{N}\choose{k}}} = \prod_{i=0}^{k-1} \frac{N-n-i}{N-i} = \prod_{i=0}^{n-1}\frac{N-k-i}{N-i}$$
+These formulas are useful to avoid computing $N!$, which is too expensive to do in practice. The choice of formula depends on $N$ and $k$.
+
+However, even with simplifications, calculations are not cheap, and fractions may not be integers: further steps must be taken, such as introduction of a Gamma function and approximations (Waters):
+$$ p \approx \Big( 1 - \frac{k}{N} \Big)^n$$
+This works implying there is a fraction of $\frac{k}{N}$ tuples which are relevant for the query, multiplied for the number of pages. The problem here is, if the first tuple does not qualify, the likelihood that a latter one qualifies increases (there is less space); in general, probability is not uniform.
+
+The estimation is roughly accurate with $N >> n$, and much cheaper to compute. There are other formulas which are simpler, but more complicated to express (Bernstein):
+$$y_n^{N,m}(k) \approx \begin{cases}
+	k & k < \frac{m}{2} \\
+	\frac{k+m}{3} & \frac{m}{2} \leq k \leq 2m \\
+	m & 2m \leq k
+\end{cases}$$
+This evaluation tries to interpolate $k$ depending on its comparison with $m$, and is faster to compute. Each case is plausible, yet not very precise. 
+
+Dihr and Saharia computed some upper and lower bounds for $p$, claiming these are accurate with a minimal difference from real-case scenarios.
+
+\subsection{Reading non-distinct items}
+Index nested loop joins often involve reading the same tuple multiple times, fetching join partners using the index. This strategy uses very little memory, with time linear in the left side.
+
+In this case, Yao's formula is not sufficient, and a multiset (set with duplicates) approach is introduced. The number of multiset with cardinality $k$ containing only elements from a set $S$ with $\abs{S} = N$ is:
+$${N+k-1}\choose{k}$$
+
+This works transforming a multiset into a set by summing a crescent value from 1 to $(k-1)$ to each element, making them unique. The other way around applies subtraction. 
+
+Cheung's formula is an extension of Yao's formula considering multisets:
+$$Cheung^{N, m}(k) = m * Cheung^N_n \qquad Cheung^N_n(k) = [1 - p] \qquad p \approx \Big( 1 - \frac{n}{N}\Big)^k$$
+$$p = \frac{{n-n+k-1\choose k}}{{n+k-1\choose k}} = \prod_{i=0}^{k-1} \frac{N-n+i}{N+i} = \prod_{i=0}^{n-1} \frac{N-1-i}{N-1+k-i}$$
+This just expands binomials using the duplicates property. The approximation of $p$ (Cardenas) is derived assuming there are $1 - \frac{n}{N}$ tuples on the current page and applying the power.
+
+The number of distinct values in a $k$-multiset of cardinality $N$ with uniform distribution is:
+$$D(n, k) = \frac{Nk}{N + k - 1}$$
+This follows by previous statements, expanding the binomial coefficient. This allows to do a simplification (model switching), i. e. using Yao's formula after removing duplicates. 
+
+Non-uniform distributions work similarly, yet modeling each probability to access a group of buckets, using summation instead of product. 
+
+\subsection{Sequential accesses on disk}
+Accesses on disk are relevant to estimate the cost of jumping between two pages or cylinders: this directly depends on the distance gap. When estimating seek costs, there must be a probability distribution for the distances.  
+
+Assuming the situation is a bitvector of length $B$ with $b$ bits set to 1, then $B - b$ bits are zero. Then, the probability distribution of the number $j$ of zeros between two consecutive ones, before the first or after the last is:
+$$B^B_b(j) = \frac{{B-j-1\choose b-1}}{{B\choose b}}$$
