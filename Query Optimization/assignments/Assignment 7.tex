@@ -1,0 +1,324 @@
+% Dokumentenart. Ersetze 12pt, falls die Schriftgröße anzupassen ist.
+\documentclass[12pt]{scrartcl}
+
+% Einbinden der Pakete, des Headers und der Formatierung.
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[pdftex,hyperref,dvipsnames]{xcolor}
+\usepackage{listings}
+\usepackage[a4paper,lmargin={2cm},rmargin={2cm},tmargin={3.5cm},bmargin = {2.5cm},headheight = {4cm}]{geometry}
+\usepackage{amsmath,amssymb,amstext,amsthm}
+\usepackage[lined,algonl,boxed]{algorithm2e}
+\usepackage{algorithmic}
+\usepackage{multirow}
+% alternative zu algorithm2e:
+%\usepackage[]{algorithm} %counter mit chapter
+%\usepackage{algpseudocode}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage[inline]{enumitem} % Ermöglicht ändern der enum Item Zahlen
+\usepackage[headsepline]{scrlayer-scrpage} 
+\usepackage{csquotes}
+\pagestyle{scrheadings} 
+\usetikzlibrary{automata,positioning,shapes.geometric,trees}
+
+\newcommand{\exercise}[1]{\section*{Exercise \theexnum\stepcounter{exnum}: #1}} % Befehl für Aufgabentitel
+
+% Formatierung der Kopfzeile
+% \ohead: Setzt rechten Teil der Kopfzeile mit
+% Namen und Matrikelnummern aller Bearbeiter
+\ohead{Andrey Rayskiy, Hui Zeng}
+% \chead{} kann mittleren Kopfzeilen Teil sezten
+% \ihead: Setzt linken Teil der Kopfzeile mit
+% Modulnamen, Semester und Übungsblattnummer
+\ihead{Query Optimization\\
+	Winter semester 2020/2021\\
+	Sheet \thesheetnr}
+
+\newcounter{sheetnr}
+\newcounter{exnum}
+
+% Counter für das Blatt und die Aufgabennummer.
+\setcounter{sheetnr}{7} % Nummer des Übungsblattes
+\setcounter{exnum}{1} % Nummer der Aufgabe
+
+\usepackage{multirow}
+% Beginn des eigentlichen Dokuments
+\begin{document}
+
+% Aufgabe 1
+\exercise{}
+\begin{enumerate}
+	\item \textbf{DPsize without crossproducts}:
+	
+	\begin{itemize}
+		\item size 1: 
+		$\left\lbrace R_{0}\right\rbrace ,\left\lbrace R_{1}\right\rbrace , \left\lbrace R_{2}\right\rbrace , \left\lbrace R_{3}\right\rbrace , \left\lbrace R_{4}\right\rbrace $
+		\item size 2:	
+			\begin{table}[H]
+				\begin{center}
+				\begin{tabular}{cc}
+					\hline
+					set & join pairs \\ \hline 
+					$\left\lbrace R_{0}, R_{1}\right\rbrace $     & $R_{0} \bowtie R_{1}$            \\
+					$\left\lbrace R_{0}, R_{3}\right\rbrace $     & $R_{0} \bowtie R_{3}$            \\
+					$\left\lbrace R_{1}, R_{2}\right\rbrace $     & $R_{1} \bowtie R_{2}$			\\
+					$\left\lbrace R_{1}, R_{4}\right\rbrace $	 & $R_{1} \bowtie R_{4}$			\\
+					$\left\lbrace R_{2}, R_{3}\right\rbrace $	 & $R_{2} \bowtie R_{3}$			\\ \hline		
+				\end{tabular}
+				\end{center}
+			\end{table}
+	
+		\item size 3:
+			\begin{table}[H]
+			\begin{center}
+				\begin{tabular}{cc}
+					\hline
+					set & join pairs \\ \hline 
+					\multirow{2}{*}{$\left\lbrace R_{0}, R_{1}, R_{2}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}\right\rbrace \bowtie R_{2}$ \\
+																						& $\left\lbrace R_{1}, R_{2}\right\rbrace \bowtie R_{0}$ \\ \hline
+					\multirow{2}{*}{$\left\lbrace R_{0}, R_{1}, R_{3}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}\right\rbrace \bowtie R_{3}$ \\
+					& $\left\lbrace R_{0}, R_{3}\right\rbrace \bowtie R_{1}$ \\ \hline
+					\multirow{2}{*}{$\left\lbrace R_{0}, R_{1}, R_{4}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}\right\rbrace \bowtie R_{4}$\\
+																						& $\left\lbrace R_{1}, R_{4}\right\rbrace \bowtie R_{0}$\\ \hline
+					\multirow{2}{*}{$\left\lbrace R_{0}, R_{2}, R_{3}\right\rbrace$}	& $\left\lbrace R_{0}, R_{3}\right\rbrace \bowtie R_{2}$\\
+																						& $\left\lbrace R_{2}, R_{3}\right\rbrace \bowtie R_{0}$\\ \hline
+					\multirow{2}{*}{$\left\lbrace R_{1}, R_{2}, R_{3}\right\rbrace$}	& $\left\lbrace R_{1}, R_{2}\right\rbrace \bowtie R_{3} $\\
+																						& $\left\lbrace R_{2}, R_{3}\right\rbrace \bowtie R_{1} $\\ \hline
+					
+					\multirow{2}{*}{$\left\lbrace R_{1}, R_{2}, R_{4}\right\rbrace$}	& $\left\lbrace R_{1}, R_{2}\right\rbrace \bowtie R_{4}$ \\
+																						& $\left\lbrace R_{1}, R_{4}\right\rbrace \bowtie R_{2}$ \\ \hline											
+				\end{tabular}
+			\end{center}
+		\end{table}
+		
+		\item size 4: 
+		\begin{table}[H]
+			\begin{center}
+				\begin{tabular}{ll}
+					\hline
+					set & join pairs \\ \hline 
+					\multirow{6}{*}{$\left\lbrace R_{0}, R_{1}, R_{2}, R_{3}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}, R_{2}\right\rbrace \bowtie R_{3}$ \\
+																							& $\left\lbrace R_{0}, R_{1}, R_{3}\right\rbrace \bowtie R_{2}$ \\
+																							& $\left\lbrace R_{0}, R_{2}, R_{3}\right\rbrace \bowtie R_{1}$ \\
+																							& $\left\lbrace R_{1}, R_{2}, R_{3}\right\rbrace \bowtie R_{0}$ \\ 
+																							& $\left\lbrace R_{0}, R_{1}\right\rbrace \bowtie \left\lbrace R_{2}, R_{3}\right\rbrace $ \\
+																							& $\left\lbrace R_{0}, R_{3}\right\rbrace \bowtie \left\lbrace R_{1}, R_{2}\right\rbrace $ \\ \hline
+					
+					\multirow{3}{*}{$\left\lbrace R_{0}, R_{1}, R_{2}, R_{4}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}, R_{2}\right\rbrace \bowtie R_{4}$ \\
+																							& $\left\lbrace R_{0}, R_{1}, R_{4}\right\rbrace \bowtie R_{2}$ \\ 	
+																							& $\left\lbrace R_{1}, R_{2}, R_{4}\right\rbrace \bowtie R_{0}$ \\ \hline
+					\multirow{3}{*}{$\left\lbrace R_{0}, R_{1}, R_{3}, R_{4}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}, R_{3}\right\rbrace \bowtie R_{4}$ \\
+																							& $\left\lbrace R_{0}, R_{1}, R_{4}\right\rbrace \bowtie R_{3}$ \\ 
+																							& $\left\lbrace R_{0}, R_{3}\right\rbrace \bowtie \left\lbrace R_{1}, R_{4}\right\rbrace $ \\\hline
+					\multirow{3}{*}{$\left\lbrace R_{1}, R_{2}, R_{3}, R_{4}\right\rbrace$}	& $\left\lbrace R_{1}, R_{2}, R_{3}\right\rbrace \bowtie R_{4}$ \\
+																							& $\left\lbrace R_{1}, R_{2}, R_{4}\right\rbrace \bowtie R_{3}$ \\ 
+																							& $\left\lbrace R_{2}, R_{3}\right\rbrace \bowtie \left\lbrace R_{1}, R_{4}\right\rbrace $ \\\hline		
+				\end{tabular}
+			\end{center}
+		\end{table}
+	
+		\item size 5: 
+		\begin{table}[H]
+			\begin{center}
+				\begin{tabular}{ll}
+					\hline
+					set & join pairs \\ \hline 
+					\multirow{7}{*}{$\left\lbrace R_{0}, R_{1}, R_{2}, R_{3}, R_{4}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}, R_{2}, R_{3}\right\rbrace \bowtie R_{4}$\\
+																									& $\left\lbrace R_{0}, R_{1}, R_{2}, R_{4}\right\rbrace \bowtie R_{3}$\\
+																									& $\left\lbrace R_{0}, R_{1}, R_{3}, R_{4}\right\rbrace \bowtie R_{2}$\\
+																									& $\left\lbrace R_{1}, R_{2}, R_{3}, R_{4}\right\rbrace \bowtie R_{0}$\\
+																									& $\left\lbrace R_{0}, R_{1}, R_{4}\right\rbrace \bowtie \left\lbrace R_{2}, R_{3}\right\rbrace $ \\
+																									& $\left\lbrace R_{0}, R_{2}, R_{3}\right\rbrace \bowtie \left\lbrace R_{1}, R_{4}\right\rbrace $ \\ 
+																									& $\left\lbrace R_{1}, R_{2}, R_{4}\right\rbrace \bowtie \left\lbrace R_{0}, R_{3}\right\rbrace $ \\ \hline	
+				\end{tabular}
+			\end{center}
+		\end{table}
+		
+	\end{itemize}
+	
+	
+	\item \textbf{DPSub with crossproduct}:
+	
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{lll}
+				\hline
+				integer &set & join pairs \\ \hline 
+				1	&$\left\lbrace R_{0}\right\rbrace $	& $\emptyset$ \\ \hline
+				2	&$\left\lbrace R_{1}\right\rbrace $	& $\emptyset$ \\ \hline
+				3	&$\left\lbrace R_{0}, R_{1}\right\rbrace $     & $R_{0} \bowtie R_{1}$            \\ \hline
+				4	&$\left\lbrace R_{2}\right\rbrace $	& $\emptyset$ \\ \hline
+				5	&$\left\lbrace R_{0}, R_{2}\right\rbrace $     & $R_{0} \times R_{2}$				\\\hline
+				6	&$\left\lbrace R_{1}, R_{2}\right\rbrace $     & $R_{1} \bowtie R_{2}$				\\ \hline 
+				\multirow{3}{*}{7}	&\multirow{3}{*}{$\left\lbrace R_{0}, R_{1}, R_{2}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}\right\rbrace \bowtie R_{2}$ \\
+				&																	& $\left\lbrace R_{0}, R_{2}\right\rbrace \bowtie R_{1}$ \\ 
+				&																	& $\left\lbrace R_{1}, R_{2}\right\rbrace \bowtie R_{0}$ \\ \hline
+				8	&$\left\lbrace R_{3}\right\rbrace $	&$\emptyset$	\\ \hline
+				9	&$\left\lbrace R_{0}, R_{3}\right\rbrace $     & $R_{0} \bowtie R_{3}$				\\ \hline
+				10	&$\left\lbrace R_{1}, R_{3}\right\rbrace $     & $R_{1} \times R_{3}$				\\ \hline
+			\end{tabular}
+		\end{center}
+	\end{table}
+	
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{lll}
+				\hline
+				integer &set & join pairs \\ \hline
+				\multirow{3}{*}{11}	&\multirow{3}{*}{$\left\lbrace R_{0}, R_{1}, R_{3}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}\right\rbrace \bowtie R_{3}$ \\
+									&																	& $\left\lbrace R_{0}, R_{3}\right\rbrace \bowtie R_{1}$ \\ 
+									&																	& $\left\lbrace R_{1}, R_{3}\right\rbrace \bowtie R_{0}$ \\ \hline
+				12	&$\left\lbrace R_{2}, R_{3}\right\rbrace $     & $R_{2} \times R_{3}$				\\ \hline
+				\multirow{3}{*}{13}	&\multirow{3}{*}{$\left\lbrace R_{0}, R_{2}, R_{3}\right\rbrace$}	& $\left\lbrace R_{0}, R_{2}\right\rbrace \bowtie R_{3}$ \\
+									&																	& $\left\lbrace R_{0}, R_{3}\right\rbrace \bowtie R_{2}$ \\ 
+									&																	& $\left\lbrace R_{2}, R_{3}\right\rbrace \bowtie R_{0}$ \\ \hline
+				\multirow{3}{*}{14}	&\multirow{3}{*}{$\left\lbrace R_{1}, R_{2}, R_{3}\right\rbrace$}	& $\left\lbrace R_{1}, R_{2}\right\rbrace \bowtie R_{3}$ \\
+									&																	& $\left\lbrace R_{1}, R_{3}\right\rbrace \bowtie R_{2}$ \\ 
+									&																	& $\left\lbrace R_{2}, R_{3}\right\rbrace \bowtie R_{01}$ \\ \hline
+				\multirow{6}{*}{15}	&\multirow{6}{*}{$\left\lbrace R_{0}, R_{1}, R_{2}, R_{3}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}, R_{2}\right\rbrace \bowtie R_{3}$ \\
+									&																			& $\left\lbrace R_{0}, R_{1}, R_{3}\right\rbrace \bowtie R_{2}$ \\
+									&																			& $\left\lbrace R_{0}, R_{2}, R_{3}\right\rbrace \bowtie R_{1}$ \\
+									&																			& $\left\lbrace R_{1}, R_{2}, R_{3}\right\rbrace \bowtie R_{0}$ \\ 
+									&																			& $\left\lbrace R_{0}, R_{1}\right\rbrace \bowtie \left\lbrace R_{2}, R_{3}\right\rbrace $ \\
+									&																			& $\left\lbrace R_{0}, R_{3}\right\rbrace \bowtie \left\lbrace R_{1}, R_{2}\right\rbrace $ \\ \hline
+				16	&$\left\lbrace R_{4}\right\rbrace $	&$\emptyset$	\\ \hline
+				17	&$\left\lbrace R_{0}, R_{4}\right\rbrace $	 & $R_{0} \times R_{4}$			\\ \hline
+				18	&$\left\lbrace R_{1}, R_{4}\right\rbrace $	 & $R_{1} \bowtie R_{4}$			\\ \hline
+				\multirow{3}{*}{19}	&\multirow{3}{*}{$\left\lbrace R_{0}, R_{1}, R_{4}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}\right\rbrace \bowtie R_{4}$\\
+									&																	& $\left\lbrace R_{1}, R_{4}\right\rbrace \bowtie R_{0}$\\ 
+									&																	& $\left\lbrace R_{0}, R_{4}\right\rbrace \bowtie R_{1}$\\\hline
+				20 	&$\left\lbrace R_{2}, R_{4}\right\rbrace $	 & $R_{2} \times R_{4}$			\\ \hline
+				\multirow{3}{*}{21}	&\multirow{3}{*}{$\left\lbrace R_{0}, R_{2}, R_{4}\right\rbrace$}	& $\left\lbrace R_{0}, R_{2}\right\rbrace \times R_{4}$ \\
+									&																	& $\left\lbrace R_{0}, R_{4}\right\rbrace \times R_{2}$ \\
+									&																	& $\left\lbrace R_{2}, R_{4}\right\rbrace \times R_{0}$ \\ \hline
+				\multirow{3}{*}{22}	&\multirow{3}{*}{$\left\lbrace R_{1}, R_{2}, R_{4}\right\rbrace$}	& $\left\lbrace R_{1}, R_{2}\right\rbrace \bowtie R_{4}$ \\
+									&																	& $\left\lbrace R_{1}, R_{4}\right\rbrace \bowtie R_{2}$ \\
+									&																	& $\left\lbrace R_{2}, R_{4}\right\rbrace \bowtie R_{1}$ \\ \hline
+				\multirow{7}{*}{23}	&\multirow{7}{*}{$\left\lbrace R_{0}, R_{1}, R_{2}, R_{4}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}, R_{2}\right\rbrace \bowtie R_{4}$ \\
+									&																			& $\left\lbrace R_{0}, R_{1}, R_{4}\right\rbrace \bowtie R_{2}$ \\ 	
+									&																			& $\left\lbrace R_{0}, R_{2}, R_{4}\right\rbrace \bowtie R_{1}$ \\
+									&																			& $\left\lbrace R_{1}, R_{2}, R_{4}\right\rbrace \bowtie R_{0}$ \\
+									&																			& $\left\lbrace R_{0}, R_{1}\right\rbrace \bowtie \left\lbrace R_{2}, R_{4}\right\rbrace $ \\ 
+									&																			& $\left\lbrace R_{0}, R_{2}\right\rbrace \bowtie \left\lbrace R_{1}, R_{4}\right\rbrace $ \\
+									&																			& $\left\lbrace R_{0}, R_{4}\right\rbrace \bowtie \left\lbrace R_{1}, R_{2}\right\rbrace $ \\ \hline
+				24	&$\left\lbrace R_{3}, R_{4}\right\rbrace $	 & $R_{3} \times R_{4}$			\\ \hline
+				\multirow{3}{*}{25}	&\multirow{3}{*}{$\left\lbrace R_{0}, R_{3}, R_{4}\right\rbrace$}			& $\left\lbrace R_{0}, R_{3}\right\rbrace \bowtie R_{4}$ \\
+									&																	& $\left\lbrace R_{0}, R_{4}\right\rbrace \bowtie R_{3}$ \\
+									&																	& $\left\lbrace R_{3}, R_{4}\right\rbrace \bowtie R_{0}$ \\ \hline
+				\multirow{3}{*}{26}	&\multirow{3}{*}{$\left\lbrace R_{1}, R_{3}, R_{4}\right\rbrace$}			& $\left\lbrace R_{1}, R_{3}\right\rbrace \bowtie R_{4}$ \\
+									&																	& $\left\lbrace R_{1}, R_{4}\right\rbrace \bowtie R_{3}$ \\
+									&																	& $\left\lbrace R_{3}, R_{4}\right\rbrace \bowtie R_{1}$ \\ \hline
+			\end{tabular}
+		\end{center}
+	\end{table}
+
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{lll}
+				\hline
+				integer &set & join pairs \\ \hline
+				\multirow{7}{*}{27}	&\multirow{7}{*}{$\left\lbrace R_{0}, R_{1}, R_{3}, R_{4}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}, R_{3}\right\rbrace \bowtie R_{4}$ \\
+									&																			& $\left\lbrace R_{0}, R_{1}, R_{4}\right\rbrace \bowtie R_{3}$ \\
+									&																			& $\left\lbrace R_{0}, R_{3}, R_{4}\right\rbrace \bowtie R_{1}$ \\
+									&																			& $\left\lbrace R_{1}, R_{3}, R_{4}\right\rbrace \bowtie R_{0}$ \\
+									&																			& $\left\lbrace R_{0}, R_{3}\right\rbrace \bowtie \left\lbrace R_{1}, R_{4}\right\rbrace $ \\
+									&																			& $\left\lbrace R_{0}, R_{1}\right\rbrace \bowtie \left\lbrace R_{3}, R_{4}\right\rbrace $ \\
+									&																			& $\left\lbrace R_{0}, R_{4}\right\rbrace \bowtie \left\lbrace R_{1}, R_{3}\right\rbrace $ \\\hline
+			\multirow{3}{*}{28}	&\multirow{3}{*}{$\left\lbrace R_{2}, R_{3}, R_{4}\right\rbrace$}			& $\left\lbrace R_{2}, R_{3}\right\rbrace \bowtie R_{4}$ \\
+								&																	& $\left\lbrace R_{2}, R_{4}\right\rbrace \bowtie R_{3}$ \\
+								&																	& $\left\lbrace R_{3}, R_{4}\right\rbrace \bowtie R_{2}$ \\ \hline
+			\multirow{7}{*}{29}	&\multirow{7}{*}{$\left\lbrace R_{0}, R_{2}, R_{3}, R_{4}\right\rbrace$}	& $\left\lbrace R_{0}, R_{2}, R_{3}\right\rbrace \bowtie R_{4}$ \\
+								&																			& $\left\lbrace R_{0}, R_{2}, R_{4}\right\rbrace \bowtie R_{3}$ \\
+								&																			& $\left\lbrace R_{0}, R_{3}, R_{4}\right\rbrace \bowtie R_{2}$ \\
+								&																			& $\left\lbrace R_{2}, R_{3}, R_{4}\right\rbrace \bowtie R_{0}$ \\
+								&																			& $\left\lbrace R_{0}, R_{2}\right\rbrace \bowtie \left\lbrace R_{3}, R_{4}\right\rbrace $ \\
+								&																			& $\left\lbrace R_{0}, R_{3}\right\rbrace \bowtie \left\lbrace R_{2}, R_{4}\right\rbrace $ \\
+								&																			& $\left\lbrace R_{0}, R_{4}\right\rbrace \bowtie \left\lbrace R_{2}, R_{3}\right\rbrace $ \\\hline
+			\multirow{7}{*}{30}	&\multirow{7}{*}{$\left\lbrace R_{1}, R_{2}, R_{3}, R_{4}\right\rbrace$}	& $\left\lbrace R_{1}, R_{2}, R_{3}\right\rbrace \bowtie R_{4}$ \\
+								&																			& $\left\lbrace R_{1}, R_{2}, R_{4}\right\rbrace \bowtie R_{3}$ \\
+								&																			& $\left\lbrace R_{1}, R_{3}, R_{4}\right\rbrace \bowtie R_{2}$ \\
+								&																			& $\left\lbrace R_{2}, R_{3}, R_{4}\right\rbrace \bowtie R_{1}$ \\
+								&																			& $\left\lbrace R_{1}, R_{2}\right\rbrace \bowtie \left\lbrace R_{3}, R_{4}\right\rbrace $ \\
+								&																			& $\left\lbrace R_{1}, R_{3}\right\rbrace \bowtie \left\lbrace R_{2}, R_{4}\right\rbrace $ \\
+								&																			& $\left\lbrace R_{1}, R_{4}\right\rbrace \bowtie \left\lbrace R_{2}, R_{3}\right\rbrace $ \\\hline
+			\multirow{15}{*}{31}	&\multirow{7}{*}{$\left\lbrace R_{0}, R_{1}, R_{2}, R_{3}, R_{4}\right\rbrace$}	& $\left\lbrace R_{0}, R_{1}, R_{2}, R_{3}\right\rbrace \bowtie R_{4}$\\
+									&																				& $\left\lbrace R_{0}, R_{1}, R_{2}, R_{4}\right\rbrace \bowtie R_{3}$\\
+									&																				& $\left\lbrace R_{0}, R_{1}, R_{3}, R_{4}\right\rbrace \bowtie R_{2}$\\
+									&																				& $\left\lbrace R_{0}, R_{2}, R_{3}, R_{4}\right\rbrace \bowtie R_{1}$\\
+									&																				& $\left\lbrace R_{1}, R_{2}, R_{3}, R_{4}\right\rbrace \bowtie R_{0}$\\
+									&																				& $\left\lbrace R_{0}, R_{1}, R_{2}\right\rbrace \bowtie \left\lbrace R_{3}, R_{4}\right\rbrace $ \\
+									&																				& $\left\lbrace R_{0}, R_{1}, R_{3}\right\rbrace \bowtie \left\lbrace R_{2}, R_{4}\right\rbrace $ \\
+									&																				& $\left\lbrace R_{0}, R_{1}, R_{4}\right\rbrace \bowtie \left\lbrace R_{2}, R_{3}\right\rbrace $ \\
+									&																				& $\left\lbrace R_{0}, R_{2}, R_{3}\right\rbrace \bowtie \left\lbrace R_{1}, R_{4}\right\rbrace $ \\ 
+									&																				& $\left\lbrace R_{0}, R_{2}, R_{4}\right\rbrace \bowtie \left\lbrace R_{1}, R_{3}\right\rbrace $ \\
+									&																				& $\left\lbrace R_{0}, R_{3}, R_{4}\right\rbrace \bowtie \left\lbrace R_{1}, R_{2}\right\rbrace $ \\
+									&																				& $\left\lbrace R_{1}, R_{2}, R_{3}\right\rbrace \bowtie \left\lbrace R_{0}, R_{4}\right\rbrace $ \\
+									&																				& $\left\lbrace R_{1}, R_{2}, R_{4}\right\rbrace \bowtie \left\lbrace R_{0}, R_{3}\right\rbrace $ \\ 
+									&																				& $\left\lbrace R_{1}, R_{3}, R_{4}\right\rbrace \bowtie \left\lbrace R_{0}, R_{2}\right\rbrace $ \\
+									&																				& $\left\lbrace R_{2}, R_{3}, R_{4}\right\rbrace \bowtie \left\lbrace R_{0}, R_{1}\right\rbrace $ \\\hline
+			\end{tabular}
+		\end{center}
+	\end{table}
+
+	
+	\item \textbf{connected subgraph-complement-pairs by DPccp}
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{cc}
+				\hline
+				connected subgraph(csg) & complementary subgraph (cmp) \\ \hline
+				$\left\lbrace R_{4} \right\rbrace $	& $\emptyset$ \\ \hline
+				$\left\lbrace R_{3} \right\rbrace $	& $\emptyset$ \\ \hline
+				$\left\lbrace R_{2} \right\rbrace $	& $\left\lbrace R_{3} \right\rbrace $ \\ \hline
+				$\left\lbrace R_{1} \right\rbrace $	& $\left\lbrace R_{4} \right\rbrace $ \\
+				$\left\lbrace R_{1} \right\rbrace $	& $\left\lbrace R_{2} \right\rbrace $ \\
+				$\left\lbrace R_{1} \right\rbrace $	& $\left\lbrace R_{2}, R_{3} \right\rbrace $ \\
+				$\left\lbrace R_{1}, R_{2} \right\rbrace $	& $\left\lbrace R_{4} \right\rbrace $ \\
+				$\left\lbrace R_{1}, R_{2} \right\rbrace $	& $\left\lbrace R_{3} \right\rbrace $ \\
+				$\left\lbrace R_{1}, R_{4} \right\rbrace $	& $\left\lbrace R_{2} \right\rbrace $ \\
+				$\left\lbrace R_{1}, R_{4} \right\rbrace $	& $\left\lbrace R_{2}, R_{3} \right\rbrace $ \\
+				$\left\lbrace R_{1}, R_{2}, R_{4} \right\rbrace $	& $\left\lbrace R_{3} \right\rbrace $ \\
+				$\left\lbrace R_{1}, R_{2}, R_{3} \right\rbrace $	& $\left\lbrace R_{4} \right\rbrace $ \\
+				$\left\lbrace R_{1}, R_{2}, R_{3}, R_{4} \right\rbrace $	& $\emptyset $ \\ \hline
+				$\left\lbrace R_{0} \right\rbrace $	& $\left\lbrace R_{3} \right\rbrace $ \\
+				$\left\lbrace R_{0} \right\rbrace $	& $\left\lbrace R_{2}, R_{3} \right\rbrace $ \\	
+				$\left\lbrace R_{0} \right\rbrace $	& $\left\lbrace R_{1} \right\rbrace $ \\
+				$\left\lbrace R_{0} \right\rbrace $	& $\left\lbrace R_{1}, R_{2} \right\rbrace $ \\	
+				$\left\lbrace R_{0} \right\rbrace $	& $\left\lbrace R_{1}, R_{4} \right\rbrace $ \\	
+				$\left\lbrace R_{0} \right\rbrace $	& $\left\lbrace R_{1}, R_{2}, R_{4} \right\rbrace $ \\	
+				$\left\lbrace R_{0} \right\rbrace $	& $\left\lbrace R_{1}, R_{2}, R_{3} \right\rbrace $ \\	
+				$\left\lbrace R_{0} \right\rbrace $	& $\left\lbrace R_{1}, R_{2}, R_{3}, R_{4} \right\rbrace $ \\	
+				$\left\lbrace R_{0}, R_{1} \right\rbrace $	& $\left\lbrace R_{4}\right\rbrace $ \\	
+				$\left\lbrace R_{0}, R_{1} \right\rbrace $	& $\left\lbrace R_{3}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1} \right\rbrace $	& $\left\lbrace R_{2}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1} \right\rbrace $	& $\left\lbrace R_{2}, R_{3}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{3} \right\rbrace $	& $\left\lbrace R_{2}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{3} \right\rbrace $	& $\left\lbrace R_{1}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{3} \right\rbrace $	& $\left\lbrace R_{1}, R_{2}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{3} \right\rbrace $	& $\left\lbrace R_{1}, R_{4}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{3} \right\rbrace $	& $\left\lbrace R_{1}, R_{2}, R_{4}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1}, R_{3} \right\rbrace $	& $\left\lbrace R_{4}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1}, R_{3} \right\rbrace $	& $\left\lbrace R_{2}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1}, R_{2} \right\rbrace $	& $\left\lbrace R_{4}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1}, R_{2} \right\rbrace $	& $\left\lbrace R_{3}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1}, R_{4} \right\rbrace $	& $\left\lbrace R_{3}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1}, R_{4} \right\rbrace $	& $\left\lbrace R_{2}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1}, R_{4} \right\rbrace $	& $\left\lbrace R_{2}, R_{3}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1}, R_{2}, R_{4} \right\rbrace $	& $\left\lbrace R_{3}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{2}, R_{3} \right\rbrace $	& $\left\lbrace R_{1}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{2}, R_{3} \right\rbrace $	& $\left\lbrace R_{1}, R_{4}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1}, R_{2}, R_{3} \right\rbrace $	& $\left\lbrace R_{4}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1}, R_{3}, R_{4} \right\rbrace $	& $\left\lbrace R_{2}\right\rbrace $ \\
+				$\left\lbrace R_{0}, R_{1}, R_{2}, R_{3}, R_{4} \right\rbrace $	& $\emptyset$ \\ \hline
+			\end{tabular}
+		\end{center}
+	\end{table}
+\end{enumerate}
+
+\end{document}

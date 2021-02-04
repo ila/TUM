@@ -138,30 +138,32 @@ This algorithm has two pitfalls: one is its computational complexity of $O(n^3)$
 It is not possible to speed the execution up through auxiliary data structures such as the heap, since weights are modified at each iteration. Furthermore, it is not guaranteed that Greedy Operator Ordering finds the best bushy tree given a set of relations, even if it tends to have better results than the greedy ordering techniques.
 
 \subsection{IKKBZ}
-IKKBZ is a polynomial time algorithm for join ordering without cross products, producing left-deep trees under some assumptions: acyclic graphs, ASI cost functions and a fixed join technique.
+IKKBZ is a \textbf{polynomial time} algorithm for join ordering without cross products, producing \textbf{left-deep trees} under some assumptions: \textit{acyclic graphs, ASI cost functions and a fixed join technique}. It was built in two phases: IK, the first proposal, and IKKBZ, the improved version which is currently used.
+
+The general idea is considering each relation as starting point, trying to obtain a benefit ordering based on a rank function, and constructing compounds if any set violates ordering rules.
 
 The algorithm will ultimately compute a rank for each predicate, based on its selectivity, obtaining an optimal evaluation order. After the first steps, however, the remaining arguments are independent on the size of the relations.
 
 It starts considering a cost function as a product of the form:
 $$C(T_i \bowtie R_j) = \abs{T_i} \cdot h_j(\abs{R_j})$$
-Each relation $R$ can have its own $h$, which has a set of parametrized cost functions. Cardinalities are also taken into account, defining $n_i = \abs{R_i}$ and $h_i(n_i)$ as the cost per input tuple of a join. $T_i$ is the left side of the computation.
+Each relation $R$ can have its own $h$ (cost for each relation), which has a set of parametrized cost functions $C_H$ (cost for a join). Cardinalities are also taken into account, defining $n_i = \abs{R_i}$ and $h_i(n_i)$ as the cost per input tuple of a join. $T_i$ is the left side of the computation.
 
-A predecende graph helps identifying which relations should be joined first; it is represented as an oriented query graph, and constructed with root in $R_k$ in the following way:
+A \textbf{predecence graph} helps identifying which relations should be joined first; it is represented as an oriented query graph, and constructed with root in $R_k$ in the following way:
 \begin{enumerate}
 	\item The root is fixed, removed by the set of possibilities and added to the tree;
 	\item As long as there are relations to be chosen, $R_i \in V \setminus V_k^P$ is selected such that $\exists\ R_j \in V_k^P : (R_j, R_i) \in E$;
 	\item $R_i$ is added to $V_k^P$ and an edge $R_j \rightarrow R_i$ is created.
 \end{enumerate}
 
-The algorithm constructs left-deep trees.
+Remainder: the algorithm constructs left-deep trees.
 
-A sequence of nodes conforms to a precedence graph if two conditions are satisfied:
+Next steps of the algorithms consist in checking whether the nodes respect properties. A sequence of nodes conforms to a precedence graph if two conditions are satisfied:
 \begin{itemize}
-	\item For each position $i$, there exists one $j$ coming before;
+	\item For each position $i$ aside from the first, there exists one $j$ coming before;
 	\item There does not exist a position $i$ and a $j$ coming after with an edge from $j$ to $i$ (acyclic).
 \end{itemize}
 
-If there exists a path between two sets of relations $R_i$ and $R'_i$, all relations from the first must be joined first; there is no join condition between any pair of relations aside from the one joining the two sets, hence the selectivity is 1.
+If there exists a path between two sets $R_i$ and $R'_i$, all relations from the first must be joined first; there is no join condition between any pair of relations aside from the one joining the two sets, hence the selectivity is 1.
 
 Selectivity of the join:
 $$s_i = \begin{cases}
@@ -175,7 +177,7 @@ $$n_{1, 2, \dots, k} = \prod_{i=1}^{k}s_in_i$$
 $$C_H(G) = \sum_{i=2}^{n}\big[n_{1, 2, \dots, i-1}h_i(n_i)\big] = \sum_{i=2}^{n}\Big[\Big(\prod_{j=1}^{i}s_jn_j\Big)h_i(n_i)\Big]$$
 The cardinality of the joins is equal to the productory of each selectivity for each cardinality among all relations.
 
-If the weight function is indeed the selectivity, then $C_H \equiv C_{out}$. The factor $s_in_i$ determines how much the input relation changes its cardinality before further joins, and can be increasing or decreasing.
+If the \textbf{weight function} is indeed the \textbf{selectivity}, then $C_H \equiv C_{out}$. The factor $s_in_i$ determines how much the input relation changes its cardinality before further joins, and can be increasing or decreasing.
 
 The algorithm employs a recursive definition of the cost function:
 $$\begin{cases}
@@ -187,11 +189,11 @@ C_H(S_1S_2) = C_H(S_1) + T(S_1) \cdot C_H(S_2)
 $$T(\epsilon) = 1 \qquad \land \qquad T(S) = \prod_{R_i \in S}s_in_i$$
 Last $C_H$ definition corresponds to the cardinality performing all the relation in the sequence (the term $T$) and multiplying for the cost of last element.
 
-This allows to use ASI properties: in fact, these hold if and only if there exists a function $T$ and a rank function defined as:
+This allows to use \textit{ASI properties}: in fact, these hold if and only if there exists a function $T$ and a \textbf{rank function} defined as:
 $$rank(S) = \frac{T(S) - 1}{C(S)}$$
 The following must hold:
 $$C(AUVB) \leq C(AVUB) \leftrightarrow rank(U) \leq rank(V)$$
-In other words, ASI properties hold if and only if the relations can be ordered by rank. The cost function previously defined can be proven to respect these constraints.
+In other words, ASI properties hold if and only if the relations can be ordered by rank. The previously defined cost function can be proven to respect these constraints.
 
 It is possible that the rank contradicts the precedence graph: the following definition is introduced to counter this occurrence.
 
@@ -204,9 +206,10 @@ Let $M = \{A_1, \dots, A_n\}$ be a set of sequences of nodes. Then $M$ is called
 
 If $A \rightarrow B$ and $rank(B) \leq rank(A)$, then it is possible to find an optimal sequence among those in which $B$ directly follows $A$.
 
-The continued process of building a compound relation until no more contradictory sequences exist is called normalization; the opposite is denormalization.
+If the precedence graph contains $A \rightarrow B$ but $rank(A) \geq rank(B)$, there is a so called \textbf{contradictory sequence}, and the two are combined, updating other edges by multiplying the cardinalities and selectivities. 
 
-\subsubsection{The algorithm}
+The continued process of building a compound relation until no more contradictory sequences exist is called \textbf{normalization}; the opposite is \textbf{denormalization}.
+
 IKKBZ works performing the following steps for each relation, considering it as a root node:
 \begin{enumerate}
 	\item Calculates the precedence graph;
@@ -220,6 +223,56 @@ The subprocedure constructs a left-deep tree (chain) from the precedence graph, 
 This works by taking $r$ and $c$ such that $rank(r) > rank(c)$ and swapping them with a compound relation representing both. This allows to merge relations that would have been reordered if only considering the rank, obtaining the actual ascending order.
 
 In case the graph contains cycles, it is possible to preprocess it with algorithms such as Minimum Spanning Tree to find a suitable representation to run IKKBZ.
+
+\subsubsection{IK}
+IK was originally proposed as a heuristic algorithm to minimize the number of page fetches necessary to evaluate a nested loop query in a database, providing a suboptimal solution to a NP-complete problem. 
+
+The paper states the impossibility to solve optimization of the expected number of accesses, yet it determines the solution in the special case in which a query is a tree. 
+
+Sorting each relation once gives an useful advantage since it decreases the number of pages in which tuples are looked for: if $T_i$ satisfies an attribute, $T_{i+1}$ will likely do it too, and it will be stored right below. This saving usually compensates the cost to sort.
+
+The $H_i$ in this case is the total \textbf{number of page fetches}, and all other formulas are similar, taking advantage of pointers and approximation in practice to estimate actual costs.
+
+Once found a somewhat accurate cost function, the problem of finding an optimal nested structure is divided into:
+\begin{enumerate}
+	\item Finding a nesting order;
+	\item Finding a compatible directed spanning tree.
+\end{enumerate}
+
+A brute force approach would take up to $n!$ permutations into account, which is not feasible: a criterion must be imposed, generally the lexicographical order of the costs of each relation, in which $H$ should be the most dominant and uniquely determined.
+
+For each relation in the query graph, the one minimizing $H$ is chosen and removed from the set, along with its incident edges, and the final order of choices is returned. This generates a \textbf{spanning tree}, hence removes all the cycles, in $O(n^3)$. 
+
+Tree queries are a special case in which \textbf{direction of edges} is used as ordering constraint: if there is a path between two nodes, then the first must be ordered before the second. The minimization problem then becomes equivalent to minimizing the sum of all cost functions, taken in the best order.
+
+Thanks to ASI properties, an optimal sequence can be obtained in $O(n\log n)$ when the constraints have the form of a directed tree. The algorithm repeatedly finds a \textbf{wedge}, i. e. two chains joined together at the end, and merges it to get a new chain, until it ends up with only one. At each iteration, a node keeps a well-defined rank regardless of its representation.
+
+After the algorithm terminates, each node is again expanded by replacing it by the corresponding sequence of relations, ordered accordingly by their rank. 
+
+Each node is considered as starting node, and the best solution over all is chosen, with a total computational runtime of $O(n^2\log n)$.
+
+\subsubsection{KBZ}
+KBZ is a variant of IK shown to be heuristically effective for cyclic queries as well, and works comparing different alternatives for each element of the search space. 
+
+It improves IK since it supports different join methods, preprocessing and pushing selects, and it is also better in runtime: its worst case is $O(n^2)$, removing the logarithmic weight caused by the sorting.
+
+This approach assumes a \textit{memory resident database}, i. e. there is no paging to disk during the execution. Once again, having the query graph as a tree defines a \textbf{partial ordering}: the root node must be joined first. 
+
+Selectivity of each node here is explicitly defined as the selectivity of the join between it and its \textbf{parent}, since there is only one, and for the root it is unity: the consequence of this is, given the total ordering, a non-root relation joins with its parent first. Therefore, the best join method can be determined independently from the tree shape.
+
+For a given tree derived by a query, therefore, two properties must hold for consistency:
+\begin{itemize}
+	\item The sequence is complied with the imposed partial order from the root;
+	\item A join operation (not a cross product) must be performed at each non-leaf node.
+\end{itemize}
+
+Cost and computation of cardinality and selectivity remain the same as IK, yet the restrictions above and \textit{not having more than one temporary relation used in any join operation} limit the search space. 
+
+However, the approach is slightly different: KBZ presents a method to find the optimal tree which is more efficient than computing the cost for each choice of the root. 
+
+First of all, the original join tree is transformed so that the total order is respected, imposing that the root has only two children. The core idea is that computations corresponding to two choices for the root have a lot in common, especially if the roots are adjacent. 
+
+Then, there is a phase of computing the rank of each relation, and merging in case of contradictory sequences. Cycles can be eliminated by considering the Minimum Spanning Tree.
 
 \subsection{Maximum Value Precedence}
 Maximum Value precedence is useful in those cases where IKKBZ fails, such as cyclic queries. It runs in polynomial time as well, employing a graph theoretic approach to calculate in how many ways joins can be scheduled.
