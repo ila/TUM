@@ -31,12 +31,12 @@ Compilation takes time and limits the number of queries which can be ran in para
 
 \textit{Embedded SQL} is another technique to optimize compilation time in the case of large periods of time between the two phases, combining data manipulation with low-level code. The programming language compiler takes care of the SQL part as well, optimizing it.
 
-The embedded SQL statements are parsed by a preprocessor and replaced by host-language calls to a code library, and from the preprocessor is then compiled by the host compiler.
+The embedded SQL statements are parsed by a preprocessor and replaced by host-language calls to a code library, and from the preprocessor are then compiled by the host compiler.
 
 The steps executed in compile time in a general database environment are:
 \begin{enumerate}
 	\item \textbf{Parsing}, AST production (abstract syntax to understand the structure);
-	\item \textbf{Schema lookup}, variable binding, type inference (semantic analysis \textbf{about} relations and columns, syntax check);
+	\item \textbf{Schema lookup}, variable binding, type inference (semantic analysis about relations and columns, syntax check);
 	\item \textbf{Normalization}, factorization (bringing the query in abstract form, avoiding computing the same thing twice, evaluating expressions);
 	\item \textbf{Unnesting}, deriving predicates, resolution of views (the plan generator can finally construct a cost-based model);
 	\item \textbf{Construction} of execution plan;
