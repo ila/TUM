@@ -275,27 +275,33 @@ First of all, the original join tree is transformed so that the total order is r
 Then, there is a phase of computing the rank of each relation, and merging in case of contradictory sequences. Cycles can be eliminated by considering the Minimum Spanning Tree.
 
 \subsection{Maximum Value Precedence}
-Maximum Value precedence is useful in those cases where IKKBZ fails, such as cyclic queries. It runs in polynomial time as well, employing a graph theoretic approach to calculate in how many ways joins can be scheduled.
+Maximum Value precedence is useful in those cases where IKKBZ fails, such as \textbf{cyclic queries}. It runs in polynomial time ($O(n^2)$) as well, employing a graph theoretic approach to calculate in how many ways joins can be scheduled.
 
-The algorithm requires a join graph, similar to the ones discussed before, which will be modified later, hence the definition must be extended: edges are assigned an order, and predicates are used to identify sets.
+This approach also provides a formal representation for operations of query and optimization parameters in an uniform manner, giving a cost once an execution plan is obtained in the form of a spanning tree.
 
-If there exists an edge between the predicates $p_1$ and $p_2$, and they belong to the same relation, two directed edges are added in the graph. 
+The algorithm requires a weighted directed \textbf{join graph}, similar to the ones discussed before, which will be modified later, hence the definition must be extended: edges are assigned an \textbf{order}, and \textbf{predicates} (nodes) are used to identify sets.
 
-If $p_1$ is connected to $p_2$ and $p_2$ is connected to $p_3$, there will be a so called virtual edge connecting $p_1$ and $p_3$: eventually, all nodes will be connected with either physical or virtual edges, forming a clique.
+In this representation, each node corresponds to a join, and a directed edge indicates the order of execution. If there exists an edge between the predicates $p_1$ and $p_2$, and they belong to the same relation, two directed edges are added in the graph.  
+
+If $p_1$ is connected to $p_2$ and $p_2$ is connected to $p_3$, there will be a so called \textit{virtual edge} connecting $p_1$ and $p_3$: eventually, all nodes will be connected with either physical or virtual edges, forming a clique.
 
 \begin{wrapfigure}{R}{0.45\textwidth}
-	\vspace{-27pt}
+	\vspace{-20pt}
 	\includegraphics[width=0.48\textwidth]{MVP.png}
-	\vspace{-50pt}
+	\vspace{-30pt}
 \end{wrapfigure}
 
-For instance, every spanning tree in the directed join graph leads to a join tree: first of all edges are added in both direction, and then one of them gets removed, giving a directed acyclic graph which can easily give a join order (without distinguishing left and right).
+For instance, \textbf{every spanning tree in the directed join graph leads to a join tree}: first of all edges are added in both direction, and then one of them gets removed, giving a directed acyclic graph which can easily give a join order (without distinguishing left and right).
 
-MVP has the advantage of also producing bushy trees, however it does not guarantee optimality of the spanning tree; furthermore, the output might not correspond to an effective join tree.
+MVP has the advantage of also producing bushy trees, however it does not guarantee optimality of the spanning tree; furthermore, the output might not correspond to an effective join tree, especially in uniprocessor environments.
 
 Despite the incorrect representation, it is simple to fix this kind of errors, but there is no specific way to produce the best join tree.
 
-To remedy the uncertainty, some additional rules are introduced to identify an effective spanning tree. The following conditions must be satisfied:
+To remedy the uncertainty, some additional rules are introduced to identify an \textbf{effective} spanning tree, which also help reducing the search space.
+
+\textit{For a given query $R_1 \bowtie R_2 \bowtie \dots \bowtie R_n$, an effective spanning tree of this query is a directed binary spanning tree of its corresponding weighted directed join graph such that query result is obtained without requiring to execute any extra joins in addition to the joins of the spanning tree.}
+
+The following conditions must be satisfied:
 \begin{enumerate}
 	\item $T$ must be binary (no nodes can have more than two children);
 	\item For all inner connected nodes $(u, v)$, $R(T(u)) \cap R(v) \neq \emptyset$ (they must have predicates in common);
@@ -305,13 +311,13 @@ To remedy the uncertainty, some additional rules are introduced to identify an e
 		\item $(R(T(u_1)) = R(v)) \land (R(T(u_2)) = R(v))$ (the relations in common are the same between pairs).
 	\end{enumerate}
 \end{enumerate}
-An effective spanning tree corresponds to a valid join tree, despite the definition not being intuitive. Given this, the rest of the assumptions is simple: if every predicate involves two relations and an equi-join condition, then $R(u) \cap R(v)$ contains only a single relation.
+An effective spanning tree corresponds to a \textit{valid join tree}, despite the definition not being intuitive. Given this, the rest of the assumptions is simple: if every predicate involves two relations and an equi-join condition, then $R(u) \cap R(v)$ contains only a single relation.
 
 Let $v$ be that relation, then $R_i \bowtie_v R_j$ is abbreviated by $\bowtie_v$.
 
 The next step is adding weight to the edges, obtaining a weighted directed join graph. Each weight is calculated with the formula:
 $$w_{u, v} = \frac{\abs{\bowtie_u}}{R(u) \cap R(v)}$$
-This means that each edge has a weight depending on the relation they have in common and the join cardinality. The intuition implies that a join is executes before another, the given relation becomes available and the edge weight can explain how the cardinality changes, i. e. how many tuples are generated.
+This means that each edge has a weight depending on the relation they have in common and the first join cardinality. The intuition implies that if a join is \textit{executed before another}, the given relation becomes available and the edge weight can explain how the cardinality changes, i. e. how many tuples are generated.
 
 This value can be bigger or smaller than 1, and can make the total cost bigger or smaller (the input size changes by a factor of $w_{u, v}$). For virtual edges, the weight is 1 by default. 
 
@@ -327,15 +333,21 @@ The algorithm works in two phases:
 	\item Taking the edges with weight smaller than 1, trying to reduce the work for latter operators as soon as possible;
 	\item Adding the remaining edges, potentially causing an increase of the load, yet as late as possible.
 \end{enumerate}
-MVP takes as input a weighted directed join graph and builds two priority queues, one with largest weights (phase 1) and one with smallest (phase 2). 
+As a weighted directed join graph contains all execution plans of a query and each spanning tree corresponds to an execution plan, the task is to find the minimum cost. However, the minimum spanning tree algorithm cannot be directly applied, since the weights are not constant (they change after each modification). 
 
-The working graph is initially just a set of predicates with no edges, and then the two phases are ran.
+The rational is therefore reducing the expensive operations as early as possible. In order to meet this goal, two priority queues are introduced along with two phases, one with largest weights (phase 1) and one with smallest (phase 2). 
 
-The first phase modifies the state of a working tree, taking the head of the priority queue (the most expensive) and finding the joins which could make it cheaper, adding nodes with smaller weight while still keeping the graph acyclic.
+The working graph is initially just a set of predicates with no edges, and then the two phases are ran, sorting costs of vertices in descending order.
 
-If there is no such edge, the element is swapped from the first queue to the second; else, the edge to be added to the working tree will be the one which maximizes the difference within costs (minimizes the new cost). Weights are then recomputed. 
+The first phase modifies the state of a working tree, taking the head of the first priority queue (the \textbf{most expensive}) and finding the joins which could make it cheaper, adding nodes with smaller weight while still keeping the graph acyclic. 
 
-Phase 2 is called when the second queue is non-empty, again considering edges which respect the acyclic property. The procedure tries to minimize the additional cost caused by adding joins. 
+The working graph is updated, removing the edge and adding respective virtual ones until no edges can reduce costs, or there are no further nodes with weight less than 1.
+
+In this case, the cheapest node is swapped from the first queue to the second; else, the edge to be added to the working tree will be the one which maximizes the difference within costs (minimizes the new cost). Weights are then recomputed. 
+
+Phase 2 is called when the second queue is non-empty, again considering edges which respect the acyclic property. The procedure tries to minimize the additional cost caused by adding joins, finding edges causing minimum increase of the total result. 
+
+The motivation behind phase 2 is that if an edge causes a large cost increase to its connecting join node, then the effect of this will propagate to all the rest join nodes; hence, these need to be considered as late as possible.
 
 To effectively modify the working tree, an update function changes the state by performing unions of sets with edges and removal from the graph yet to consider. If there are two incoming physical edges, they are replaced with virtual ones. 
 
