@@ -86,4 +86,72 @@ Non-uniform distributions work similarly, yet modeling each probability to acces
 Accesses on disk are relevant to estimate the cost of jumping between two pages or cylinders: this directly depends on the distance gap. When estimating seek costs, there must be a probability distribution for the distances.  
 
 Assuming the situation is a bitvector of length $B$ with $b$ bits set to 1, then $B - b$ bits are zero. Then, the probability distribution of the number $j$ of zeros between two consecutive ones, before the first or after the last is:
-$$B^B_b(j) = \frac{{B-j-1\choose b-1}}{{B\choose b}}$$
+$$B^B_b(j) = \frac{{B-j-1\choose b-1}}{{B\choose b}} = \frac{b}{B-j}\prod_{i=0}^{j-1} \Big( 1 - \frac{b}{B - i}\Big)$$
+
+The distance between two ones is obtained taking the expected value of the number of zeros, and adding one for the potential first or last position.
+
+Some other values can be deduced from this, such as the total number of bits from the first bit to the last one (extremes included), which is:
+$$B_{tot}(B, b) = \frac{Bb + b}{b + 1}$$
+
+All these computations have several real-life applications: the original motivation implies retrieving values from a B-tree and accessing them on disk, sorting the entries to avoid multiple random lookups. 
+
+After estimating how many pages need to be accessed using Yao's formula, there has to be a way to understand how expensive a fetch can be, and a bitvector module gives information about the distance between pages. 
+
+
+\section{Selectivity estimations}
+Selectivity estimation has always been assumed to be known until now, yet it is a statistic which needs to be computed, since it is essential for query optimization.
+
+Unfortunately, this is a fundamentally difficult problem, and can take quite a long time.
+
+Specifically, there are different selectivity problems requiring different approaches. For arbitrarily difficult queries it is impossible to make an estimation, yet the following three are the most common:
+
+\begin{lstlisting}[language=SQL]
+SELECT *
+FROM relation r
+WHERE r.a = 10
+	
+SELECT *
+FROM relation r
+WHERE r.b > 2
+	
+SELECT *
+FROM relation1 r1, relation2 r2
+WHERE r1.a = r2.b
+\end{lstlisting}
+
+\subsection{Heuristic estimations}
+There are some textbook estimations which are not advanced strategies, depending on the predicate.
+
+Knowing the domain of $A$, for instance, can happen when the column has an index, yet an uniform distribution must be assumed.
+
+Having a range query is also helped by an index, since this additional data structure stores the minimum and maximum value, hence selection can be obtained by interpolation. 
+
+Joins again depend on indices and domain of the involved tables.
+
+\subsection{Building histograms}
+Heuristics are quite simple and have the restriction of the uniform distribution, so multiple DBMS employ histograms: aggregated data is partitioned in buckets such that $H_A(b) = |\{r\ |\ r \in R \;and R.A \in b\}|$ and thus $\sum_{b \in B} H_A(b) = \abs{R}$.
+
+This methods leads to a much better estimation than previous ones, and computing histograms is also easy since it only involves a sequential scan: the real challenge is selecting the appropriate $B$.
+
+Assuming data is already in buckets, there are formulas giving the appropriate result, applying linear interpolation to the newly obtained histogram:
+$$A = c \quad \frac{\sum_{b \in B:c \in b H_A(b)}}{\sum_{b \in B}H_A(b)}$$
+$$A > c \quad \frac{\sum_{b \in B:c \in b \frac{max(b) - c}{max(b) - min(b)} H_A(b) + \sum_{b \in B:min(b) > c} H_A(b)}}{\sum_{b \in B}H_A(b)}$$
+$$A_1 = A_2 \quad \frac{\sum_{b_1 \in B_1, b_2 \in B_2, b' = b_1 \cap b_2: b' \neq \emptyset} \frac{max(b') - min(b')}{max(b_1) - min(b_1)} H_{A_1}(b_1) \frac{max(b') - min(b')}{max(b_2) - min(b_2)} H_{A_2}(b_2)}{\sum_{b_1 \in B_1}H_{A_1}(b_1) \sum_{b_2 \in B_2}H_{A_2}(b_2)}$$
+
+These computations only give an upper bound, while the lower bound can be up to zero, and it is impossible to predict. Furthermore, the upper bound can be quite an overestimation in the first case, which represents only a rough approximation.
+
+The problem comes from the restriction in the mathematical meaning of $P(A = c) = 0$, which gives a sound result when $A > c$ but fails when the query involves equality. Joining works using some assumptions as well, such as independence.
+
+Building histograms concerns the previously mentioned issue: finding the optimal number of buckets. Typically, this is a fixed value, and it has to work with an unknown distribution.
+
+One particular strategy is partitioning the domain into buckets of equal width, simply constructing them from left to right. This is easy to compute, since it does not require boundaries: it is enough to store minimum, maximum and size. 
+
+However, it fails when data is skewed, causing uneven buckets and therefore a greater estimation error. 
+
+Another method is the equi-depth, forcing each bucket to have the same number of elements, adopting to data distribution. This technique is very common and not too time consuming, so it is widely used in practice.
+
+The only disadvantages are having to sort the values beforehand, and store boundaries and ties (obviously not the count).
+
+Interpolation is a technique to improve accuracy, however it can be difficult to interpolate a histogram: a potential solution is using the distribution function instead, which is continuous and monotonic. This works particularly well in the case $A > c$.
+
+Further research includes analyzing correlations, multi-dimensional histograms and cardinality estimators.

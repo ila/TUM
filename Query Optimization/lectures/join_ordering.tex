@@ -525,7 +525,7 @@ After the optimal simplification is obtained, dynamic programming is used to get
 
 Simplification heuristics are subject to mistakes, hence performing too many probably means at some point the cost will increase, and it would be best to stop earlier. This problem is NP-hard.
 
-\subsection{Search Space Linearization}
+\subsection{Adaptive Query Optimization}
 The effectiveness of this method comes from the huge variety of possible queries to be performed in the real world, of which most are small, but some can arrive up to thousands of relations.
 
 Reducing the search space is essential, but greedy algorithms do not perform that well on large graphs. On the other hand, dynamic programming has exponential runtime and a lot of assumptions, so a large search space leads to NP-hard problems. 
@@ -549,6 +549,7 @@ To summarize, the decision flow chooses the following approaches:
 
 Complexity is measured with both time and space requirements, and it strictly depends on the structure of the query graph.
 
+\subsubsection{Search Space Linearization}
 Search space linearization (LDP) is a technique working for medium-sized queries (in the order of a hundred relations), always assuming no cross products to improve performance. 
 
 The main goal is to transform a complicated query graph in a chain, since most algorithms perform badly on cliques. Assuming the order of relations in the optimal plan is known, LDP generates the optimal plan from the linearization in polynomial time, and combines solutions for subchains of increasing size.
