@@ -1,0 +1,155 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{xparse}
+
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{forest}
+\usepackage{tikz-qtree}
+\usepackage{comment}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+
+\title{Query Optimization}
+\date{November 2020}
+
+\begin{document}
+
+\maketitle
+
+\section{Exercise 2}
+\subsection{Task 1}
+~\\
+Task 1.1
+~\\
+To be shown:
+\begin{equation}
+\nonumber
+\begin{aligned}
+\sigma_a (R_1\Join_b R_2) \equiv \sigma_a(R_1) \Join_b R_2 \qquad|\;a=p_1,\;b=p_2,\;F(a)\subseteq A(R_1)
+\end{aligned}
+\end{equation}
+~\\
+\begin{equation}
+\nonumber
+\begin{aligned}
+Let\; c\in \sigma_a (R_1\Join_b R_2)\\
+\iff \exists c\in(R_1\Join_b R_2)\; |\; a(c)\\
+\iff \exists c_1\in R_1,c_2\in R_2\; |\; c=c_1\circ c_2\wedge b(c)\wedge a(c)\\
+Because\; F(a)\subseteq A(R_1)\\
+\iff \exists c_1\in R_1,c_2\in R_2\; |\; c=c_1\circ c_2\wedge b(c)\wedge a(c_1)\\
+\iff \exists c_1\in \sigma_a (R_1),c_2\in R_2\; |\; c=c_1\circ c_2\wedge b(c)\\
+\iff \exists c \;|\; \sigma_a(R_1) \Join_b R_2\\
+\end{aligned}
+\end{equation}
+~\\
+Task 1.2
+~\\
+The equivalence does not hold true for outer joins.\\
+~\\
+If $R_1$:\\~\\
+\begin{tabular}{| c |c |}
+\hline
+ $p1$ &$p2$ \\ 
+ \hline
+\end{tabular}
+~\\
+~\\
+And if $R_2$:\\~\\
+\begin{tabular}{| c |}
+\hline
+$ p_2$ \\ 
+ \hline \hline
+ 1\\\hline
+ 2\\\hline
+\end{tabular}
+~\\
+~\\
+~\\
+Then: \\
+~\\
+$\sigma_a (R_1\Join_b R_2) = \emptyset$
+~\\
+~\\
+And: \\
+~\\
+$\sigma_a(R_1) \Join_b R_2$:\\
+~\\
+\begin{tabular}{| c | c |}
+\hline
+ $p_2$ &$ p_1$ \\ 
+ \hline \hline
+ 1 & -\\\hline
+ 2 & - \\\hline
+\end{tabular}
+
+\subsection{Task 2}
+~\\
+Task 2.1 
+~\\
+\begin{tabular}{| c || c |}
+\hline
+$ R_1.x=key $ & $ 1\div  |R_1| $\\\hline
+$ R_1.x\neq key $ & $ 1\div distinct(R_1) $ \\\hline
+\end{tabular}
+~\\
+~\\
+~\\
+Task 2.2
+~\\
+\begin{tabular}{| c || c | c |}
+\hline
+ & $R_2.y=key$ & $R_2.y\neq key $\\\hline
+ $R_1.x=key$ & $1\div max( |R_1|,|R_2|)$ & $1\div |R_2|$\\\hline
+ $R_1.x\neq key$ & $1\div |R_1|$ & $1\div max(distinct(R_1),distinct(R_2))$\\\hline
+\end{tabular}
+\subsection{Task 3}
+~\\
+Task 3.1: NL\\
+~\\
+Given, average access time for relation $x = aat_x$, $pg_x$ is amount of seconds needed to transfer x pages, performing the Nested Loops Join of R and S takes:\\
+~\\
+\begin{gather*}
+|R|*(aat_R + pg_1 + aat_S + pg_{100000}) \\
+= 50 000 * (10^{-2} + 10^{-4} + 10^{-2} + \frac{100000}{10000})\\
+= 501005
+\end{gather*}
+seconds.
+~\\
+Task 3.2: BNL\\
+~\\
+\begin{gather*}
+|R|*(aat_R + pg_{100} + aat_S + pg_{100000}) \\
+= 10 * (10^{-2} + 10^{-2} + 10^{-2} + \frac{100000}{10000})\\
+= 100.3
+\end{gather*}
+seconds.
+\end{document}
+
