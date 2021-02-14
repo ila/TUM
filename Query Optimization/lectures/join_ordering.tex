@@ -653,60 +653,118 @@ To summarize, the decision flow chooses the following approaches, considered to 
 	\item \textbf{Greediness} (still in a limited way, keeping in mind restrictions) to achieve a reasonable optimization time.
 \end{itemize}
 
-Complexity is measured with both time and space requirements, and it strictly depends on the structure of the query graph.
+Complexity is measured with both time and space requirements, and it strictly depends on the structure of the query graph. Once queries become reasonably large, not only the join orderingalgorithm itself plays an important role, but also the implementationof data structures.
 
 \subsubsection{Search Space Linearization (LDP)}
-Search space linearization (LDP) is a technique working for medium-sized queries (in the order of a hundred relations), always assuming no cross products to improve performance. 
+Search space linearization (LDP) is a technique working for medium-sized and large queries (in the order of a hundred relations, scaling well), always assuming no cross products to improve performance. 
 
-The main goal is to transform a complicated query graph in a chain, since most algorithms perform badly on cliques. Assuming the order of relations in the optimal plan is known, LDP generates the optimal plan from the linearization in polynomial time, and combines solutions for subchains of increasing size.
+The main goal is to transform a complicated query graph in a \textbf{chain}, since most algorithms perform badly on cliques. Search space is \textit{linearized} by restricting the DP algorithm to consider only \textbf{connected subchains} of a linear relation ordering, instead of arbitrary combinations.
 
-The optimal order can be obtained through IKKBZ in quadratic runtime, so it is indeed possible to run LDP. The result is as least as good as the best left-deep plan, and the optimal bushy plan can be discovered with further steps.
+\begin{wrapfigure}{L}{0.6\textwidth}
+	\vspace{-18pt}
+	\includegraphics[width=0.6\textwidth]{lindp.png}
+	\vspace{-30pt}
+\end{wrapfigure}
 
-However, a runtime of $O(n^3)$ is still too large for wide query graphs, so a combined approach is taken:
+Unfortunately, hypergraphs cannot be expressed in such a linearized form, hence this algorithm can only be applied to queries that can be represented by a regular graph.
+
+Knowing the order of relations in the optimal plan, LDP generates the optimal plan from the linearization in polynomial time, combining solutions for subchains of increasing size. 
+
+Furthermore, as seen above, the DP table is much smaller.
+
+The way the graph is linearized also has a great impact on the quality of the final plan, thus even if time is greatly reduced, some join orders which may be good are removed.
+
+This is countered knowing the optimal order can be obtained through \textbf{IKKBZ} in quadratic runtime (with eventually applying MST if the graph is cyclic), so it is indeed possible to order relations efficiently. The result is as least as good as the best left-deep plan, and the optimal bushy plan can be discovered with further steps.
+
+However, a runtime of $O(n^3)$ is still too large for wide query graphs, so a \textbf{combined approach} is taken in case of joining more than 100 relations:
 \begin{enumerate}
 	\item The query plan is build through a greedy algorithm, such as GOO;
 	\item The $k$ most expensive trees are iteratively optimized again using dynamic programming.
 \end{enumerate}
 
-LDP is useful to increase the factor $k$ up to 100, obtaining a reasonable plan. For small number of relations, however, DPhyp still performs the best. 
+The latter algorithm is indeed LDP: most DP approaches would need a relatively small $k$ to achieve reasonable time, while LDP allows to increase the factor $k$ up to 100.
+
+This way, there is more freedom to correct mistakes the greedy phase has introduced, as relations can move up to 100 places within the tree. For small number of relations, however, DPhyp still performs the best. 
 
 \subsection{Generating Permutations}
-Generating permutation is a lightweight algorithm: it does not require a DP table, and the solution can be found even without completing the enumeration of possibilities. This allows very low space consumption, imposing stricter time requirements (stop if time runs out).
+Generating permutation is a \textit{lightweight} algorithm: it does not require a DP table, and the solution can be found even without completing the enumeration of possibilities. This allows very low space consumption, imposing \textbf{stricter time requirements} (stop if time runs out).
 
-This can be achieved considering left-deep trees: those are permutations of the relations to be joined, which can be generated directly. To make the process cheaper, some permutations can be ignored applying the DP reasoning (if a solution is better than another, there is no point extending the latter).
+Generating all permutations is too expensive, but some of them can be ignored: if a join is more efficient than another, the latter can be discarded.
 
-A sequence is only explored if exchanging the last two relations does not result in a cheaper alternative. 
+This can be achieved considering left-deep trees: those are permutations of the relations to be joined, which can be generated directly. To make the process cheaper, some permutations can be ignored once again applying the DP reasoning (if a solution is better than another, there is no point extending the latter).
+
+\textit{A sequence is only explored if exchanging the last two relations does not result in a cheaper alternative. }
 
 The algorithm performs a recursive search while comparing the costs of adding a relation in the end or earlier in the chain, making the optimal plan better after each iteration. 
 
-Since modifications are performed in-place, the occupied memory is linear; however, it potentially runs for a long time, and some constraints need to be placed. An instance of the worst case scenario is when a tie occurs, since the algorithm must explore both alternatives. 
+This process is implemented considering a \textbf{prefix} $P$ and the rest $R$, increasing $P$ recursively and keeping track of the best tree found so far. 
+
+Since modifications are performed in-place, the occupied memory is linear; however, it potentially runs for a long time, and some constraints need to be placed. An instance of the worst case scenario is when a \textbf{tie} occurs, since the algorithm must explore both alternatives. 
 
 \subsection{Transformative Approaches}
-This technique is used among modern commercial DBMS (SQL server), but it is likely not the best approach. 
+This technique is used among modern commercial DBMS (Microsoft SQL server), but it is likely not the best approach. The main idea is to directly apply properties and equivalences to construct new query plans, yet this raises plenty of problems: there is no order, the optimal solution must be guaranteed and such.
 
-The main idea is to directly apply properties and equivalences to construct new query plans, yet this raises plenty of problems: there is no order, the optimal solution must be guaranteed and such. 
+The algorithm is presented as a transformation-based enumeration to avoid the generation of duplicates, to obtain a lower bound for the number of combinations, employing both \textbf{memoization} and \textbf{transformation rules}.
 
-To restrict the combinations, only a few possibilities are considered: commutativity, associativity and join exchange. Furthermore, two arbitrary relations can be swapped, or cyclic rotations can be performed. 
+This works as follows:
+\begin{enumerate}
+	\item A set of visited plans is kept, starting with a simple expression;
+	\item All transformation rules are applied to visited plans, adding the result to the set if they are new;
+	\item When no new plans can be generated, the complete search space has been explored.
+\end{enumerate}
 
-It is possible to obtain the optimal solution just applying commutativity and left/right associativity (RS-0), however the other rules allow a smaller number of steps hence a quicker runtime.
+Commonly used sets of transformations are:
+\begin{itemize}
+	\item RS-B0 (one of the properties is redundant):
+	\begin{itemize}
+		\item Right associativity: $(A \bowtie B) \bowtie C \rightarrow A \bowtie (B \bowtie C)$;
+		\item Left associativity: $A \bowtie (B \bowtie C) \rightarrow (A \bowtie B) \bowtie C$;
+		\item Commutativity: $A \bowtie B \rightarrow B \bowtie A$;
+	\end{itemize}
+	\item RS-B1 (not redundant anymore):
+	\begin{itemize}
+		\item Left associativity: $A \bowtie (B \bowtie C) \rightarrow (A \bowtie B) \bowtie C$;
+		\item Commutativity: $A \bowtie B \rightarrow B \bowtie A$;
+	\end{itemize}
+	\item RS-L1, for left-deep trees:
+	\begin{itemize}
+		\item Swap: $(A \bowtie B) \bowtie C \rightarrow (A \bowtie C) \bowtie B$;
+		\item Bottom commutativity: $B_1 \bowtie B_2 \rightarrow B_2 \bowtie B_1$, for base tables (underlying tables storing metadata for a database);
+	\end{itemize}
+	\item RS-B2, to avoid duplicates:
+	\begin{itemize}
+		\item Commutativity: $A \bowtie_0 B \rightarrow B \bowtie_1 A$, disabling all other rules for the new operator $\bowtie_1$;
+		\item Right associativity: $(A \bowtie_0 B) \bowtie_1 C \rightarrow A \bowtie_2 (B \bowtie_3 C)$, disabling associativity and exchange on $\bowtie_2$;
+		\item Left associativity: $A \bowtie_0 (B \bowtie_1 C) \rightarrow (A \bowtie_2 B) \bowtie_3 C$, disabling associativity and exchange on $\bowtie_3$;
+		\item Exchange: $(A \bowtie_0 B) \bowtie_1 (C \bowtie_2 D) \rightarrow (A \bowtie_3 C) \bowtie_4 (B \bowtie_5 D)$, disabling all other rules for application on $\bowtie_4$.
+	\end{itemize}
+\end{itemize}
+
+Furthermore, two arbitrary relations can be swapped, or cyclic rotations can be performed. It is possible to obtain the optimal solution just applying RS-0, however the other rules allow a smaller number of steps hence a quicker runtime.
 
 In practice, the output is easily suboptimal: the whole search space is to be considered and the same plan can be generated more than once. 
 
-A memoization approach is introduced to remember the intermediate solutions, using pointers to class and expanding their relative members.
+A memoization approach is therefore introduced to remember the intermediate solutions, using pointers to class and expanding their relative members. Replication is avoided by using \textit{shared copies} only, organizing a network of \textit{equivalence classes}.
 
-The rule set is therefore extended (RS-1) to repeatedly disable and enable some transformations depending on the step which has just been performed, managing to avoid duplicates. 
+Each class is a set of operators which all produce the same result, and each operator takes a class as input, meaning that any operator in that class may be applied. A hash table is furthermore used to speed up finding results.
+
+\textbf{RS-B2} is the only set of rules which effectively avoids duplicates, working with the following logic: some rules should not be applied twice, since their output will be redundant (e. g. commutativity).
+
+The applicability of a rule can be encoded using a single bit, which is not a huge overhead in memory. Even with restrictions, RS-B2 rules generate all valid bushy join orders.
+
+Linear trees can also be obtained employing a variant of this, using only associativity and commutativity.
 
 \subsection{Generating Random Join Trees}
-Constructing a random join tree is quite useful in practice: assuming the cost is random, it is possible to find a solution which is really close to the optimal one, and allows to get information about the distribution.
+Constructing a \textbf{random join tree} is quite useful in practice: assuming the cost is random, it is possible to find a solution which is really close to the optimal one, and allows to get information about the distribution.
 
-In this case, considering cross products make the problem simpler, but the uniformity of join trees (having the same probability for each tree) is a challenge.
+In this case, considering cross products make the problem simpler, but the \textit{uniformity of join trees} (having the same probability for each tree) is a challenge.
 
-To help this, the concepts of ranking and unranking are introduced:
+To help this, the concepts of \textbf{ranking} and \textbf{unranking} are introduced:
 \begin{itemize}
 	\item A ranking is a mapping $f : S \rightarrow [0, n[$;
 	\item An unranking is a mapping $f : [0, n[ \rightarrow S$.
 \end{itemize}
-The idea is to generate random numbers to them map them to the corresponding join tree. Both functions should be bijective for this to work, however the function must also be able to unrank in a fast way.
+The idea is to generate random numbers, to then map them to the and the function must also be able to unrank in a fast way.
 
 A trivial mapping would just be generating all possible trees and incrementing a counter, but this method is not efficient: the solution set should be smaller.
 
@@ -716,15 +774,23 @@ In the first call, there are $n$ choices of random elements $r_{n-1}, \dots, r_0
 
 Unranking works trying to find a sequence from the initial value, which is independent from previous ones: $r_{n-1} \equiv r \mod n$ is set, and the swap is performed. $r' = \lfloor r/n\rfloor$ is defined and iteratively unranked to construct a permutation of $n - 1$ elements. 
 
-Bushy trees are obtained in a similar way, yet using a Catalan number $b$ (the amount of different trees) to obtain the relations, and applying the previous procedure with another random value $p$ smaller than $n!$. Unranking works attaching the relations in order $p$.
+\textbf{Bushy trees} are obtained in a similar way, yet using a Catalan number $b$ (the amount of different trees) to obtain the relations, and applying the previous procedure with another random value $p$ smaller than $n!$. Unranking works attaching the relations in order $p$.
 
 To encode trees, whenever an inner node is encountered a left bracket (1) is added, and when a leaf node is encountered a right bracket (0) is added, except for the last one. Brackets are then substituted with the respective binary value, and the relations correspond to the position of 1s starting from left. 
 
-Unranking binary trees also has an unique correspondence with Dyck words (sequences with proper brackets): to count how many possibilities are there, it is possible to plot them knowing that the first character must be a left bracket, and last one a right bracket. A tree is any path in the grid from $(0, 0)$ to $(2n 0)$.
+Unranking binary trees also has an unique correspondence with Dyck words (sequences with proper brackets): to count how many possibilities are there, it is possible to plot them knowing that the first character must be a left bracket, and last one a right bracket. A tree is any path in the grid from $(0, 0)$ to $(2n, 0)$.
+
+\begin{wrapfigure}{L}{0.6\textwidth}
+	\vspace{-10pt}
+	\includegraphics[width=0.6\textwidth]{grid.png}
+	\vspace{-30pt}
+\end{wrapfigure}
 
 The number of different paths from $(0, 0)$ to $(i, j)$ can be computed with the following formula:
 $$p(i, j) = \frac{j+1}{i+1} {{i+1}\choose{\frac{1}{2}(i+j)+1}}$$
-These numbers are the Ballot numbers (useful for elections!). Hence, all the paths from beginning to end are $p(2n - i, j)$, which is indeed a Catalan number. Choices which have not been taken are subtracted by the rank at each iteration.
+These numbers are the \textit{Ballot numbers} (useful for elections!). Hence, all the paths from beginning to end are $p(2n - i, j)$, which is indeed a Catalan number. Choices which have not been taken are subtracted by the rank at each iteration.
+
+If the number of paths does not exceed the rank, a parenthesis is open and the grid is traversed upwards. When it does, a parenthesis is closed and a step down is taken, \textbf{decrementing} the rank by the number of excluded paths.
 
 The decision of upwards or downwards is as easy as flipping a coin, but this does not respect a uniform probability since there are more trees starting with a left brackets, and going down is not possible in all cases. 
 
@@ -752,20 +818,26 @@ Unranking simply consists in computing $r' = r - \sum_{i=0}^{k-1} \abs{S_i}$, i.
 
 Each possible merge is partitioned into subsets, each having an increasing number of elements. In each of them, there are $M(l_1 - j, l_2 - 1)$ elements. To unrank a value, its partition is firstly computed, setting $k = min_j r \leq \sum_{i=0}^{j} M(j, l_2 - 1)$ and $\alpha_0 = l_1 - k$. The new rank is then updated and used for the next iteration.
 
-If the query graph is cyclic, there does not exist a way to generate trees with random probability; not allowing cross products implies choosing only relationships which are connected, introducing bias. 
+If the query graph is cyclic, there does not exist a way to generate trees with random probability; not allowing cross products implies choosing only relationships which are \textbf{connected}, introducing bias. 
 
-Another representation of join trees works through anchored lists:
+Another representation of join trees works through \textbf{anchored lists}:
 \begin{itemize}
 	\item If $T$ is a single leaf node, then $L = <>$;
 	\item if $T = T_1 \bowtie T_2$ and a leaf $v$ occurs in $T_2$, then $L = <T_1 | L_2>$ where $L_2$ is the anchored list representation of $T_2$.
 \end{itemize}
 Here, left and right are not distinguished, since there is no way to remember the direction. Leafs are inserted introducing insertion pairs, couples $(T', k)$ of lists and rank in which only one node (missing from $T$) is inserted at position $k$. This is a bijective mapping.
 
+\newpage
 \subsubsection{Standard Decomposition Graph}
+\begin{wrapfigure}{R}{0.55\textwidth}
+	\vspace{-5pt}
+	\includegraphics[width=0.55\textwidth]{std.png}
+	\vspace{-70pt}
+\end{wrapfigure}
 A STD describes the possible constructions of join trees. It uses two kind of nodes:
 \begin{itemize}
-	\item $+$ for leaf insertion;
-	\item $*_w$ for merging subtrees whose only common leaf is $w$.
+	\item $+$ for \textbf{leaf} insertion;
+	\item $*_w$ for merging \textbf{subtrees} whose only common leaf is $w$.
 \end{itemize}
 This is done with three steps:
 \begin{enumerate}
