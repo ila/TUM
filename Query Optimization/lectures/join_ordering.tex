@@ -849,54 +849,102 @@ This is done with three steps:
 \subsection{QuickPick}
 QuickPick is useful to have a first insight into what the search space looks like, building pseudo-random trees by randomly select edges. This algorithm is easy to implement and quite fast, however it loses uniformity: the usual way to take advantage of it is running it multiple times and picking the best output.
 
-It works without cross products, since each edge must join two relations, and can output any kind of tree shape. If an edge connects two subtrees, it is replaced with a join until only one tree is left. 
+It works without cross products, since each edge must join two relations, and can output any kind of tree shape. The key element of the algorithm is sampling from a \textbf{mapping} of randomly generated sequences of join predicates to query plans.
 
-Failure of the procedure can happen if cycles exist in the graph. Furthermore, some trees are more likely to exist than others, since sometimes swapping two edges makes no difference among the structure.
+Query plans are constructed in a bottom-up way, simultaneously computing the costs and discarding partial plans as soon as they exceed the best costs found so far. 
+
+QuickPick performs biased sampling by selecting edges from the join graph and adding the respective joins to the query plan. 
+
+After this step, if either the plan is complete or the cost exceeds the best plan so far, the query plan is \textbf{reset}, eventually updating the cost if a better alternative has been found.
+
+The procedure only ends when the stopping criterion is fulfilled, usually an amount of time or operations. However, QuickPick tends to \textbf{converge} due to its biased cost distribution.
+
+There is a variant starting with all possible sets of trees and randomly joining them by selecting an edge. If an edge connects two subtrees, it is replaced with a join, removing the two subtrees until only one tree is left. 
+
+Failure can happen if cycles exist in the graph. Furthermore, some trees are more likely to exist than others, since sometimes swapping two edges makes no difference among the structure.
 
 To check whether an edge connects two relations in different subtrees, an approach similar to Kruskal's algorithm is used: through an union-find data structure it is possible to do this efficiently.
 
 \subsection{Metaheuristics}
 Metaheuristics are general optimization strategies working well for even large problems, but are unaware of the real issue and just rely on computational power.
 
+Formally, \textit{a \textbf{metaheuristic} is a higher-level procedure or heuristic designed to find, generate, or select a heuristic (partial search algorithm) that may provide a sufficiently good solution to an optimization problem, especially with incomplete or imperfect information or limited computation capacity.}
+
+By searching over a large set of feasible solutions, they can often find good solutions with less computational effort than optimization algorithms, iterative methods, or simple heuristics.
+
 It is not proven how well they perform or what kind of problem they solve, but they are widely used by modern DBMS.
 
-\subsubsection{Iterative improvement}
-The iterative improvement approach starts with a random tree, applies some rules to improve (e. g. transformative approaches) and stops only when no further improvement is possible. If the tree after the random modifications gets worse, the change is undone. 
+\subsubsection{Iterative Dynamic Programming}
+The main idea of IDP is to apply dynamic programming several timesin the process of optimizing a query, either to optimize different parts of a planseparately or in different phases of the optimization process.
 
-Metaheuristichs work trying to find an optimal, and have the consequence of risking to get stuck into a local minimum: usually a time limit is implemented so that the procedure always terminates, and there are different start points to generate multiple results.
+This approach generally works better than simple dynamic programming variants, since when the query it simple the plan will be the same, and it scales better than naive algorithms. It also considers memory limitations, eventually restarting if it exceeds a threshold and using previous results as building blocks. 
+
+The iterative improvement approach starts with a \textbf{random tree}, applies some rules to improve (e. g. transformative approaches) and stops only when no further improvement is possible. If the tree after random modifications gets worse, the change is undone. 
+
+Improvements, therefore, are applied both on a query graph and a tree basis, trying several trees and randomly optimizing each of them.
+
+Metaheuristics work trying to find an optimal, and have the consequence of risking to get stuck into a local minimum: usually a time limit is implemented so that the procedure always terminates, and there are different start points to generate multiple results.
 
 Cross products could be generated by accidentally swapping two relations which are not linked, hence a method similar to QuickPick is used, manipulating edges instead of nodes.
 
 IKKBZ can be used with an acyclic query graph to obtain the optimal left-deep tree, which is then compared with the iterative improvement result.
 
 \subsubsection{Simulated annealing}
-Simulated annealing is another approach which allows moving from a local minimum even if the solution gets worse, defining a probability based on the temperature for the worse tree to be swapped with the current best one. 
+Simulated annealing is another approach which allows moving from a local minimum even if the solution gets worse, defining a \textbf{probability} based on the temperature for the worse tree to be swapped with the current best one. 
 
-The only problem is optimizing temperature and time, picking initial values and thresholds to decrease or rise the temperature, yet there are some rule of thumbs working well in practice.
+The only problem is \textit{optimizing temperature and time}, picking initial values and thresholds to decrease or rise the temperature, yet there are some rule of thumbs working well in practice.
 
 Simulating annealing is often used along with iterative improvement, using the latter to find a local minima and the former to try and find a better plan.
 
 \subsubsection{Tabu search}
-Tabu search sets some nodes in the graph as forbidden, to extend the search space trying to find different solutions. The cheapest results among all neighbors are chosen, even if they are worse than the current one, forcing the algorithm to never go back. This is useful to avoid cycles.  
+Tabu search sets some nodes in the graph as \textbf{forbidden}, to extend the search space trying to find different solutions. The cheapest results among all neighbors are chosen, even if they are worse than the current one, forcing the algorithm to never go back. This is useful to avoid cycles.  
 
-The size of the tabu set is fixed, otherwise it might eventually contain all the relations: whenever the size is exceeded, the oldest node is removed and allowed back into the search space. 
+Size of the tabu set is fixed, otherwise it might eventually contain all the relations: whenever the size is exceeded, the oldest node is removed and allowed back into the search space. 
 
 \subsubsection{Genetic algorithms}
-Genetic algorithms function in the same way as a population model, based on survival of the fittest. Join trees are elements which generate successors by crossover or mutation, only keeping the best trees.
+Genetic algorithm, employed in PostgreSQL [\href{https://www.postgresql.org/docs/current/geqo.html}{source}], is a heuristic optimization method operating through randomized search. It functions in the same way as a population model, based on \textit{survival of the fittest}. Join trees are elements which generate successors by \textbf{crossover} or \textbf{mutation}, only keeping the best trees.
+
+The coordinates of an individual in the search space are represented by chromosomes, in essence a set of character strings. A gene is a subsection of a chromosome which encodes the value of a single parameter being optimized.
+
+Through simulation of the evolutionary operations, new generations of search points are found that show a higher average fitness than their ancestors. 
+
+Query optimization in this case is approached as it was the TSP problem, implementing steady state (replacement only of the least fit individuals) and edge recombination crossover for fast convergence. 
+
+The algorithm works with the following process:
+\begin{enumerate}
+	\item The standard planner generates plans for scans of individual relations;
+	\item Transforms each join plan into a sequence, and estimates its cost;
+	\item Least fit candidates (more expensive) are discarded;
+	\item New candidates are generated by combining genes, i. e. using random portions of low-cost joins to create new sequences.
+\end{enumerate}
 
 The problem with this simulation is finding an encoding between trees and population, especially representing crossover and mutation. There are two different possibilities: 
 \begin{itemize}
-	\item Ordered list, showing a tree as a permutation of numbers and joining them from left to right, implementing the bushy variant naming edges instead of nodes;
-	\item Ordinal number, starting with a natural order:
+	\item \textbf{Ordered list}, showing a tree as a permutation of numbers and joining them from left to right, implementing the bushy variant naming edges instead of nodes;
+	\item \textbf{Ordinal number}, starting with a natural order:
 	\begin{itemize}
 		\item For left-deep trees, finding the index of the first relation to be joined, setting the first character in the chromosome string as $i$ and removing it from the list;
 		\item For bushy trees, encoding in bottom-up, left-to-right, looking at two positions at once and again removing them, but replacing them with a third symbol to describe the tree.
 	\end{itemize}
 \end{itemize}
-Crossover is simulated either by subsequence exchange or subset exchange, generating permutations such that the order of appearance is respected or simply swapping elements of equal length.
+Crossover is simulated either by \textbf{subsequence} exchange or \textbf{subset} exchange, generating permutations such that the order of appearance is respected or simply swapping elements of equal length.
 
-A mutation, on the other hand, randomly alters a character in the encoding, hence a swap can be considered a mutation as well.
+\begin{wrapfigure}{R}{0.6\textwidth}
+	\vspace{-18pt}
+	\includegraphics[width=0.6\textwidth]{genetic.png}
+	\vspace{-60pt}
+\end{wrapfigure}
 
-The algorithm is implemented with a selection phase, sorting trees by cost and keeping the best, and then crossover and mutations are applied with a given rate. This increases the population, so selection needs to be performed again until the maximum number of iterations is reached.
+An example of crossover by subsequence exchange is:
+\begin{enumerate}
+	\item Assuming two individuals with chromosomes $u_1v_1w_1$ and $u_2v_2w_2$;
+	\item Taking $v$ and permuting its relations to obtain $u_1v'_1w_1$, $u_2v'_2w_2$.
+\end{enumerate}
+
+A mutation, on the other hand, \textit{randomly alters} a character in the encoding, hence a swap can be considered a mutation as well.
+
+The algorithm is implemented with a \textbf{selection} phase: population is sorted according to survival probability (sorting trees by cost and keeping the best) and some of them are selected to be subject of crossover or mutations.
+
+Since crossover increases the population, selection needs to be performed again until the maximum number of iterations or the given size are reached.
 
 Like other metaheuristics, parameters rely on human hand-made benchmarking.
