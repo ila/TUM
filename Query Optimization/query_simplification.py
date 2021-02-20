@@ -1,6 +1,7 @@
 import pandas as pd
 
-# this is only the first step!
+# this is only the first table!
+# does not work with following steps
 
 relations = [
 	{'name': 'r0', 'cardinality': 10},
@@ -18,7 +19,7 @@ edges = [
 	{'nodes': ['r1', 'r4'], 'selectivity': 0.05},
 ]
 
-table = pd.DataFrame(columns = ['Relation', 'OrderingBenefit'])
+table = pd.DataFrame(columns = ['Relation', 'OrderingBenefit', 'CardinalitySecondJoin'])
 
 for relation in relations:
 
@@ -42,10 +43,7 @@ for relation in relations:
 			for relation1 in relations:
 				for relation2 in relations:
 			
-					if neighbour1['name'] != neighbour2['name']:
-						if relation1['name'] != relation2['name']:
-							if relation1['name'] == neighbour1['name']:
-								if relation2['name'] == neighbour2['name']:
+					if neighbour1['name'] != neighbour2['name'] and relation1['name'] != relation2['name'] and relation1['name'] == neighbour1['name'] and relation2['name'] == neighbour2['name']:
 
 									# compute ordering benefit
 									join1 = relation['cardinality'] * relation1['cardinality'] * neighbour1['selectivity'] + (relation['cardinality'] * relation1['cardinality'] * neighbour1['selectivity']) * relation2['cardinality'] * neighbour2['selectivity']
@@ -53,6 +51,10 @@ for relation in relations:
 									join2 = relation['cardinality'] * relation2['cardinality'] * neighbour2['selectivity'] + (relation['cardinality'] * relation2['cardinality'] * neighbour2['selectivity']) * relation1['cardinality'] * neighbour1['selectivity']
 
 									ordering_benefit = join1 / join2
-									table = table.append({'Relation': relation['name'] + relation1['name'] + ',' + relation['name'] + relation2['name'], 'OrderingBenefit': ordering_benefit}, ignore_index = True)
+
+									# adding cardinality for next steps
+									cardinality = relation['cardinality'] * relation2['cardinality'] * neighbour2['selectivity']
+
+									table = table.append({'Relation': relation['name'] + relation1['name'] + ',' + relation['name'] + relation2['name'], 'OrderingBenefit': ordering_benefit, 'CardinalitySecondJoin': cardinality}, ignore_index = True)
 
 print(table.sort_values(by = 'OrderingBenefit', ascending = False))
