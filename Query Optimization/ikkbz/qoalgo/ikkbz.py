@@ -1,6 +1,6 @@
 from operator import attrgetter
 
-from base import JoinTree
+from qoalgo.base import JoinTree
 
 
 class PrecedenceGraph:

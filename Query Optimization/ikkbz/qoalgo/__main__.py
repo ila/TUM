@@ -1,10 +1,10 @@
 #/usr/bin/env python3
 import argparse
 
-from base import QueryGraph
-from encoding import unrank_permutation
-from graphviz import precedence_graph_to_graphviz
-from ikkbz import generate_precedence_graph_rooted, ikkbz_sub, is_chain, ikkbz_sub_step, ikkbz_denormalize, \
+from qoalgo.base import QueryGraph
+from qoalgo.encoding import unrank_permutation
+from qoalgo.graphviz import precedence_graph_to_graphviz
+from qoalgo.ikkbz import generate_precedence_graph_rooted, ikkbz_sub, is_chain, ikkbz_sub_step, ikkbz_denormalize, \
     generate_precedence_graphs, precedence_to_join_tree
 
 

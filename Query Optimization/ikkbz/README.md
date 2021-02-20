@@ -1,10 +1,10 @@
 # QueryOptimization Algorithms
 
-Either run the module itself using `python qoalgo` inside this directory or just use the jupyter notebooks provided.
+Either run the module itself using `python3 -m qoalgo` inside this directory or just use the jupyter notebooks provided.
 
 
 ```
-$ python qoalgo --help
+$ python3 -m qoalgo--help
 usage: qoalgo [-h] relations selectivities root
 
 positional arguments:
@@ -20,7 +20,7 @@ optional arguments:
 Example:
 
 ```
-$ python qoalgo A:10,B:10,C:100,D:100 A:B:0.9,A:C:0.1,B:D:0.1 A
+$ python3 -m qoalgo A:10,B:10,C:100,D:100 A:B:0.9,A:C:0.1,B:D:0.1 A
 
 (A) 	 n: 10.0 	 s: -1.00 	C: -1.00 	 T: -1 	 rank: -1.000
 (B) 	 n: 10.0 	 s: 0.90 	C: 9.00 	 T: 9.0 	 rank: 0.889
