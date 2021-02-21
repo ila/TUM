@@ -1,5 +1,14 @@
 from collections import defaultdict
+from typing import List, Iterator
 
+
+class Relation:
+    def __init__(self, name, cardinality):
+        self.name = name
+        self.cardinality = cardinality
+
+    def __str__(self):
+        return self.name
 
 class QueryGraph:
 
@@ -26,14 +35,19 @@ class QueryGraph:
         self.relations.append(r)
         return r
 
+    def get_neighbours(self, relations: List[Relation]) -> Iterator[Relation]:
+        yielded = []
+        for relation in relations:
+            for name, join in self.join_dict[relation].items():
+                other = join.get_other(relation)
+                if other not in relations and other not in yielded:
+                    yielded.append(other)
+                    yield other
 
-class Relation:
-    def __init__(self, name, cardinality):
-        self.name = name
-        self.cardinality = cardinality
-
-    def __str__(self):
-        return self.name
+    def get_joins(self, relations: List[Relation]):
+        for join in self.joins:
+            if join.r1 in relations and join.r2 in relations:
+                yield join
 
 
 class Join:
@@ -49,10 +63,27 @@ class Join:
 
 
 class JoinTree:
-    def __init__(self, operator='HJ', left=None, right=None, relations=None, cost=-1):
+    def __init__(self, operator='⨝', left=None, right=None, relations=None, cost=-1):
         self.left = left
         self.right = right
         self.cost = cost
         self.relations = relations
+        self.operator = operator
         if self.relations is None:
             self.relations = []
+
+    def __str__(self):
+        r = ''
+        if isinstance(self.left, Relation):
+            r += str(self.left)
+        else:
+            r += '(' + str(self.left) + ')'
+
+        r += self.operator
+
+        if isinstance(self.right, Relation):
+            r += str(self.right)
+        else:
+            r += '(' + str(self.right) + ')'
+
+        return r
