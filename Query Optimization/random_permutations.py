@@ -43,8 +43,13 @@ def unrank_perm(pi, r):
 # output is displayed assuming relations in natural order
 # index starts from 0
 # piFinal = unrank(8, 64)
+print("If relations are not in ascending order, please change a line of code! ")
 n = int(input("Enter the number of relations: "))
 r = int(input("Enter the rank: "))
+
+# alternatively, relations can be added in arbitrary order 
+# by commenting the 3 lines below and uncommenting next one
+# piFinal = unrank_perm(["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8"], 64)
 
 relations = []
 for i in range(1, n+1):
