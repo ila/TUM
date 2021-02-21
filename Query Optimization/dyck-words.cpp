@@ -43,6 +43,21 @@ int main(int argc, const char** argv) {
 		return -1;
 	}
 
+    std::cout << std::endl;
+    std::cout << "Dyck grid" << std::endl;
+    for (int i = 0; i < 2 * relations - 2; i++) {
+        std::vector<int> spu;
+        for (int j = i % 2; j <= std::min(i, 2 * relations - 2 - i); j += 2) {
+            spu.push_back(possibilities(i, j, relations - 1));
+        }
+        if (i % 2) {
+            std::cout << "\t";
+        }
+        for (const auto& c: spu) std::cout << c << "\t\t";
+        std::cout << std::endl;
+    }
+    std::cout << 0 << std::endl;
+
 	int j = 1;
 	for (int i = 1; i < 2 * relations - 2; i++) {
 
