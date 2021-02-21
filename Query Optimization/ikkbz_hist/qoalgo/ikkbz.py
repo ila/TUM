@@ -1,6 +1,7 @@
 from operator import attrgetter
 
 from qoalgo.base import JoinTree
+from qoalgo.cost import c_out
 
 
 class PrecedenceGraph:
@@ -140,14 +141,18 @@ def precedence_to_join_tree(qg, pg, cost_fn=None):
     :param cost_fn:
     :return:
     """
+    if cost_fn is None:
+        cost_fn = c_out
     parent = pg
     child = pg.children[0]
     relations = parent.relations + child.relations
     jt = JoinTree('HJ', left=parent.relations[0], right=child.relations[0], relations=relations, cost=0)
+    jt.cost = cost_fn(qg, jt)
 
     while len(child.children) > 0:
         relations = jt.relations + child.children[0].relations
         jt = JoinTree('HJ', left=jt, right=child.children[0].relations[0], relations=relations)
+        jt.cost = cost_fn(qg, jt)
         child = child.children[0]
 
     return jt
