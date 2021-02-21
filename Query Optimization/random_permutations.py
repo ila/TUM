@@ -43,5 +43,12 @@ def unrank_perm(pi, r):
 # output is displayed assuming relations in natural order
 # index starts from 0
 # piFinal = unrank(8, 64)
-piFinal = unrank_perm(["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8"], 64)
+n = int(input("Enter the number of relations: "))
+r = int(input("Enter the rank: "))
+
+relations = []
+for i in range(1, n+1):
+	relations.append("r" + str(i))
+
+piFinal = unrank_perm(relations, r)
 print("\nFinal permutation: ", " ".join(map(str, piFinal)))
