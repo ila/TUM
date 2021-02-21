@@ -75,16 +75,15 @@ def is_chain(pg):
 
 def find_children_chain_only(pg):
     root = pg
-    if len(root.children) > 2:
-        for child in root.children:
-            if not is_chain(child):
-                return find_children_chain_only(child)
-        return root
-    elif len(root.children) == 0:
-        return None
-    else:
-        return root
 
+    if len(root.children) == 0:
+        return None
+
+    for child in root.children:
+        if not is_chain(child):
+            return find_children_chain_only(child)
+
+    return root
 
 def ikkbz_normalize(pg):
     if not is_chain(pg):
