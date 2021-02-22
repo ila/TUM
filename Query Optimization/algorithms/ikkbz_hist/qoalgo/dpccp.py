@@ -90,9 +90,7 @@ class Dpccp():
         blocked = [r for r in self.qg.relations if self.qg.relations.index(r) <= smallest_index] + csg
         neighbours = [n for n in self.qg.get_neighbours(csg) if n not in blocked]
 
-        neighbours.sort(key=lambda n: n.name, reverse=True)
-
-        for n in neighbours:
+        for n in reversed(neighbours):
             yield [n]
             blocked_n = [r for r in self.qg.relations if self.qg.relations.index(r) <= self.qg.relations.index(n)]
             yield from self.enumerate_csg_rec([n], blocked + list(set(blocked_n) & set(neighbours)))
