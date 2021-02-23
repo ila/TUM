@@ -20,7 +20,7 @@ Query processing consists in:
 	\item Extract the execution plan;
 	\item Executing the query.
 \end{enumerate}
-Roughly, it can be differentiated between \textbf{compile time} and \textbf{runtime system}. Most systems strongly separate those phases, for example using so-called prepared queries.
+Roughly, it can be differentiated between \textbf{compile time} and \textbf{runtime system}. Most systems strongly separate those phases, for example using so-called \textit{prepared queries}.
 \begin{lstlisting}[language=SQL]
 SELECT S.NAME
 FROM STUDENTS S
@@ -68,7 +68,7 @@ Usually query planners are much more complicated and have practical difficulties
 \subsection{Query Optimization}
 Possible goals of query optimization include minimizing response time, resource consumption, time to first tuple (producing the first tuple as quick as possible, for instance with search results) or maximizing throughput. This can be expressed as a \textbf{cost function}: most systems aim to minimize response time, having resources as constraints.
 
-\textbf{Algebraic optimization} is a branch using relational algebra to find the cheapest expression equivalent to the original. However, finding the cheapest is a \textbf{practically impossible problem}: it is hard to test for equivalence (numerical overflow, undecidable), the set of expressions is potentially huge and some algorithms are NP-hard (actual search space is limited and smaller than the potential one). 
+\textbf{Algebraic optimization} is a branch using relational algebra to find the cheapest expression equivalent to the original. However, finding the cheapest is a \textbf{practically impossible problem}: it is hard to test for equivalence (numerical overflow, undecidability), the set of expressions is potentially huge and some algorithms are NP-hard (actual search space is limited and smaller than the potential one). 
 
 There are ways to transform numerical expressions in algebraic ones, yet they might be expensive: calculus is faster to evaluate than algebra. 
 

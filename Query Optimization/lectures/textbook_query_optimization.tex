@@ -38,21 +38,21 @@ In most cases, sets and bags can be used interchangeably, but the optimizer cons
 
 Set operations are the classic ones of union, intersection and difference, yet are \textbf{subject to schema constraints}. On bags, operations are performed on frequencies. 
 
-There are also free variables, which first must be bounded to be evaluated: they are essentials for predicates and algebra expressions, such as dependent joins. 
+There are also \textit{free variables}, which first must be bounded to be evaluated: they are essentials for predicates and algebra expressions, such as dependent joins. 
 
 It is important to note that projection removes duplicates within sets, while keeping them in bags.
 
 There are equivalences for selection and projection useful to derive whether a different ordering produces the same output. For instance, applying selection twice is the same as applying it once with two criteria plus an AND. Commutative property also holds.
 
 \subsection{Canonical Query Translation}
-The canonical query translation transforms SQL into \textbf{algebra expressions}. The first approach involves some restrictions: it assumes no duplicates without aggregation and set operations.
+Canonical query translation transforms SQL into \textbf{algebra expressions}. The first approach involves some restrictions: it assumes no duplicates without aggregation and set operations.
 
 The first step is translating the FROM clause:
 $$F = \begin{cases}
 R_1 & k = 1 \\
 ((\dots (R_1 \times R_2) \times \dots) \times R_k)) & \text{else}
 \end{cases}$$
-In short all relations are joined through a cross product. The next step is translating the WHERE clause:
+In short, all relations are joined through a cross product. The next step is translating the WHERE clause:
 $$W = \begin{cases}
 F & \text{there is no WHERE clause} \\
 \sigma_p(F) & \text{otherwise}
@@ -102,7 +102,7 @@ Data may be sorted or materialized, introducing results which can be reused and 
 
 First of all, the access path is selected: lookup can be done through \textbf{index} or \textbf{table scan}, depending on the selectivity (fraction of the data satisfying the clause): in general, above 10\% a table scan is recommended. 
 
-Scanning a table might be efficient since tuples are stored adjacent in memory; using index, instead, involves traversing a tree multiple times starting from the root. 
+Scanning a table might be efficient since tuples are stored \textit{adjacent} in memory; using index, instead, involves traversing a tree multiple times starting from the root. 
 
 Sometimes it is useful to just store in cache the output of a view, but that also depends on the query plan: intermediate results should actually be reused.
 
@@ -112,4 +112,4 @@ A blockwise nested loop join is generally better than a natural join; sort merge
 
 Sort merge join might outperform the hash join if the amount of data is much larger than the available memory.
 
-Materializing, on the other side, is quite relevant for nested loop joins: the first pass is expensive, but the afterwards ones are way cheaper, making it essential for multiple consumers. 
+\textit{Materializing}, on the other side, is quite relevant for nested loop joins: the first pass is expensive, but the afterwards ones are way cheaper, making it essential for multiple consumers. 

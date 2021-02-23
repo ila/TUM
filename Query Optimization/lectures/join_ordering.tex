@@ -1,5 +1,5 @@
 \section{Join Ordering}
-Join ordering focuses on conjunctive queries with simple predicates of the type $a_1 = a_2$ where the latter can be either an \textbf{attribute} or a \textbf{constant} (commonly algorithms assume join between \textit{attributes}).
+Join ordering focuses on conjunctive queries with simple predicates of the type $a_1 = a_2$ where the latter can be either an \textbf{attribute} or a \textbf{constant} (commonly used algorithms assume join between \textit{attributes}).
 
 Relations may include selections or complex building blocks, however for simplicity filtering is ignored; having operators other than equality might cause differences within the query planner.
 
@@ -101,7 +101,7 @@ Still, complexity is very high and runtime is bad, although the worst case usual
 \subsection{Greedy heuristics}
 Regardless of the methods and the inclusion of cross products, the search space is in general quite large when the number of relations is larger than 10, and polynomial time is hard to achieve. Some cost functions do not even have a proof of complexity.
 
-Due to the size of the search space, greedy heuristics are ways to easily construct a potential tree in a fast time: they are most suitable for \textbf{large queries}, but often do not give the best result.
+Due to the size of the search space, \textit{greedy heuristics} are ways to easily construct a potential tree in a fast time: they are most suitable for \textbf{large queries}, but often do not give the best result.
 
 This class of algorithms assumes no cross products within left-deep trees, and known cardinalities (or some other weight function).
 
@@ -115,7 +115,7 @@ This method is simple, but not that good in practice: it assumed fixed weight (n
 \subsubsection{GreedyJoinOrdering-2}
 This variant also considers the \textbf{previous set of relations}, computing relative weights based on the existing tree. The only difference with the first version is the computation of minima considering also previous results.
 
-In this case, however, the very first relation has a large relative weight and a major impact on the choices made afterwards. 
+It works picking the first relation based on cardinality, and all others according to minimum selectivity. In this case, however, the very first relation has a large relative weight and a major impact on the choices made afterwards. 
 
 \subsubsection{GreedyJoinOrdering-3}
 To tackle the problem introduced by the second version, a double loop is employed in which not only the set of relations is scanned, but also every relation is tested as a starting one. Then, all computed results are compared and the minimum among them is returned. 
@@ -142,7 +142,7 @@ IKKBZ is a \textbf{polynomial time} algorithm for join ordering without cross pr
 
 The general idea is considering each relation as starting point, trying to obtain a benefit ordering based on a rank function, and constructing compounds if any set violates ordering rules.
 
-The algorithm will ultimately compute a rank for each predicate, based on its selectivity, obtaining an optimal evaluation order. After the first steps, however, the remaining arguments are independent on the size of the relations.
+The algorithm will ultimately compute a \textit{rank} for each predicate, based on its selectivity, obtaining an optimal evaluation order. After the first steps, however, the remaining arguments are independent on the size of the relations.
 
 It starts considering a cost function as a product of the form:
 $$C(T_i \bowtie R_j) = \abs{T_i} \cdot h_j(\abs{R_j})$$
@@ -435,7 +435,7 @@ Computational time is quite low, which is useful for a large amount of relations
 \subsection{Memoization}
 Memoization is a top-down formulation of dynamic programming, \textbf{recursively} generating join tree in a way which allows to avoid duplicates and prune useless solutions.
 
-Code is easier to understand and sometimes more efficient, but usually slower due to recursiveness. However, it allows to generate bushy trees.
+Code is easier to understand and sometimes more efficient, but usually \textit{slower} due to recursiveness. However, it allows to generate bushy trees.
 
 The memoization algorithm fills the table and then performs an auxiliary procedure for each subset: it checks whether the problem has \textit{already been computed}, otherwise it splits the subset in two and recursively calculates the two values. At the end of all function calls, the best value is picked between the two and cost is returned. 
 
@@ -465,14 +465,14 @@ Before introducing the algorithm, a few definitions should be stated:
 	\item A \texttt{csg-cmp-pair} (connected subgraph-complement) is a pair $(S_1, S_2)$ such that:
 	\begin{itemize}
 		\item $S_1$, $S_2$ are non-empty and connected;
-		\item $S_1 \cap S_= \emptyset$;
+		\item $S_1 \cap S_2 = \emptyset$;
 		\item There exists $v_1 \in S_1$, $v_2 \in S_2$ such that there is an edge between $v_1$ and $v_2$;
 		\item \texttt{ccp} is the number of csg-cmp-pairs;
 	\end{itemize} 
 \end{enumerate}
 Of course, subsets should be also be connected with each other (a join predicate must exists) since cross products are to be avoided.
 
-The approach aims to enumerate the number of connected subsets and csg-cmp-pairs, avoiding duplicates. There are some formulas which can be used wit $n$ relations:
+The approach aims to enumerate the number of connected subsets and csg-cmp-pairs, avoiding duplicates. There are some formulas which can be used with $n$ relations:
 \begin{itemize}
 	\item Chain queries:
 	\begin{itemize}
@@ -653,7 +653,9 @@ To summarize, the decision flow chooses the following approaches, considered to 
 	\item \textbf{Greediness} (still in a limited way, keeping in mind restrictions) to achieve a reasonable optimization time.
 \end{itemize}
 
-Complexity is measured with both time and space requirements, and it strictly depends on the structure of the query graph. Once queries become reasonably large, not only the join orderingalgorithm itself plays an important role, but also the implementationof data structures.
+Complexity is measured with both time and space requirements, and it strictly depends on the structure of the query graph. Once queries become reasonably large, not only the join ordering
+algorithm itself plays an important role, but also the implementation
+of data structures.
 
 \subsubsection{Search Space Linearization (LDP)}
 Search space linearization (LDP) is a technique working for medium-sized and large queries (in the order of a hundred relations, scaling well), always assuming no cross products to improve performance. 
@@ -875,7 +877,9 @@ By searching over a large set of feasible solutions, they can often find good so
 It is not proven how well they perform or what kind of problem they solve, but they are widely used by modern DBMS.
 
 \subsubsection{Iterative Dynamic Programming}
-The main idea of IDP is to apply dynamic programming several timesin the process of optimizing a query, either to optimize different parts of a planseparately or in different phases of the optimization process.
+The main idea of IDP is to apply dynamic programming several times
+in the process of optimizing a query, either to optimize different parts of a plan
+separately or in different phases of the optimization process.
 
 This approach generally works better than simple dynamic programming variants, since when the query it simple the plan will be the same, and it scales better than naive algorithms. It also considers memory limitations, eventually restarting if it exceeds a threshold and using previous results as building blocks. 
 
