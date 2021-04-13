@@ -1,0 +1,101 @@
+% LaTeX Template für Abgaben an der Universität Stuttgart
+% Autor: Sandro Speth
+% Bei Fragen: Sandro.Speth@studi.informatik.uni-stuttgart.de
+%-----------------------------------------------------------
+% Modul beinhaltet Befehl fuer Aufgabennummerierung,
+% sowie die Header Informationen.
+
+% Überschreibt enumerate Befehl, sodass 1. Ebene Items mit
+\renewcommand{\theenumi}{(\alph{enumi})}
+\renewcommand{\theenumii}{(\roman{enumii})}
+% (a), (b), etc. nummeriert werden.
+\renewcommand{\labelenumi}{\text{\theenumi}}
+\renewcommand{\labelenumii}{\text{\theenumii}}
+
+% Counter für das Blatt und die Aufgabennummer.
+% Ersetze die Nummer des Übungsblattes und die Nummer der Aufgabe
+% den Anforderungen entsprechend.
+% Gesetz werden die counter in der hauptdatei, damit siese hier nicht jedes mal verändert werden muss
+% Beachte:
+% \setcounter{countername}{number}: Legt den Wert des Counters fest
+% \stepcounter{countername}: Erhöht den Wert des Counters um 1.
+\newcounter{sheetnr}
+\newcounter{exnum}
+
+% Befehl für die Aufgabentitel
+\newcommand{\exercise}[1]{\section*{Exercise \theexnum\stepcounter{exnum}: #1}} % Befehl für Aufgabentitel
+
+% Formatierung der Kopfzeile
+% \ohead: Setzt rechten Teil der Kopfzeile mit
+% Namen und Matrikelnummern aller Bearbeiter
+\ohead{Hui Zeng}
+% \chead{} kann mittleren Kopfzeilen Teil sezten
+% \ihead: Setzt linken Teil der Kopfzeile mit
+% Modulnamen, Semester und Übungsblattnummer
+\ihead{Business Analytics\\
+Winter semester 2020/2021\\
+Lecture Notes Summary }
+
+\definecolor{comments}{rgb}{0.41,0.54,0.21}
+\definecolor{code}{rgb}{0,0,0}
+\definecolor{keyword}{rgb}{0.77,0.48,0.57}
+\definecolor{number}{rgb}{0.153,0.5,0}
+\definecolor{codeBack}{rgb}{0.85,0.85,0.85}
+\definecolor{string}{rgb}{0.81,0.57,0.47}
+
+\lstdefinestyle{stdCode}{
+	backgroundcolor=\color{codeBack},   
+	commentstyle=\color{comments},
+	literate=*{0}{{\textcolor{number}{0}}}{1}%
+         {1}{{\textcolor{number}{1}}}{1}%
+         {2}{{\textcolor{number}{2}}}{1}%
+         {3}{{\textcolor{number}{3}}}{1}%
+         {4}{{\textcolor{number}{4}}}{1}%
+         {5}{{\textcolor{number}{5}}}{1}%
+         {6}{{\textcolor{number}{6}}}{1}%
+         {7}{{\textcolor{number}{7}}}{1}%
+         {8}{{\textcolor{number}{8}}}{1}%
+         {9}{{\textcolor{number}{9}}}{1}%
+         {.0}{{\textcolor{number}{.0}}}{1}% Following is to ensure that only periods
+         {.1}{{\textcolor{number}{.1}}}{1}% followed by a digit are changed.
+         {.2}{{\textcolor{number}{.2}}}{1}%
+         {.3}{{\textcolor{number}{.3}}}{1}%
+         {.4}{{\textcolor{number}{.4}}}{1}%
+         {.5}{{\textcolor{number}{.5}}}{1}%
+         {.6}{{\textcolor{number}{.6}}}{1}%
+         {.7}{{\textcolor{number}{.7}}}{1}%
+         {.8}{{\textcolor{number}{.8}}}{1}%
+         {.9}{{\textcolor{number}{.9}}}{1}%
+         {\ }{{ }}{1}% handle the space
+         ,%
+	keywordstyle=\color{keyword},
+	numberstyle=\tiny\color{number},
+	stringstyle=\color{string},
+	basicstyle=\ttfamily\scriptsize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+
+\lstset{
+	style=stdCode, language=Java,
+  	literate={ö}{{\"o}}1
+           {ä}{{\"a}}1
+           {ü}{{\"u}}1
+}
+
+\tikzset{triangle/.style = {regular polygon, regular polygon sides=3 },
+node rotated/.style = {rotate=180},
+border rotated/.style = {shape border rotate=180},
+astTerminal/.style = {regular polygon, regular polygon sides=3, inner sep=2.5pt, shape border rotate=180},
+astLabel/.style = {right=3pt,font=\footnotesize\itshape},
+astValue/.style = {below=5pt},
+astLine/.style = {edge from parent fork down}
+}

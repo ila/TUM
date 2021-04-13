@@ -1,0 +1,173 @@
+\section{Dimensionality Reduction}
+\begin{itemize}
+	\item Reasons: 
+	\begin{itemize}
+		\item reduce a complex dataset to a \textbf{lower dimension}.
+		\item simplify data understanding, visualization and manipulation
+		\item reduce computation time
+		\item reveal hidden dynamics -- latent variables, \textbf{multicollinearity}
+		\item the data lies on a lower dimensional subspace anyway. 
+	\end{itemize}
+
+	\item Techniques to Dimensionality Reduction (combat multicollinearity):
+	\begin{itemize}
+		\item Subset Selection 
+		\begin{itemize}
+			\item Best Subset, Forward Selection, Backward Elimination, Stepwise Selection
+		\end{itemize}
+		\item Derived Input in Regression
+		\begin{itemize}
+			\item Principal Component Regression
+			\item Partial Least Squares
+		\end{itemize}
+		\item Regularization (Coefficient Shrinkage)
+		\begin{itemize}
+			\item Subset selection
+			\item Ridge Regression
+			\item Lasso Coefficient
+		\end{itemize}
+	\end{itemize}
+	
+	\item Comparison Linear Regression VS. Dimension-Reduction Techniques
+	\begin{itemize}
+		\item Linear Regresion: 
+		\begin{itemize}
+			\item requires $n \geq p$, more observations than variables. 
+			
+			$\rightarrow$ reality large observation too costly, variables too much
+			\item if number of variables too large $\rightarrow$ \textbf{Overfitting}
+			\item can't combat multicollinearity, separate test on VIF.
+			\item \textbf{unstable} to little variability on data in prediction results
+		\end{itemize}
+		\item Dimension-Reduction Techniques:
+		\begin{itemize}
+			\item PCR: combats multicollinearity through computing linear uncorrelated principal components.
+			\item \textbf{more stable} to the variability on data if variables are correlated.
+			\item Regularization: through feature selection, introduce \textbf{bias} but \textbf{reduce variance (smaller MSE)}.  
+		\end{itemize}
+	\end{itemize}
+\end{itemize}
+\subsection{Principal Component Analysis}
+\begin{itemize}
+	\item Definition: converts a set of possibly \textbf{correlated} variables into a (possibly smaller) set of \textbf{linearly uncorrelated} variables -- \textbf{Principal Components}.
+	
+	\item Goal: transform the data, such that the new dimensions are \textbf{linear uncorrelated} and we \textbf{maximize the variance} along the axes.
+	\item Assumption: relationship among variables is \textbf{linear}.
+	\item \textbf{Principal Components}: \textbf{explain most of the variability} in the original dataset. 
+	\begin{itemize}
+		\item the \textbf{eigenvectors} of the covariance/correlation matrix
+		\item the direction are those in feature space along which the original data is \textbf{highly variable}.
+		\item the \textbf{first PC} has \textbf{largest possible variance}.  It's the direction of \textbf{maximum variance from origin}.
+		\item \textbf{subsequent PCs} are \textbf{orthogonal} to first PC. They describe \textbf{maximum residual variance}.
+		\item each element of eigenvector represents the \textbf{contribution of a variable} to the PC.
+	\end{itemize}
+	\item PCA \textbf{Eigenvalues}: give the \textbf{proportion of variance explained} by the corresponding principal components. 
+	\begin{itemize}
+		\item $\lambda_1$ shows the proportion of variance explained by PC1. $\rightarrow$ the \textbf{spread of data} in PC1 direction.
+	\end{itemize}
+	\item PCA \textbf{Scores}: Z, score of x are the coefficients of in each PC direction. 
+\end{itemize}
+
+\subsubsection{Process}
+\begin{enumerate}[label= \protect \circled{\arabic*} ]
+	\item \textbf{center} the data, subtract the \textbf{mean} from each data dimension. $\rightarrow$ zero-mean dataset.
+	\item compute \textbf{covariance/correlation matrix}:
+	\begin{itemize}
+		\item covariance matrix: variables in \textbf{comparable units}, \textbf{difference in variance} across variable \textbf{important}
+		\item correlation matrix: variables in \textbf{different units}, \textbf{difference in variance} across variable \textbf{not important}
+	\end{itemize}
+	$$Var(x_j) =  \frac{1}{N-1} \cdot\Sigma x_{ij}^2$$
+	$$Cov(x_{j1}, x_{j2}) = \frac{1}{N-1} \cdot \Sigma x_{ij1} x_{ij2} $$
+	
+	\item compute \textbf{eigenvalues and eigenvectors} of the covariance/correlation matrix. \textbf{Normalized} the eigenvectors.
+	\item \textbf{order} eigenvectors according to \textbf{its eigenvalues in descending order} $\Phi$.
+	\item compute variance explained by each principal component:
+	$$\text{variance explained} = \frac{\lambda_i}{\Sigma \lambda_i}$$
+	\item Project the transformed data onto principal components: all principal components are \textbf{orthonormal basis}.
+	$$Z = X\cdot \Phi$$
+	\item Compress: choose $k$ most important PCs. $\rightarrow$ slight \textbf{information loss}
+\end{enumerate}
+
+\subsubsection{Reconstruction of Original Data}
+$$D \approx Z \Phi^T + \text{means}$$
+
+If \textbf{dimensionality reduced}, we \textbf{lose} those dimensions we choose to \textbf{discard}. The information loss is relatively small.
+\subsubsection{Computation Principal Component: Singular Value Decomposition}
+$$A = U\cdot S \cdot T^{T}$$
+
+\begin{itemize}
+	\item Alternative to compute principal components.
+	\item principal axes/components: columns of V
+	\item principal component scores $U\cdot S$
+	\item Use-case: recommendation system
+\end{itemize}
+\subsection{Principal Component Regression}
+\begin{itemize}
+	\item Multiple Linear Regression VS. Principal Component Regression
+	\begin{itemize}
+		\item PC combines the correlated variables into linear uncorrelated variables. It explain the most important variability of the model. 
+		
+		$\rightarrow$ \textbf{combats multicollinearity and unstability} to minor change in data from linear regression models. 
+	\end{itemize}
+	\item PCR Model:
+	$$y = Z \cdot \gamma + \varepsilon,  \quad \text{with} \quad Z = X \cdot \Phi  $$
+	\begin{itemize}
+		\item independent variables: principal components in Z
+	\end{itemize}
+	\item works well when the first few principal components are sufficient to explain most of the variation.
+	\item not a feature selection method.
+\end{itemize}
+
+\subsubsection{Partial Least Squares}
+\begin{itemize}
+	\item identifies new features in a \textbf{supervised} way:
+	\begin{itemize}
+		\item new features \textbf{approximate old features} and are \textbf{related to response}.
+		\item weights reflect the covariance structure between \textbf{predictors and response}
+	\end{itemize}
+	\item requires more complicated iterative algorithms
+\end{itemize}
+
+\subsection{Regularization: Ridge Regression}
+\subsubsection{Regularization}
+\begin{itemize}
+	\item Goal: \textbf{introduce bias} into regression solution that can \textbf{reduce variance} relative to OLS solution.
+	\item Objective function in regularization:
+	$$J(\theta) = L(\theta) + \Omega(\theta)$$
+	\begin{itemize}
+		\item $L(\theta)$ : training loss, describes \textbf{model fit}
+		\item $\Omega(\theta)$: regularization, describes \textbf{model complexity} 
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{Ridge Regression}
+\begin{itemize}
+	\item Goal: \textbf{minimizes} a \textbf{penalized} RSS
+	\item Penality: \textbf{$\mathbf{l_2}$ penality}
+	
+	$$\hat{\beta}^{ridge} = \arg\min_{\beta} (RSS + \lambda \cdot\Sigma \beta_j^2)$$
+	\begin{itemize}
+		\item $\lambda \uparrow$ , coefficients $\rightarrow 0$ 
+		\item coefficents will never be exactly 0, but nearly 0.
+	\end{itemize}
+	\item Evaluation: estimates \textbf{more biased} but have \textbf{lower variance} than OLS-Estimator. 
+\end{itemize}
+
+
+\subsection{Regularization: Lasso}
+\begin{itemize}
+	\item Goal: \textbf{minimizes quantity}
+	\item Penality: \textbf{$\mathbf{l_1}$ penality}
+	$$\hat{\beta}^{lasso} = \arg\min_{\beta} (RSS + \lambda \cdot \Sigma |\beta_j|)$$
+	
+	\item Finding tuning parameter $\lambda$ : select a grid of values + cross-validation
+	\item Evaluation \& Comparison Ridge Regression:
+	\begin{itemize}
+		\item has the effect of forcing some coefficients to be \textbf{exactly zero}, when $\lambda$ is large. 
+		
+		$\rightarrow$ feature selection
+		\item produces \textbf{simpler and more interpretable} models involving only \textbf{subset of predictors}
+		\item similar behavior to ridge regression: $\lambda \uparrow$, variance $\downarrow$, bias $\uparrow$.
+		\item generate \textbf{more accurate predictions}.
+	\end{itemize}
+\end{itemize}
