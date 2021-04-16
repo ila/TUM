@@ -1,0 +1,30 @@
+% Dokumentenart. Ersetze 12pt, falls die Schriftgröße anzupassen ist.
+\documentclass[12pt]{scrartcl}
+
+% Einbinden der Pakete, des Headers und der Formatierung.
+\input{styles/Packages.tex}
+\input{styles/FormatAndHeader.tex}
+\graphicspath{{bilder/}}
+
+
+% Counter für das Blatt und die Aufgabennummer.
+\setcounter{sheetnr}{0} % Nummer des Übungsblattes
+\setcounter{exnum}{1} % Nummer der Aufgabe
+
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+		\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}     % number in circles
+% Beginn des eigentlichen Dokuments
+\begin{document}
+	\pagenumbering{roman}
+	\input{styles/title.tex}
+	\newpage
+	\setcounter{tocdepth}{2}
+	
+	\tableofcontents
+	\newpage
+	\flushleft
+	
+	\pagenumbering{arabic}
+	\input{lectures/introduction.tex}
+
+\end{document}
