@@ -1,0 +1,139 @@
+\newpage
+\part{Unsupervised Learning}
+\section{Clustering}
+\begin{itemize}
+	\item Definition: given a database $D = {t_1, \dots, t_n}$ of tuples and an integer value $k$, define a mappping $f: D \rightarrow {1, \dots, k}$ where each tuple $t_i$ is assigned to a cluster $K_j$.
+	\item Input: a dataset with $n$ p-dimensional data instances.
+	
+	Output: a \textbf{natural partitioning} of the dataset into $k$ clusters and noise
+	\item Clustering VS. Classification
+	\begin{table}[H]
+		\begin{center}
+			\begin{tabular}{|l|p {0.3\linewidth}|p {0.35\linewidth}|}
+				\hline
+				Characteristics        & \textbf{Classification}  & \textbf{Clustering}   \\ \hline
+				Learning     & supervised  & unsupervised \\ \hline
+				Target       & known & unknown, no dependent variables \\ \hline
+				Training  	 & training data and training phase exists  & no training data/training phase, no labels/true classes  \\ \hline
+			\end{tabular}
+		\end{center}	
+	\end{table}
+	\item key questions: 
+	\begin{itemize}
+		\item the right number of clusters k
+		\item identification of class membership between instances
+	\end{itemize}
+	\item Issues:
+	\begin{itemize}
+		\item interpreting results
+		\item evaluating results: high intra-similarity within cluster, low inter-similarity across cluster? 
+		\item outlier
+		\item number of clusters k
+		\item scalability of algorithms
+	\end{itemize}
+\end{itemize}
+
+\subsection{Hierarchical Clustering : Minimum Spanning Tree}
+\begin{itemize}
+	\item Input: a database D with tuples, \textbf{adjacency matrix} based on distances
+	
+	Output: \textbf{dendogram}
+	\item Methods of building a dendogram: 
+	\begin{itemize}
+		\item top-down
+		\item bottom-up
+	\end{itemize}
+	\item Algorithms: with adjacency matrix, \textbf{each instance} can be seen as \textbf{node}, \textbf{distance} to other instances can be seen as \textbf{weighted edges} 
+	
+	$\rightarrow$ graph problem
+	
+	$\rightarrow$ compute \textbf{Minimum Spanning Tree}, bottom-up method.
+	\begin{itemize}
+		\item Kruskal's algorithm: $\mathcal{O}(d\log(d))$
+		\item Prim's algorithm: $\mathcal{O}(d\log(n))$
+	\end{itemize}
+	$\rightarrow$ each hierarchical level shares the same distance/weight.
+	
+	\item Distance measures in adjacency matrix:
+	\begin{itemize}
+		\item \textbf{Euclidean distance} between instance $p_1$ and $p_2$
+		$$d_E(p_1,p_2) = \sqrt{(x_{p1} - x_{p2})^2 + (y_{p1} - y_{p2})^2 +\dots }$$
+		\item \textbf{Manhattan distance} between instance $p_1$ and $p_2$
+		$$d_M(p_1,p_2) = |x_{p1} - x_{p2}| + |y_{p1} - y_{p2}| + \dots$$
+	\end{itemize}
+\end{itemize}
+
+\subsection{Partitional Clustering for Numeric Data: K-Means}
+\begin{itemize}
+	\item Input: 
+	\begin{itemize}
+		\item a database D with tuples
+		\item $k$ number of clusters
+	\end{itemize}
+	 
+	Output: k partitioned clusters
+	\item Process:
+	\begin{itemize}
+		\item Initialization: randomly picked k centers
+		\item compute the distance between each instance to the centers, assign instance to the \textbf{nearest center}.
+		\item \textbf{update} the center of the clusters: \textbf{mean of assigned instances}
+		\item repeat step 2-3 until convergence.
+	\end{itemize}
+
+	\item Advantages:
+	\begin{itemize}
+		\item simple
+		\item items automatically assigned to clusters
+	\end{itemize}
+	Disadvantages:
+	\begin{itemize}
+		\item number of clusters $k$ must be predefined
+		\item result significantly depends on \textbf{initial choice of centers} 
+		
+		$\rightarrow$ traps in \textbf{local minimum} 
+		
+		$\rightarrow$ repeat algorithm by starting from different random centers (eg: Iterative Improvement)
+		\item sensitive to \textbf{outliers}
+	\end{itemize}
+\end{itemize}
+
+\subsection{Probabilistic Clustering: Expectation Maximization}
+We only discuss the simplified case here: instance with single \textbf{numeric} attribute and 2 clusters A \& B.
+\begin{itemize}
+	\item Input: random assigned parameters for cluster A \& B, assume \textbf{normal distribution}
+	\begin{itemize}
+		\item A: $\mu_A, \sigma_A$, prior probability of instance in cluster A $Pr(A)$
+		\item B: $\mu_B, \sigma_B$, prior probability of instance in cluster B $Pr(B) = 1 - Pr(A)$
+	\end{itemize}
+	Output: 2 clusters with assigned instances
+	
+	\item Process:
+	\begin{itemize}
+		\item \textbf{Expectation} step: calculate the probability for \textbf{all instances} in \textbf{each cluster}: \textbf{Bayes Theorem}
+			$$Pr(A|x) = \frac{Pr(x|A) \cdot Pr(A)}{Pr(x)} ,\quad Pr(x|A) = \frac{1}{\sqrt{2\pi} \cdot \sigma_A} e^{-\frac{(x - \mu_A)^2}{2\sigma_A^2}}$$
+			$$Pr(B|x) = \frac{Pr(x|B) \cdot Pr(B)}{Pr(x)} ,\quad Pr(x|B) = \frac{1}{\sqrt{2\pi} \cdot \sigma_B} e^{-\frac{(x - \mu_B)^2}{2\sigma_B^2}}$$
+		\textbf{no need to pick cluster here!}
+		\item \textbf{Maximization} step: update the parameters for cluster A \& B. calculate the weighted mean and weighted variance using \textbf{all instances}. 
+		$$w_{iA} = Pr(A|x), \quad  w_{iB} = Pr(B|x)$$
+		$$\mu_A = \frac{w_{1A}x_1 + w_{2A}x_2 + \dots + w_{nA}x_n}{w_{1A} + w_{2A} + \dots + w_{nA}}$$
+		$$\sigma_A = \sqrt{\frac{w_{1A} (x_1 - \mu_A)^2 + \dots + w_{nA} (x_n - \mu_A)^2}{w_{1A} + w_{2A} + \dots + w_{nA}}}$$
+		analog to $\mu_B$ and $\sigma_B$
+		
+		$$Pr(A) = \frac{\Sigma w_A}{\Sigma w_A + \Sigma w_B}, \quad Pr(B) = 1 - Pr(A)$$
+		\item repeat expectation and maximization step until convergence.
+	\end{itemize}
+	\item Limitation: can stuck in \textbf{local optimum}. 
+	
+	$\rightarrow$ repeat algorithm by starting with \textbf{different initial parameters}.
+	
+	\item Extension of model:
+	\begin{itemize}
+		\item multiple clusters: calculate k normal distributions
+		\item multiple attributes: 
+		\begin{itemize}
+			\item independent: multiply probabilities of all attributes
+			\item correlated: multivariate normal distribution
+		\end{itemize}
+		\item nominal attributes: create probability distribution
+	\end{itemize}
+\end{itemize}

@@ -1,0 +1,47 @@
+% Dokumentenart. Ersetze 12pt, falls die Schriftgröße anzupassen ist.
+\documentclass[12pt]{scrartcl}
+
+% Einbinden der Pakete, des Headers und der Formatierung.
+\input{styles/Packages.tex}
+\input{styles/FormatAndHeader.tex}
+
+\graphicspath{{bilder/}}
+
+\def\ojoin{\setbox0=\hbox{$\bowtie$}%
+	\rule[-.02ex]{.25em}{.4pt}\llap{\rule[\ht0]{.25em}{.4pt}}}
+\def\leftouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie}}
+\def\rightouterjoin{\mathbin{\bowtie\mkern-5.8mu\ojoin}}
+\def\fullouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie\mkern-5.8mu\ojoin}}
+% Beginn des eigentlichen Dokuments
+\usepackage{color,soul}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+		\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}     % number in circles
+
+\begin{document}		
+	\pagenumbering{roman}
+	\input{styles/title.tex}
+	\newpage
+	\setcounter{tocdepth}{2}
+	
+	\tableofcontents
+	\newpage
+	\flushleft
+	
+	\pagenumbering{arabic}
+	\input{lectures/formulasheet.tex}
+	\input{lectures/introduction.tex}
+	\input{lectures/regression_analysis.tex}
+	\input{lectures/regression_diagnostics.tex}
+	\input{lectures/logit.tex}
+	\input{lectures/naivebayes.tex}
+	\input{lectures/decisiontree.tex}
+	\input{lectures/ensemble.tex}
+	\input{lectures/nn.tex}
+	\input{lectures/causal.tex}
+	\input{lectures/clustering.tex}
+	\input{lectures/assorules.tex}
+	\input{lectures/dataprep.tex}
+	\input{lectures/dataevaluate.tex}
+	\input{lectures/dimreduce.tex}
+	
+\end{document}
