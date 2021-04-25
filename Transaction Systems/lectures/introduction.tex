@@ -1,0 +1,57 @@
+\section{Introduction}
+Transaction systems are essential for real-life applications: 
+\begin{itemize}
+	\item OLTP systems (online transaction processing), which consist in an architecture with a DBMS and operations happening inside it;
+	\item E-commerce, more complicated since there are external systems in addition to a database;
+	\item Workflows such as travel planning and booking, usually taking more time than the other two.
+\end{itemize}
+
+This kind of scenarios can happen within different modalities: embedded SQL, dynamic SQL and so on. Such techniques allow communication between programming languages and databases in a black-box environment, making the database unaware of the complexity and the meaning of statements. 
+
+The main problem is that in the same database, multiple operations can happen at the same time, generating concurrent executions: in the case of reads and writes on the same data, this can generate inconsistencies.
+
+For instance, a write happening immediately after another write can overwrite the previous one, losing information: this scenario needs to be prevented, requiring concurrency control for isolation of transactions.
+
+Furthermore, the system can crash between statements, which is a risk happening regardless of the technical infrastructure (power outages and such) so cannot be avoided: a transaction may not be committed while the next one will, creating potentially inaccurate situations.
+
+Failures therefore need recovery mechanisms for atomicity and durability of data. 
+
+Complex systems such as online shopping involve multiple parts (and multiple databases) constantly interacting between one another: distributed systems must employ transactional effects to obtain persistent information, especially since some operations cannot be rolled back.
+
+Workflows are commonly-used computerized parts of business processes, consisting in a set of activities with specific flow and control between them. 
+
+These can be represented as Petri networks, and involve an if-else strucure which might spawn other transactions in other systems, gathering information over a long span of time (i. e. booking a conference and finding flights).
+
+Once again, state must be failure-resistant, allowing to save existing operations without isolating its parts if they need to interact. 
+
+To split the workload and differentiate logic, usually more layers are used, creating a 3-tier system architecture:
+\begin{enumerate}
+	\item Client, with GUIs and websites to be rendered on browsers;
+	\item Application server, composed by application programs and request brokering (middlewares);
+	\item Data server, commonly a database, but also a mail server or documents.
+\end{enumerate}
+Some specific cases only use two tiers, such as a simple client-server in which the application part resides on the client (or on the database).
+
+All the properties mentioned before within requirements of transaction systems can be summarized in ACID:
+\begin{itemize}
+	\item Atomicity, either an operation is completely done or rolled back (a rollback must always succeed, even at the cost of shutting down the connection);
+	\item Consistency, transactions must be aborted if properties of the state are violated;
+	\item Isolation, data should be visible as if single-user mode;
+	\item Durability, persistence of storage even during failures. 
+\end{itemize}
+Every transaction has to follow a begin-commit-rollback flow. If a commit succeeds, it is never lost and it has to be propagated within all the system.
+
+These properties can be achieved by implementing the following components:
+\begin{enumerate}
+	\item Concurrency control, to guarantee isolation;
+	\item Recovery, for atomicity and durability;
+	\item Performance, trying to maximize throughput to minimize response time;
+	\item Reliability, never losing data;
+	\item Availability, providing a continuous server with very short downtime.
+\end{enumerate}
+
+Another thing to keep in mind is how to store data, i.\ e. which storage structure to use: databases employ pages, containing a header and (ideally) continuous data. When an update triggers an overflow, the tuple is placed on a new page and a pointer is added. 
+
+Complementary structures such as indexes allow to access information more efficiently, implementing lookup in logarithmic time for both point and range queries (B+-trees). These should also taken into account when implementing concurrency and query plans. 
+
+

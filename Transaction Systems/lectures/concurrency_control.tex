@@ -1,0 +1,54 @@
+% !TeX root = ../notes.tex
+
+\section{Concurrency control}
+\subsection{Synchronization problems}
+The most common and problematic synchronization issue is the so-called lost update: a process A updates a value, while process B also performs the update with a different value. The first assignment is lost, since the second transaction gets written over it.
+
+The problem here is an interleaving of reads and writes, of the kind $r_1(x)r_2(x)w_1(x)w_2(x)$: simply swapping the middle ones would solve concurrency issues.
+
+Furthermore, reads can happen inconsistently: in this case, operations can be executed sequentially, yet consequent reads of the same process may lead to wrong results.
+
+Dirty reads are a particular scenario in which a write fails and it is rolled back, invalidating previously read data. Furthermore, successive writes can also be compromised by not knowing the state of the system.
+
+\subsection{Schedules}
+Let $T$ be a set of transactions, in which $t_i = (op_i, <_i)\ \forall i$. Then:
+\begin{itemize}
+	\item A history is a pair $s = (op(s), <_s)$ such that:
+	\begin{itemize}
+		\item $op(s) \subseteq \cup_{i=1\dots n} op_i \cup \cup_{i=1\dots n} \{a_i, c_i\}$;
+		\item $c_i \in op(s) \leftrightarrow a_i \notin op(s)$;
+		\item $p <_s c_i \lor q <_s p$ (all operations are ordered before a commit);
+		\item If at least one $p, q$ is a write and both access the same element, then $p <_s q \lor q <_s p$.
+	\end{itemize}
+	\item A schedule is a prefix of a history, allows to run transactions.
+\end{itemize}
+
+A history (partial order) is serial if for any two transactions $i, j$ in $s$, all operations in $t_i$ are ordered in $s$ strictly before all operations in $t_j$, or vice versa.
+
+The definition of correctness for a history may vary, however in these examples it is stated as an equivalence relation which must be decidable and sufficiently large. For simplicity, it is assumed that all transactions commit.
+
+\subsection{Herbrand semantics}
+Herbrand semantics are sets of rules defining dependency between writes and consequent reads, since the latter's result is related to the previous operation.
+
+Since functions are deterministic, the same input within the same set of operation must always lead to the same output; therefore, Herbrand semantics can be treated as functions.
+
+A Herbrand universe is the smallest set of symbols such that:
+\begin{itemize}
+	\item $F_{0x}() \in HU$ for each $x \in D$ where $f_{0x}$ is a constant;
+	\item If $w_i \in op$ for some $t_i$, there are $m$ read operations that precede $w_i(x)$ in $t_i$, (...).
+\end{itemize}
+% todo finish this
+
+\subsection{Serializability}
+Two schedules are final state equivalent if their Herbrand semantics are the same, and $op(s) = op(s')$: not only the same operations are performed, but also for the same reasons having the same values.
+
+To give more meaning to Herbrand semantics, reads-from relations are introduced by extending a schedule with an initial and final transaction, respectively $t_0$ and $t_{\infty}$:
+\begin{itemize}
+	\item $r_j(x)$ reads $x$ in $s$ from $w_i(x)$ if $w_i(x)$ is the last write on $x$ such that $w_i(x) <_s t_i(x)$;
+	\item The reads-from relation is $RF(s) = \{(t_i, x, t_j)\ |\ r_j \text{ reads } x \text{ from a } w_i(x)\}$;
+	\item Step $p$ is directly useful for step $q$ (...)
+	\item Step $p$ is alive if it is useful for the final transaction, and dead otherwise;
+	\item The live-reads-from relation is $LRF(s) = \{(t_i, x, t_j)\ |\ \text{an alive } r_j \text{ reads } x \text{ from } w_i(x)\}$.
+\end{itemize}
+
+

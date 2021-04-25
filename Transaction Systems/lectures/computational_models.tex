@@ -1,0 +1,36 @@
+% !TeX root = ../notes.tex
+
+\section{Computational models}
+Computational models in transaction systems work with the assumption of database system layers, in which requests are communicated at the top level of the stack and propagated below; the system must make sure that results are correct, even in an environment with multiple users and operations.
+
+To get this, some elements are needed:
+\begin{itemize}
+	\item Elementary operations, primitive;
+	\item Transactions, logical compounds of execution;
+	\item Schedule and history;
+	\item Correctness, expressed by a common notion;
+	\item Protocols, algorithms to enforce the latter.
+\end{itemize}
+
+\subsection{Page model}
+A transactin $t$ is a partial order of seps of the form $r(x)$ or $w(x)$ with $x \in D$, in which reads and writes to the same object are ordered. 
+
+$t = (op, <)$ represents a partial order $<$ for transaction $t$ with step set $op$. This model is quite simple since it only consists in reads and writes defined in order:
+\begin{enumerate}
+	\item If $p_j = r(x)$, the interpretation is an assignment of type $v_j = x$;
+	\item If $p_j = w(x)$, the assignment is performed without knowing the series of previous operations, hence $x = f_j(v_{j1}, \dots, v_{jk})$ with unknown function.
+\end{enumerate}
+
+\subsection{Object model}
+An object model identified a transaction as a tree of labeled nodes, having the following characteristics:
+\begin{itemize}
+	\item The identifier corresponds to the root;
+	\item Names and parameters are labels of inner nodes;
+	\item Read/write operations are leaves;
+	\item Leaves are subject of a partial order $<$ such that for $p = w(x)$ and $q = r(x)$ or $q = r(x)$, then $p < q \lor q < p$.
+\end{itemize}
+Inner nodes can be ordered by checking their leaf descendants and comparing them. 
+
+It is also possible to build trees according to application logic, implementing custom object modules taking advantage of index structures to allow more degrees of freedom.
+
+
