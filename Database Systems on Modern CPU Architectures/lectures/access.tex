@@ -1,0 +1,17 @@
+\section{Access paths}
+Access paths can be seen as a general concept for indexes on relations: the DBMS needs several data structures, mainly for space management and retrieval.
+
+A common problem in database implementation consists in where to store incoming data, especially since not all tuples have the same size. A traditional solution for that is the free space bitmap, in which each nibble (an array of half a byte per page) indicates the fill status for each page.
+
+This means that information on space utilization has to be encoded in 4 bits, approximating the status with the linear formula $data\ size / \frac{page\ size}{2^{bits}}$, which however leads to accuracy loss.
+
+Logarithmic scale is often better ($\lceil log_2(free\ size)\rceil$), or interpolation, or a combination of methods since it is unlikely that each page only has a couple of tuples.
+
+When inserting the data, the required FSI entry is computed and FSI gets scanned for a match, then data is inserted. Searching leads to linear runtime, which can be too expensive, especially since the size is so small. This method therefore gets slower and slower, as FSI gets longer. 
+
+\subsection{Allocation}
+Performing allocation benefits from application knowledge: larger pieces are often inserted with short amount of time in between, or there can be one single huge item.
+
+Allocation should be contiguous, and to achieve this the interface $allocate(min, max)$ contains size parameters to improve layout, help deciding location and reduce fragmentation. Tuples are more difficult to store, and can cause over-allocation. Unfortunately, most programming languages do not support such options. 
+
+Taking a vector and continuously increasing its size, for example, will at some point lead to some misalignment if memory hasn't been allocated before: in this case, pointers can be employed to know next location, but MALLOC cannot give bounds on the overhead. 

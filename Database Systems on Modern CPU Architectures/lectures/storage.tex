@@ -1,0 +1,110 @@
+\section{Storing the data}
+Storing the data is a common issue within database implementation: the application data must be mapped in the file system, taking into account several design choices (such as not even using a file system but just using a physical drive).
+
+However, the application layer should not be aware of how the data is being stored, and storage has to be able to scale up to very large sizes while keeping fast retrieval and update properties. 
+
+To simplify the implementation of all requirements and allow decoupling of structures, DBMS employ a layer architecture, in which each layer only communicates with the one below. Layers in this way can be replaced easily independently of the others.
+
+A simplified layer architecture is composed by:
+\begin{enumerate}
+	\item Query layer, performing SQL instructions and optimizing them;
+	\item Access layer, organizing data in pages, managing records and access paths, creating indices and exposing relations or views;
+	\item Storage layer, containing a database buffer in which data is kept before writing it to disk, which manages accesses and releases of pages;
+	\item DB, the physical medium to store data.
+\end{enumerate}
+
+A more detailed architecture has more layers with specific functionalities and data structures, adding interfaces to have more granularity. Transaction isolation and recovery need to be implemented as well, despite not present in this representation.
+
+Most DBMS nowadays, however, deviate slightly from the classical architecture, delegating hard disk access or buffer management directly to the OS. 
+
+\subsection{Hard disk access}
+While designing architecture, hardware power must also be taken into account: storage systems are constantly getting faster and more powerful, and CPU speed had exponential growth until the last years. 
+
+Storage hierarchy can be represented with a pyramid: the upper parts are faster but obviously more expensive, and therefore smaller, while lower parts are way bigger and slower. The difference between units can go from $ns$ to even seconds with offline archive storage.  
+
+Hard disk is still the dominant external storage, employing rotating platters and therefore leading to an imbalance between random and sequential I/O. 
+
+Moving the disk is terribly expensive, so typically a larger chunk is loaded (usually one page, 4 to 16 kilobytes). Reading a full page might lead to wasting time by handling unnecessary information, however larger pages can be used in specific use cases. 
+
+The page structure is prominent within the DBMS: often, multiple pages are loaded at once with a read-ahead technique, to avoid multiple successive requests; write-back is implemented by sorting pages before applying changes.
+
+Some pages are accessed frequently, therefore the I/O can be reduced by buffering or caching. This must be coupled with recovery, in particular logging must be accurate.
+
+A basic page interface works in the following way:
+\begin{itemize}
+	\item A page is fixed when it is contained in the buffer, and can be manipulated but not discarded, read by multiple transactions at once but only exclusively modified, keeping a dirty state if it has been subject to changes;
+	\item A page gets then unfixed when it is no longer accessed, and memory is released. 
+\end{itemize}
+
+\subsection{Buffer management}
+
+A buffer uses a hash table to manage its pages, in which each entry links to a page stored in memory, and handles collisions with multiple layers of buffer managers. To protect from concurrent access, latches are maintained.
+
+When memory is full, some buffer pages need to be replaced: dirty ones have to be written to disk first, while clean ones can be simply discarded. 
+
+The simplest strategy is FIFO, keeping a linked list with oldest pages and just removing the head, but this does not take locality into account and this method becomes worse as memory size increases.
+
+LRU (Least Recently Used) is one of the mostly used strategies, keeping a double linked list in which a page is moved to the tail if it is unfixed, so that often-accessed pages always stay in it. Latching requires care, since multiple users will try to access the list at the same time.
+
+LRU is simulated through clock or second-chance algorithms, approximating lists with one bit (representing whether the page has been used). When evicting, pages are replaced with an unset bit. 
+
+LFU (Least Frequently Used) organizes pages by reordering them according to the number of accesses, but it is quite expensive to maintain. 
+
+2Q is a method specific for database systems, based on the fact that not all pages have the same access frequency: all pages are kept in a FIFO queue, and when a page there is referenced again, it gets moved into a LRU queue. This way, hot pages are in LRU, while read-once pages in FIFO.
+
+Since the DBMS already might know which pages will be accessed, having information about the query, it is possible to give hints to the buffer manager and eventually change placement in queue.
+
+\subsection{Segments}
+Segments are the traditional data structure to organize pages, allowing to handle relations, indexes, space management and such. For instance, a DROP TABLE statement implies memory must be de-allocated, and a segment indicates which pages correspond to the entity to be deleted.
+
+A segment is conceptually similar to a file system, however segments do not necessarily have contiguous data and inherent orders (linearity is not guaranteed). Another comparison would be with virtual memory, since both involve mapping.
+
+The interface of a segment contains low-level operations such as allocating or releasing, iterating pages, dropping the whole segment and optionally offering a linear address space (not by default).
+
+This means, for instance, that when a relation occupies a contiguous amount of space and grows over time, it is not given that latter parts will be allocated in the same area: this leads to potential holes which could be closed whenever more space is required by the relation, even allocating more than needed. 
+
+However, tuples cannot be returned in the same order as they were inserted, since insertion order may differ from chunk order. This is not an issue since SELECT instructions do not guarantee a deterministic ordering. 
+
+There are a few data structures requiring a linear address space, i. e. the iteration order to be the same as insertion order, which can be obtained by adding numbers for pages but is not ideal. 
+
+\subsubsection{Block allocation}
+Block allocation can be performed in several ways:
+\begin{enumerate}
+	\item Static file mapping, catalog having a reserved static area which is easy to implement but hard to resize;
+	\item Dynamic block mapping, having pointers to some static catalogs, quite flexible but requires an additional overhead;
+	\item Dynamic extent mapping, easy to grow with a slight overhead, growing exponentially.
+\end{enumerate}
+
+\subsubsection{Segment types}
+Segments can be classified into types:
+\begin{itemize}
+	\item Public or private;
+	\item Permanent or temporary (the latter is obviously cheaper, while permanent storage guarantees persistency by writing all data twice);
+	\item Automatic or manual;
+	\item With or without recovery (recovery might not needed when storing one-time data or index structures to pay less overhead).
+\end{itemize}
+Most DBMSs have at least two low-level segments, one for segment inventory (keeping track of allocated pages) and one for free-space inventory. In addition to these are built high level segments, such as schema, relations and temporary ones. 
+
+Updates are performed either with steal or with force in case of running out of memory: the first one works taking an unmodified page and throwing it away, however if the page is dirty there is a lesser amount of flexibility which leads to complicated management and recovery. 
+
+Force, on the other hand, writes every dirty page on disk, no matter when they will be modified next and triggering more writes than needed.
+For this reason, steal is preferred.
+
+One problem with dirty handling is the multiplicity of users in a database systems: other users should not be allowed to see changes until a commit takes place, locking data and disallowing good concurrency. 
+
+One particularly elegant solution to this is shadow paging, relying on the idea of having copies of each dirty page and noting down each modified page in a structure, such that other users can still read the previous version.
+
+There are two downsides, namely the increase on difficulty of implementation, and the lack of locality among data: shadow pages interrupt sequential runs, causing more seek time.
+
+A similar concept to remedy the previous problems is delta files, working in three steps:
+\begin{enumerate}
+	\item On change, pages are copied to a separate file;
+	\item A copied page can be changed in-place;
+	\item On commit, the file is discarded, otherwise it gets copied back. 
+\end{enumerate}
+Delta can keep either dirty or clean pages, as long as one copy gets destroyed after a commit. Both ways have pros and cons, making expensive either the commit or the abort.
+
+Delta files allow to preserve locality among its advantages, and make recovery easier by having no mixture of clean and dirty pages. However, it leads to more I/O and keeping track of delta pages is non-trivial.
+
+ 
+
