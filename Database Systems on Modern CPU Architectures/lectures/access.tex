@@ -15,3 +15,64 @@ Performing allocation benefits from application knowledge: larger pieces are oft
 Allocation should be contiguous, and to achieve this the interface $allocate(min, max)$ contains size parameters to improve layout, help deciding location and reduce fragmentation. Tuples are more difficult to store, and can cause over-allocation. Unfortunately, most programming languages do not support such options. 
 
 Taking a vector and continuously increasing its size, for example, will at some point lead to some misalignment if memory hasn't been allocated before: in this case, pointers can be employed to know next location, but MALLOC cannot give bounds on the overhead. 
+
+\subsection{Slotted Pages}
+Slotted pages are useful to allocate pages a fixed size on a segment, using slots supporting combinations of page number and slot number to retrieve information. 
+
+It can happen that a record overflows: in that case, it is moved to a new page, and a pointer gets stored in the previous slot. This forward mechanism enables to keep a structured storage while not having to perform cascading updates.
+
+When a record which has already been moved overflows again, in fact, there is no need to create a chain: the existing link can just be replaced, only forming a chain in case of an index. This system, however, relies on the hope that most tuples will not be moved, instead they will be never updated. 
+
+Slotted pages are implemented by storing tuples in a page in which data grows from one side and slots from the other. Each page will have a header and a new slot getting added as new data items get added, until it is full when two sides meet.
+
+In reality, data items have variable size, and it is unknown how many slots will be there. Updates and deletions can be complicated as well, since they might change the size: in this case, some data needs to be moved with periodic compactification to optimize space consumption.
+
+Header parameters are:
+\begin{itemize}
+	\item LSN, flag to check whether there have been crashes;
+	\item slotCount, number of used slots;
+	\item firstFreeSlot, pointer to the first usable slot;
+	\item dataStart, lower end of data, which should not be updated;
+	\item freeSpace, available space after compactification, which can be performed when this number is bigger than the effective free space.
+\end{itemize}
+The effective free space can be calculated with the following formula:
+$$EFS = pageSize - headerSize - slots \cdot slotSize - (pageSize - dataStart)$$ 
+
+Scanning slots to find a free one can take quadratic runtime, therefore pointers to free slots are employed; however, performance of slotted pages is still not ideal.
+
+Conceptually, each slot can be assigned an offset and length of the respective data item, even if empty tuples must be distinguished from deleted one through offset length.
+
+The main issue with this method is the lack of available space in the case a transaction to shrink a page aborts and the following to add data commits, making it necessary to store a further bit (flag) in the TID which would be stored inside the slot: if the TID is valid, the entry is redirected.
+
+\subsection{Record layout}
+A record layout has the purpose of materialize and serialize the tuples, trying to avoid the linear worst-case runtime of accessing an attribute. 
+
+Instead of offset, the length is stored:
+\begin{enumerate}
+	\item Each tuple is split in two parts;
+	\item The header has fixed size, while tail is variable;
+	\item Header contains pointers to the tail (beginning can just be computed);
+	\item Attributes are accessed in constant time.
+\end{enumerate}
+For even better performance, attributes can be reordered by decreasing alignment, i. e. the number of bits of its type. Sorting works since alignment is always a power of two, and it helps identifying the data type. 
+
+Variable length-data, which modern processors easily handle, is placed at the end and given alignment 1 by default, without wasting space on padding.
+
+NULL values can either be stored as invalid or identified with an additional bit, which allows to omit actual information to save more space. This is useful when NULL values are common.
+
+\subsection{Compression}
+Some DBMS store data in a compressed way, with the aim of saving space and most importantly improve performance: reducing size reduces bandwidth consumption as well, decreasing I/O costs.
+
+General compression schemes work better as the data gets larger (for instance LZ77), but every DBMS should be able to update information without decompressing and recompressing everything. Page size is also a problem, since it can vary.
+
+Compressing large chunks is therefore not an option, so it is performed tuple by tuple. Huffman encodings are a possibility (building decision trees to take advantage of similarities in data) except for the problem of not knowing the tree to decompress, which is usually not serialized to avoid the additional overhead. 
+
+To remedy this, adapted Huffman encoding is an algorithm in order to reconstruct trees by changing encoding to make frequent letters cheaper, so that trees will only depend on frequencies.
+
+Performance of such technique is quite bad, and might not balance the time saved from I/O. A reasonable compromise is byte-wise encoding through VLE, a bit worse in terms of size but faster in the long run and able to handle null values.
+
+Compressed data, however, has variable length, and sometimes depend on precedent compression. Lookup tables help precomputing and locating quickly.
+
+Dictionary encoding is a particular method used for strings, since data tends to be redundant: it stores strings in a dictionary, and only the ID is contained in the tuple, greatly reducing the total size. 
+
+
