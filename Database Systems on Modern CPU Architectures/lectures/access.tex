@@ -75,4 +75,37 @@ Compressed data, however, has variable length, and sometimes depend on precedent
 
 Dictionary encoding is a particular method used for strings, since data tends to be redundant: it stores strings in a dictionary, and only the ID is contained in the tuple, greatly reducing the total size. 
 
+\subsection{Long records}
+Long records consist in a long-term solution in case the previously mentioned methods cannot be used: the root of the idea are pages which do not fit into a single page (BLOB, for instance).
+
+These could be stored with a pointer to the attribute to a whole page, or eventually a long chain of pointers, but this implementation is problematic since it implies reading a potentially unbounded amount of pages (troublesome for buffering or locking). Furthermore, updates involve multiple allocations or releases in the system. 
+
+Instead, tuples are stored separately from BLOB objects, and not parsed until a query is actually performed; sometimes IDs are assigned to BLOBs, hiding their complexity.
+
+In most systems, it is not easily possible to perform many operations on such data types, for instance looking at the content, and costs are generally high even though processing is simple.
+
+When objects are in the order of MBs, data is again mapped to pages, storing information in a B-tree like fashion. Each node contains a part of the BLOB and a key representing a range (offset) for searching. Relative offsets allow logarithmic worst-case runtime when updating, the only downside is the overly complicated interface.
+
+Using an extent list is simpler, having a chain of real tuples pointing to BLOB tuples with unlikely worst-case scenarios. BLOBS can be manipulated as a whole piece, but are harder to update in pieces. 
+
+Postgres employs TOAST, a mechanism to shorten long tuples.
+
+Other approaches encode short BLOBs in the TID, and uses the full procedure only for actually large objects. The ones smaller than the page size are stored in records.
+
+\subsection{Index structures}
+Index structures come in handy when a small part of all the available tuples need to be fetched (either point or range queries), or when making sure primary keys exist. 
+
+B-trees are the most popular data structure used for external storage: every tree has a degree $k$ and each nodes has $k \leq n \leq 2k$ entries. All leaves must have the same depth, which can be bounded with the logarithm of the size (usually 3 or 4).
+
+Given they are particularly easier to implement and generally faster than red-black trees, B-trees are widely used in their variant of B+-trees, which are even simpler and store TIDs only in leaves. Inner nodes contain separators which may or may not occur in the data.
+
+Each node contains:
+\begin{itemize}
+	\item LSN for recovery;
+	\item Upper node or leaf node marker, the latter being a value which cannot appear in the former;
+	\item Number of entries;
+	\item Key/TID/child;
+	\item Next leaf node (only for leaves, a flag).
+\end{itemize}
+
 
