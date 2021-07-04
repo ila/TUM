@@ -297,3 +297,310 @@ $\rightarrow$ good for data parallel processing like vector processing.
 	\end{itemize}
 \end{itemize}
 
+\subsection{Data Center Networks}
+Inside the data center, the \textbf{servers} are connected by \textbf{LAN}-- Local Area Network. Each \textbf{server} is connected to a \textbf{switch}. The \textbf{switches} are connected, which allows \textbf{communication between the servers}. \\ \ \\
+
+Multiple \textbf{LANs} are possible in a data center. The \textbf{LANs} can be connected through a \textbf{router}. A router is based on a IP-address, it can make decisions depending on the IP-address (eg: receiver of message). \\ \ \\
+
+The \textbf{routers} in the data center can be connected to a \textbf{WAN}-- Wide Area Network, the internet. The \textbf{WAN} can be connected to a \textbf{local router}, which a client has access to . This is the \textbf{last mile} to reach the client, frequently \textbf{radio network} is used -- WLAN or GSM.
+
+\subsubsection{Different Networks}
+\begin{itemize}
+	\item Types:
+	\begin{itemize}
+		\item WAN -- Wide Area Networks
+		\begin{itemize}
+			\item homogeneous base technology (opto-electronic)
+		\end{itemize}
+		
+		\item LAN -- Local Area Networks and Cluster Networks
+		\begin{itemize}
+			\item non-shared Ethernet
+			\item Infiniband
+		\end{itemize}
+		
+		\item Last Mile
+		\begin{itemize}
+			\item heterogeneous base technology (Radio, TV cables, etc.)
+		\end{itemize}
+	\end{itemize}
+
+	\item Performance Metrics:
+	\begin{itemize}
+		\item \textbf{Latency}: transport time of a message
+		\begin{itemize}
+			\item physical delay: time needed to go through the links, limited by speed of light, \textbf{not optimizable}.
+			\item protocol delay: time needed to execute protocol operations. \textbf{compensated by increase of CPU performance.}
+			\item line waiting time: time to wait until the link is available. negligible up to 10\% utilization. \textbf{reduced by increasing bandwidth}.
+			\item transmission time: time needed to send certain amount of data over the link. \textbf{reduced by increasing bandwidth}.
+			$$\text{transmission time} = \frac{\text{message size}}{bandwidth}$$
+		\end{itemize}
+		\item \textbf{Bandwidth} (byte/sec): the speed transporting a message
+	\end{itemize}
+\end{itemize}
+
+
+\subsubsection{Local Area Network}
+\paragraph{Ethernet}
+\begin{itemize}
+	\item first implementation based on a \textbf{shared cable}: all computer are connected through one cable. Only one computer can transmit message at a time.
+	\item now \textbf{switched Ethernet}: each computer is connected to a switch. Switches are connected together to enable communication. A switch replicates all packets to all ports.
+	\item Speed: 10 Mbit/s, 100 Mbit/s or 1000 Mbit/s
+\end{itemize}
+
+\paragraph{VLAN -- Virtual Local Area Network}
+\begin{itemize}
+	\item Characteristics:
+	\begin{itemize}
+		\item a single LAN is \textbf{partitioned} into \textbf{multiple virtual LANs}.
+		
+		$\rightarrow$ direct traffic or for security reasons.
+		\item each virtual LAN is a \textbf{single broadcast domain}
+		\item \textbf{communication} between VLANs only through \textbf{router} 
+	\end{itemize}
+
+	\item \textbf{Port-based VLAN}
+	\begin{itemize}
+		\item The \textbf{ports} of a switch are \textbf{specifically assigned} to a \textbf{VLAN}.
+		\item servers of a VLAN from two switches are communicated through a \textbf{link}.
+		\item  \# links = \# VLANs
+	\end{itemize}
+	
+	\item \textbf{Tagged VLAN}
+	\begin{itemize}
+		\item one port of a switch is not connected to server. This port is connected to other switches through a \textbf{link}. This link manages all packets.
+		\item \textbf{Tag}: packets are \textbf{only forwarded to ports with the same tag}.
+		\item \# links = 1
+	\end{itemize}
+\end{itemize}
+
+\paragraph{Infiniband}
+\begin{itemize}
+	\item Characteristics:
+	\begin{itemize}
+		\item low latency, high bandwidth
+		\item speed: 25 Gbit/s
+		\item RDMA access: \textbf{direct access of memory of other computer}. Instead of packing data into a message an sending to the operation system and then taking it out, RDMA can \textbf{directly fetch} the data from memory and forward it to the requester. 
+		
+		No protocol overhead or handling of message $\rightarrow$ \textbf{faster}.
+		\item based on \textbf{Virtual Interface Adapter}: data transfer don't require operation system support.
+	\end{itemize}
+	\item Use-case: clusters and servers
+\end{itemize}
+
+\subsubsection{Software-defined Networks}
+\begin{itemize}
+	\item Motivation:
+	\begin{itemize}
+		\item higher speed
+		\item automated network configurations
+		\item security
+		\item adaptation to performance variations
+	\end{itemize}
+	\item Current network management:
+	\begin{itemize}
+		\item Management plane --> Control plane --> Data/Forwarding plane
+	\end{itemize}
+	\item Software Defined Networking:
+	\begin{itemize}
+		\item allows network administrators to \textbf{programmatically initialize, control, change and manage the network behavior dynamically} via open interfaces
+		\item Protocol: OpenFlow
+		\begin{itemize}
+			\item enables an open interface to \textbf{interact} with networking devices (machines, switches from different providers)
+			\item network layers on top of L3
+			\item SDN controllers communicate to L3 switches using openFlow protocols. 
+		\end{itemize}
+	\end{itemize}
+
+\end{itemize}
+
+
+\subsubsection{Last Mile Networks}
+
+\paragraph{Wireless Local Area Network -- WLAN}
+\begin{itemize}
+	\item consists of \textbf{clients} and \textbf{access points} as routers.
+	\item modes:
+	\begin{itemize}
+		\item \textbf{infrastructure}: clients connect to the access point
+		\item \textbf{ad hoc}: clients communicate with each other
+	\end{itemize}
+	\item Security:
+	\begin{itemize}
+		\item Wireless Equivalent Privacy (WEP)
+		\item Wi-Fi Protected Access (WPA1, WPA2) 
+	\end{itemize}
+	\item Speed:
+	\begin{itemize}
+		\item 802.11 n: 800 Mbit/s, 70m
+		\item 802.11 ac: 1733 Mbit/s, 35m
+	\end{itemize}
+\end{itemize}
+
+\paragraph{Digital Subscriber Line -- DSL}
+\begin{itemize}
+	\item transmission of data \textbf{over telephone lines}, share with telephone service (different frequency)
+	\item Speed:
+	\begin{itemize}
+		\item asymmetric DSL: upstream bandwidth \textbf{much lower} than downstream
+		\item downstream: 256 Kbit/s to 100 Mbit/s
+	\end{itemize}
+	
+\end{itemize}
+
+\paragraph{Very-high-bit-rate Digital Subscriber Line -- VDSL}
+\begin{itemize}
+	\item higher speed than DSL:
+	\begin{itemize}
+		\item different versions: VDSL, VDSL2, VDSL2-Vplus
+		\item VDSL: up to 55Mbit/s downstream, 16 Mbit/s upstream 
+	\end{itemize}
+	\item VDSL with \textbf{vectoring}: reduce crosstalk between different lines. (Crosstalk: communication on one line influences the communciation on other lines)
+	
+	$\rightarrow$ special encoding of neighbouring lines: a provider needs to have \textbf{access to all lines in a bundle}
+	
+	$\rightarrow$ current implementation difficult
+\end{itemize}
+
+\paragraph{Global System for Mobile Communication --GSM}
+\begin{itemize}
+	\item network for \textbf{mobile phones}, 3G, 4G, 5G
+	\item access to the network using SIM card
+\end{itemize}
+
+\subsection{Storage Technologies}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{storage.png}
+\end{figure}
+\subsubsection{Local Storage}
+
+\paragraph{Redundant Array of Independent Disks -- RAID}
+\begin{itemize}
+	\item Goal: increase reliability or bandwidth
+	\item RAID 0: \textbf{distribute} blocks over \textbf{2 disks}, if \textbf{write both blocks on two disks} at the same time, it gets \textbf{double bandwidth} to the disk.
+	
+	$\rightarrow$ \textbf{higher bandwidth}
+	\item RAID 1: \textbf{replicates} blocks on \textbf{2 disks}. If one fails, we still have the information on the other disk. 
+	
+	$\rightarrow$ \textbf{higher reliability}
+	\item RAID 5: \textbf{distribute} blocks over \textbf{4 disks}, while one disk saves the \textbf{parity information}. If one block fails, the parity information enables \textbf{reconstruction}. Parity information of blocks is not written on the same disk, but \textbf{distributed} over all disks.
+	
+	$\rightarrow$ \textbf{higher bandwidth and reliability}
+\end{itemize}
+\paragraph{Flash}
+\begin{itemize}
+	\item non-volatile memory, retains stored information even after power is removed.
+	\item Write operation: tunnel injection, a high positive voltage between control gate and source \textbf{pushes electrons into the floating gate}. It stays/saves in the floating gate as stored information. 
+	\item Read operation: a higher voltage is required at the drain to make the channel conduct, the electrons move from source to drain.
+	\item Increasing storage density: \textbf{increase floating gates} in a flash cell
+	\begin{itemize}
+		\item Single Level Cells (SLC): stores \textbf{1 bit} of information
+		\item Multiple Level Cells (MLC): stores \textbf{2 bits} of information
+		\item \# floating gates $\uparrow$, cost per bit $\downarrow$, storage density $\uparrow$, program-erase cycles $\downarrow$, write/reading speed $\downarrow$
+	\end{itemize}
+	
+	\item Use-case: USB-disks, SD-cards, mobile phone storage, built in SSD
+\end{itemize}
+
+\paragraph{SSD}
+\begin{itemize}
+	\item Comparison with hard disks:
+	\begin{itemize}
+		\item lower latency, random access
+		\item smaller storage capacity
+		\item less power hungry
+		\item faster read/write speed
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{Data Center Storage}
+\begin{itemize}
+	\item storage comparison: \euro/IOPS 
+	\item only based on flash storage or SSDs, combined with RAID, with special controllers optimized for SSDs.
+	
+	$\rightarrow$ IOPS $\uparrow$, latency $\downarrow$, bandwidth $\uparrow$, cost $\uparrow$
+\end{itemize}
+
+
+\subsubsection{Provisioning of Storage}
+\begin{itemize}
+	\item 3 ways to provide storage:
+	\begin{itemize}
+		\item Direct Attached Storage: storage devices are attached to the individual computer
+		\item Storage Area Network
+		\item Network Attached Storage
+	\end{itemize}
+\end{itemize}
+
+
+\paragraph{Storage Area Network -- SAN}
+\begin{itemize}
+	\item access to \textbf{block level} data storage
+	\item a \textbf{specialized network} connecting the servers which separates from LAN
+	\item \textbf{no pre-existing file system}, the server can define its own file system according to needs
+	\item a shared pool of spare resources, which allows \textbf{flexible allocation of spare storage} 
+	
+	\item Advantages:
+	\begin{itemize}
+		\item \textbf{flexible distribution} of devices between clients, reconfiguration of distribution in software instead of adaptation of cabling.
+		\item easy replacement of faulty servers
+		\item back-up can be done centrally, easier disaster protection
+		\item no pre-existing file system, allows \textbf{customization} according to needs.
+	\end{itemize}
+	Disadvantages:
+	\begin{itemize}
+		\item shared network bandwidth
+		\item shared performance of storage devices
+	\end{itemize}
+\end{itemize}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\textwidth]{san.png}
+\end{figure}
+
+\paragraph{Network Attached Storage -- NAS}
+\begin{itemize}
+	\item storage devices(disks) are connected to a \textbf{file server}
+	\item computers \textbf{go over the network} and \textbf{access the file system} on file server
+	\item an \textbf{existing file system}.
+	\item network file sharing protocols: NFS
+	\item storage devices: RAID to increase bandwidth and reliability
+	\item Use-case: streaming contents(movies, images) to home network. If connected to home WiFi, then access to local storage. Access out of home using VPN and public IP
+	
+\end{itemize}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\textwidth]{nas.png}
+\end{figure}
+
+
+\subsubsection{Storage Virtualization}
+\begin{itemize}
+	\item Goal: location transparency
+	\item Process: allocate a \textbf{virtual disk}, which will be \textbf{mapped to a real physical hard-disk} in the Storage Area Network. The \textbf{client won't know about which hard-disk is allocated} for the virtual disk.
+\end{itemize}
+\paragraph{Block Virtualization}
+\begin{itemize}
+	\item the \textbf{mapping} of a \textbf{virtual disk and block number} to a \textbf{physical disk and block number}.
+	\item Use-case: SAN, flexible mapping, disk expansion and shrinking
+	\item implementation:
+	\begin{itemize}
+		\item host based: host runs virtualization software
+		\item storage device based: disk array provides a virtualization level
+		\item \textbf{network based}: virtualization device is in LAN and connected to a SAN, \textbf{most frequent implementation}
+		\begin{itemize}
+			\item \textbf{in-band}: client sends request for certain blocks to the controller in the network, the controller fetches the data and returns the data to the client.
+			\item \textbf{out-of-band}: host contacts the controller, gets the mapping information and accesses the data in SAN directly without the help of controller.
+		\end{itemize}
+	\end{itemize}
+\end{itemize}
+
+\paragraph{File Virtualization}
+\begin{itemize}
+	\item Virtualization on \textbf{file level}
+	\item Use-case: \textbf{Distributed File System}
+	\begin{itemize}
+		\item allows transparent access to multiple NAS server. Files located on multiple NAS servers \textbf{appears as if on a single NAS}, the client doesn't know on which server the file exists.
+	\end{itemize} 
+\end{itemize}
