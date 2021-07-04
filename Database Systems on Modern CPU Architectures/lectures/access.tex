@@ -95,6 +95,8 @@ Other approaches encode short BLOBs in the TID, and uses the full procedure only
 \subsection{Index structures}
 Index structures come in handy when a small part of all the available tuples need to be fetched (either point or range queries), or when making sure primary keys exist. 
 
+
+\subsection{B-trees}
 B-trees are the most popular data structure used for external storage: every tree has a degree $k$ and each nodes has $k \leq n \leq 2k$ entries. All leaves must have the same depth, which can be bounded with the logarithm of the size (usually 3 or 4).
 
 Given they are particularly easier to implement and generally faster than red-black trees, B-trees are widely used in their variant of B+-trees, which are even simpler and store TIDs only in leaves. Inner nodes contain separators which may or may not occur in the data.
@@ -107,5 +109,103 @@ Each node contains:
 	\item Key/TID/child;
 	\item Next leaf node (only for leaves, a flag).
 \end{itemize}
+
+% todo insert lookup delete
+
+\subsection{B+-trees}
+\subsubsection{Insertion}
+Insertion is performed in the following way:
+\begin{itemize}
+	\item The leaf page is looked up;
+	\item If there is available space, the entry is inserted;
+\end{itemize}
+
+Bulk insertions can be optimized, since the tree needs to be rebuilt several times and there is a lot of random I/O. Each database system implements it in its own way (Postgres for instance loads a whole file through a COPY instruction), trying to improve locality.
+
+Sorting is an option since the order is not random, but it triggers the worst-case scenario of space consumption: all the pages will be half-full, since the rightmost one is split.
+
+Since a database is usually aware of bulk loading, this can be optimized further:
+\begin{itemize}
+	\item Data is sorted;
+	\item Data is spooled into leaf pages, filling them completely and storing the largest value in each;
+	\item Separators are spooled into inner pages, again remembering inner separators;
+	\item This is repeated until one page is left (the root).
+\end{itemize}
+This method provides a compact B+-tree, performing only sequential I/O with all full pages except for the rightmost and improving locality on disk.
+
+Inserting in an existing tree requires a level of merging to be employed in the above procedure, beginning with merging all data and then starting a new chunk once a page would contain only entries from the original tree and then merging separators. 
+
+Under-full pages can therefore be accepted to avoid moving all data already contained in old pages but obviously not guaranteeing adjacent pages anymore. 
+
+\subsubsection{Deletion}
+Deletion is the hardest operation to perform in B+-trees, since it may violate the strong criterion of having at least half the pages half full. 
+
+In case the removal of an entry violates this property, logarithmic cost is not guaranteed anymore, therefore the tree needs to be rebalanced: this happens through merging pages with their neighboring ones, updating separators.
+
+Finding neighbors, however, can be a difficult task: the succeeding value can be located far away in the structure, hence a simpler solution is to just choose another child of the parent, achieving constant time.
+
+Many systems do not implement a proper deletion logic, since it is so complicated, and just accept pages under-full, eventually deleting them completely. In the long run, however, if the value of newly-inserted entries is much bigger than the deleted ones, free space may be never used.
+
+\subsubsection{Range scans}
+Range scan is the operation reading all entries within a range. This is efficient thanks to pointers to next element, therefore only the first lookup needs to be performed.
+
+This works particularly well when leaf nodes are stored consequently on disk, or cached (clusters).
+
+\subsection{Compound keys}
+Compound keys are compared lexicographically according to the following rule:
+$$(a_1, a_2) < (b_1, b_2) \leftrightarrow (a_1 < b_1) \lor (a_1 = b_1 \land a_2 < b_2)$$
+Other than this, they are quite similar to atomic keys. Search can be performed by imposing a prefix of the compound and using anything else as a range, however the other way around can be difficult to implement.
+
+\subsection{Non-unique values}
+Users may decide to apply an index on columns containing many duplicates, which need to be retrieved for updates and deletions. 
+
+The solution in this case is to only index unique values, appending a TID to the non-key attributes working as a tie-breaker. Space complexity grows sightly, but logarithmic access is still guaranteed. 
+
+\subsection{Concurrent access}
+Concurrent access cannot be handled through simple page locking or latching, since this method only works for leaf nodes; inner pages locking might cause missed values.
+
+The classical technique is lock coupling, working in the following way:
+\begin{itemize}
+	\item A thread locks both the page and its parent;
+	\item The parent is released as a new lock is acquired on the child, and so on;
+\end{itemize}
+This prevents conflicts and deadlocks, as latches are ordered and pages can only be split when the parent is latched.
+
+Concurrent insertions might cause the split to propagate up, until the root, making lock coupling not an option anymore since the parent may need to be locked, causing deadlocks.
+
+Another solution is safe inner pages: while going down, a check if the inner page has enough space is performed, and if not the page is split. This method ensures going up of never more than a step.
+
+An alternative to this is just restarting the process, releasing all latches only if the inner node must be split, and keeping all latches up to the root in the new execution. It is not ideal since it involves less concurrency, yet happens extremely rarely.
+
+% todo blink
+
+\subsection{Partitioned B-trees}
+Bulk insertions in trees work well if they are not too frequent, but usually require taking the index offline and impacting optimization.
+
+Partitioned B-trees are created by adding an artificial column (partitioning key) causing all new values to be larger than the existing ones. Partitions are largely independent and can be efficiently merged, but lookups need to access all partitions and deletions are complicated to implement.
+
+\subsection{Variable length records}
+In reality, entries can have variable length, making it harder to check whether a page is half full. Having keys of different length (or alternating) can produce multiple tree structures and depths, depending on the separator. 
+
+This emphasizes on the importance of choosing the right separator, a non-trivial issue to achieve logarithmic height. The main idea behind algorithms is to pick the smallest value within 20\% around the median whenever a page overflows.
+
+% todo prexix btree
+
+\subsection{Hashing}
+Hash tables are a data structure used for single, infrequent lookups, providing amortized expected constant runtime through hashing keys either with chaining or open addressing.
+
+To map keys to their hashed values, a prime module function is used. Calculations can be sped up with the following methods:
+\begin{itemize}
+	\item Making the modulo operation cheap by precomputing some magic numbers to then perform a sequence of multiplications and shifting;
+	\item Making sure that $N$ is a power of two;
+	\item Converting 32 bits to 64, multiplying by the hash table size and shifting again.
+\end{itemize}
+DBMS benefit from this implementing hash tables as indexes, but downsides are many, such as random I/O and expensive rehashing. In practice, hash tables are mainly used for primary keys, since the number of collisions should be less due to uniqueness of values. Duplicate values can be handled by reindexing them, or just with a tree.
+
+In real life it is hard to predict the table size beforehand, and rehashings are to be avoided, due to their expensiveness: extendible hashing is a technique in which pointers lead to buckets (pages), even the same one, obtaining variable depth.
+
+When a bucket overflows, it is split, increasing the depth and adding a bit. Pointers must be un-shared and items are redistributed. Exponential growth, however, should stop at some point, falling back to chaining.
+
+
 
 
