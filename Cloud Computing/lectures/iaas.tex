@@ -1,3 +1,5 @@
+
+\part{Infrastructure as a Service -- IaaS}
 \section{Infrastructure as a Service -- Amazon Web Service}
 
 AWS is distributed among \textbf{regions}. Each region is \textbf{isolated} for \textbf{fault tolerance and stability}. Each region consists of \textbf{availability zones} (eg: data centers), where data can be \textbf{replicated}. 
@@ -212,6 +214,11 @@ Storage attached to EC2:
 			\item \textbf{primary key}: unique for each row, \textbf{composite key} possible (partition key + sort key).
 			\item values: a set of attributes
 		\end{itemize}
+		\item Consistency: \textbf{eventual consistency}
+		\begin{itemize}
+			\item \textbf{normal reads}: eventual consistency, might return old values
+			\item \textbf{strong consistent reads}: consistent, always the latest.
+		\end{itemize}
 		\item Architecture:
 		\begin{itemize}
 			\item \textbf{key-value pairs} stored in \textbf{tables}. 
@@ -231,7 +238,7 @@ Storage attached to EC2:
 			\item W: success \textbf{write} on \textbf{W copies}. W $\downarrow$, latency $\uparrow$
 			\item \textbf{R + W > N}: ensures the \textbf{most recent write} is returned.
 		\end{itemize}
-		\item Consistency: \textbf{eventual consistency}
+		
 		\item Failures is a \textbf{norm}: \textbf{gossip protocol}
 		
 

@@ -1,0 +1,154 @@
+\part{Platform as a Service -- PaaS}
+\begin{itemize}
+	\item Definition: 
+	\begin{itemize}
+		\item client: deploy \textbf{customer-created applications}
+		\item cloud provider: provides web interfaces, programming languages, libraries, services and tools 
+	\end{itemize}
+	\item Rights as customer:
+	\begin{itemize}
+		\item application deployment
+		\item configuration settings application-hosting environment
+	\end{itemize}
+	\item No control:
+	\begin{itemize}
+		\item cloud infrastructure: storage, network, servers, operation systems
+	\end{itemize}
+\end{itemize}
+
+\section{Platform as a Service -- Microsoft Azure}
+\begin{itemize}
+	\item Focus: integration with \textbf{on-premise IT} -- company oriented
+	\item Services:
+	\begin{itemize}
+		\item Azure Web Apps
+		\item Azure Service Fabrics: microservices
+		\item Azure Functions
+	\end{itemize}
+	\item Azure access:
+	\begin{itemize}
+		\item \textbf{Tenant}: a Microsoft Active \textbf{Directory} for managing accounts, groups and permissions. (eg: a company)
+		\item \textbf{Subscription}: a subscription is \textbf{associated with a unique tenant}. A \textbf{resource container} for the tenant.
+		\begin{itemize}
+			\item can be divided into \textbf{multiple resource groups}. (eg: different teams) Each has its \textbf{own resource allocation}.
+			\item account (eg: an employee): has a \textbf{role} in subscription: eg: account administrator, service administrator 
+		\end{itemize}
+	\end{itemize}
+\end{itemize}
+
+\subsection{Azure Web Apps Service}
+\begin{itemize}
+	\item \textbf{development, deployment and management of web applications} without managing VMs
+	\begin{itemize}
+		\item different programming languages provided: development
+		\item a \textbf{managed web environment}: deployment
+		\item automatic load balancing: \textbf{scale in/out}
+		\item VM sharing possible
+	\end{itemize}
+	\item App development:
+	\begin{itemize}
+		\item creation of a \textbf{deployment user}
+		\item creation of a \textbf{resource group}: name, location, template
+		\item creation of a \textbf{app service plan}: VM instance type, number of VM instances, scale count, subscription (resources), region, pricing tier.
+		\item creation of a web app $\rightarrow$ development ready
+	\end{itemize}
+	\item App scaling: triggered by \textbf{automatic load balancing}, scales \textbf{according to app service plan}, apps will be \textbf{scaled together}. 
+	\begin{itemize}
+		\item manual scaling
+		\item \textbf{automatic} scaling: according to defined metric/target/time period. 
+	\end{itemize}
+	\item App monitoring: 
+	\begin{itemize}
+		\item per app: 
+		
+		\begin{table}[H]
+			\begin{center}
+				\begin{tabular}{|l|p{7cm}|}
+					\hline
+					metrics  &definition \\ \hline
+					Average response time        & time taken to serve requests (s)  \\ \hline
+					Average memory working set     & average amount of memory used (MiB)    \\ \hline
+					CPU time      & amount of CPU consumed (s)    \\ \hline
+					Data In  & amount of incoming bandwidth (MiB)    \\ \hline
+					Data Out  & amount of outgoing bandwidth (MiB)    \\ \hline
+					Requests  & total number of requests regardless of HTTP status code    \\ \hline
+				\end{tabular}
+			\end{center}
+		\end{table}
+		
+		\item per app service plan:
+		\begin{table}[H]
+			\begin{center}
+				\begin{tabular}{|l|p{9cm}|}
+					\hline
+					metrics  &definition \\ \hline
+					CPU percentage        & \textbf{average} CPU used \textbf{across all instances} (s)  \\ \hline
+					memory percentage     & \textbf{average} memory used \textbf{across all instances} (MiB)    \\ \hline
+					Data In  & \textbf{average} amount of incoming bandwidth \textbf{across all instances} (MiB)    \\ \hline
+					Data Out  & \textbf{average} amount of outgoing bandwidth \textbf{across all instances} (MiB)    \\ \hline
+					Disk Queue Length  & \textbf{average} amount of read \& write requests queued on storage (disk I/O)    \\ \hline
+					HTTP Queue Length  & \textbf{average} amount of http-requests (plan load) \\ \hline
+				\end{tabular}
+			\end{center}
+		\end{table}
+		\item granularity (level of detail of data): minute/hour/day granularity metrics
+	\end{itemize}
+\end{itemize}
+
+
+\subsection{Microservices Platform -- Azure Service Fabric}
+
+\subsubsection{Monolithic VS. Microservices}
+\begin{itemize}
+	\item \textbf{Monolithic} service:
+	\begin{itemize}
+		\item tiered architecture (eg: presentation/user interface -- logic -- data layer)
+		\item \textbf{replication} of the \textbf{whole app} to other instances
+		\item all states stored in a single database.
+		\item testing and failure: one part fails, the whole app fails. Changes of one part requires testing/deployment of whole app.
+	\end{itemize}
+	\item \textbf{Microservice}: 
+	\begin{itemize}
+		\item app is \textbf{decomposed} into microservices. 
+		\item \textbf{individual replication} of each microservice over instances. \textbf{individual scaling}. 
+		\item stateless services: \textbf{individual database} connected to microservice for state storage.
+		\item stateful services: state is stored in the service. 
+		\item testing and failure: \textbf{individual} testing and deployment. If one microservice fails, the rest is unaffected.
+		\item increased network traffic and latency sensitivity: communication between microservices, especially chatty services.
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{Service Fabric}
+\begin{itemize}
+	\item platform for \textbf{microservice based applications}
+	\item Transformation of a monolithic service to a microservice:
+	\begin{itemize}
+		\item lift and shift: containerize existing codes in service fabric
+		\item modernization: add new microservices alongside the containerized codes
+		\item innovate: break the monolithic service into microservices based on needs.
+	\end{itemize} 
+	\item Fabric cluster: \textbf{a set of virtual/real machines (nodes)} where microservices are deployed.
+	\begin{itemize}
+		\item service - node allocation: placement constraints of services, properties specified by node in key-value pairs.
+		\item load balancing: \textbf{distributes/migrates} services to other nodes, \textbf{distributes requests}
+		\item scaling of a whole cluster possible: app scaling
+	\end{itemize}
+	\item service models:
+	\begin{itemize}
+		\item reliable services model
+		\item reliable actors model: \textbf{stateful} objects, actor \textbf{communicates} by receiving and sending \textbf{messages}.actor reacts faster than stateless services.
+		\item guest executables: treated like stateless services
+	\end{itemize}
+	\item \textbf{service partition}: a group of service instances 
+	\begin{itemize}
+		\item stateless service: \textbf{not partitioned}. all instances belong to a \textbf{single partition}. eg: collection, gallery, overview
+		\item stateful service: \textbf{frequently partitioned or replicated}. eg: by country, name, payment status  
+	\end{itemize}
+	\item testing:
+	\begin{itemize}
+		\item restart nodes/partitions of service instances
+		\item simulate load balancing, failover, app-upgrade
+		\item invoke data loss
+		\item simulate scenarios: chaos(continuous overlapping faults), failover(continuous overlapping faults targeting single partition)
+	\end{itemize}
+\end{itemize}
