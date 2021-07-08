@@ -1,0 +1,137 @@
+\section{Autoscaling}
+
+\begin{itemize}
+	\item Motivation:
+	\begin{itemize}
+		\item \textbf{Scalability}: ability when resource $\uparrow$, application performance $\uparrow$, throughput $\uparrow$, latency $\downarrow$
+		\item \textbf{Elasticity}: ability to \textbf{dynamically adapt}(up/down) the resource scale to the actual workload \textbf{without reboot}. 
+		
+		$\rightarrow$ No under-/overprovisioning, cost $\downarrow$, customer satisfaction $\uparrow$
+		\item \textbf{Automation}: automatically, without interaction with the application owner
+	\end{itemize}
+	\item Capacity planning in cloud: avoid under-/overprovisioning by \textbf{dynmaic resource management} and \textbf{pay-per-use cost model}
+\end{itemize}
+
+\subsection{Scaling}
+
+\begin{itemize}
+	
+	\item scaling performance: 
+	\begin{itemize}
+		\item speedup: $$\text{speedup(p processors)} = \frac{\text{performance(p processors)}}{\text{performance(1 processor)}}$$
+		\item efficiency: $$\text{efficiency(p processors)} = \frac{\text{speedup(p processors)}}{p}$$
+	\end{itemize}  
+	\item scalabilty limit: restricted by \textbf{app design}, maximum \textbf{application capacity} or maximum \textbf{resource capacity}
+	
+	$\rightarrow$ scaling with infinite servers impossible
+	\begin{itemize}
+		\item \textbf{efficiency} of scaling \textbf{drops} when \textbf{more resources} are provisioned. $\rightarrow$ \textbf{bottleneck} of application gets dominant
+		\item \textbf{poor application design} has lower scalability limit.
+		\item more servers, communication latency increases.
+	\end{itemize}
+	\item resource to be scaled: \textbf{CPU (\#CPU, CPU time/percentage)}, memory, disk storage(size, bandwidth), network(throughput, bandwidth)
+\end{itemize}
+
+\subsubsection{Vertical Scaling -- Scaling Up}
+\begin{itemize}
+	\item increase capacity of a service instance by \textbf{increasing its allocated resources}. eg: CPU time percentage $\uparrow$, clock frequency $\uparrow$, cores $\uparrow$ 
+	\item Advantages:
+	\begin{itemize}
+		\item no re-design of app required
+		\item easy to replace, less management complexity
+	\end{itemize}
+	Disadvantages:
+	\begin{itemize}
+		\item powerful resources are expensive
+		\item \textbf{limited} scalability due to resource capacity limit
+	\end{itemize}
+\end{itemize}
+
+
+\subsubsection{Horizontal Scaling -- Scaling Out}
+\begin{itemize}
+	\item increase capacity of a service instance by \textbf{increasing the amount of same resources}.
+	\item Advantages:	
+	\begin{itemize}
+		\item lower cost, implementation of commodity hardware
+		\item larger scalability possibility (just increase the amount of resource)
+	\end{itemize}
+	Disadvantages:
+	\begin{itemize}
+		\item more management overhead
+		\item distributed architecture required, load balancing, replica handling.
+	\end{itemize}
+\end{itemize}
+
+
+\subsection{Autoscaling}
+
+\begin{itemize}
+	\item Goal: scale automatically to fulfill \textbf{Service Level Objectives}(SLO) while \textbf{minimizing costs}
+	\begin{itemize}
+		\item latency of request
+		\item failed request rate
+		\item service availability
+	\end{itemize}
+	\item Process: monitoring data --> analyzer --> scheduler takes scaling actions according to autoscaling policy --> executor gives cloud commands to scale up/down resources 
+	\item Autoscaling approaches:
+	\begin{itemize}
+		\item \textbf{reactive}: \textbf{real-time} scaling according to policy(thresholds). detection of under/overloaded service
+		\item \textbf{scheduled}: \textbf{periodical} scaling, time-stamped scaling events. eg: banking system, food ordering app
+		\item \textbf{predictive}: predict future workload and scale \textbf{ahead of time}. It adapts proactively the \textbf{minimum} of autoscaling group.
+	\end{itemize}
+	\item Autoscaling implementation:
+	\begin{itemize}
+		\item \textbf{resource-centric}: scaling action directly modifies \textbf{resource allocation}(\#VM, CPU, memory, bandwidth). 
+		\begin{itemize}
+			\item Use-case: AWS Reactive Autoscaling -- scaling modifies \#VMs.
+		\end{itemize}
+		\item \textbf{service-centric}: scaling action directly modifies \textbf{\#service instances}. 
+	\end{itemize}
+	\item Autoscaling Policies (AWS):
+	\begin{itemize}
+		
+		\item \textbf{target tracking scaling}: a \textbf{target value} of a \textbf{metric} is predefined, eg: CPU utilization at 40\%, \#requests per target at 1000. 
+		
+		Metrics that decrease when capacity increases and increase when capacity decreases can be used to \textbf{proportionally scale out or in} the number of instances using target tracking.
+		\item \textbf{simple scaling}: scaling action is triggered based on metric, threshold or condition. 
+		\begin{itemize}
+			\item \textbf{cooldown period exists}: responses to \textbf{no additional alarms} until cooldown period expires, wait until scaling result visible and health check.  
+		\end{itemize}
+		\item \textbf{step scaling}: scaling action is triggered based on metric, threshold or condition with \textbf{step adjustments}.  The adjustments vary based on the \textbf{size of alarm breach}.
+		\begin{itemize}
+			\item \textbf{no cooldown period}: continues to \textbf{respond to additional alarms}, even while a scaling activity or health check replacement is in progress. Therefore, \textbf{all alarms that are breached are evaluated}
+		\end{itemize}	
+		
+	\end{itemize}
+\end{itemize}
+
+
+
+\subsection{Load Balancing}
+\begin{itemize}
+	\item for \textbf{scaling out}(horizontal scaling)
+	\item Goals:
+	\begin{itemize}
+		\item efficient resource utilization
+		\item increase service availability (health check, restart nodes)
+		\item increase aggregated capability of replicas $\rightarrow$ reduce response time and failure rate
+	\end{itemize}
+	\item Implementation: \textbf{multi-layer} load balancing
+	\begin{itemize}
+		\item different \textbf{layers} for different \textbf{functions}: service layer(request distribution), virtual machine layer(VM distribution), physical layer(server, CPU, storage, bandwidth distribution)
+		\item \textbf{static VS. dynamic}: 
+		\begin{itemize}
+			\item static: scheduling according to \textbf{weighted round-robin}, \textbf{no feedback} about current load of servers
+			\item dynamic: \textbf{feedback} from server to load balancer, able to adapt according to feedback.
+		\end{itemize} 
+		\item scalability: destributed design for load balancer
+	\end{itemize}
+	\item Algorithms:
+	\begin{itemize}
+		\item class-aware: \textbf{classification of requests} into sensitive, best-effort
+		\item content-aware: direct \textbf{similar request content} to same server
+		\item client-aware: based on \textbf{packet source}. Clients from similar area might share similar information, system can already \textbf{cache} the info.
+	\end{itemize}
+\end{itemize}
+
