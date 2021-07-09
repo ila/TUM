@@ -125,3 +125,41 @@
 \end{itemize}
 
 
+
+\section{Function Delivery Network -- Serverless Computing for Heterogeneous Platforms }
+
+\begin{itemize}
+	\item Motivation:
+	\begin{itemize}
+		\item current \textbf{FaaS platform} are limited to \textbf{homogeneous nodes/clusters} (eg: same architecture/VM/GPU)
+		\item \textbf{FaaS landscape} however very \textbf{heterogeneous}: software platforms, architecture different, computation requirements
+		\item when scheduling functions, \textbf{no consideration in data and computation requirements} (eg: machine learning -- more GPUs, vector processing -- accelerators)
+		
+	\end{itemize}
+
+	$\rightarrow$ need for \textbf{heterogeneous FaaS platform} 
+	
+	$\rightarrow$ \textbf{Function Delivery Network}
+	
+	\item Function Delivery Network: integrates multiple heterogeneous FaaS clusters into one network.
+	\begin{itemize}
+		\item deployment of functions across clusters based on:
+		\begin{itemize}
+			\item data requirements: edge devices(locality, low latency)
+			\item compute requirements: HPC nodes(high demanding functions)
+			\item cluster capabilities
+			\item cluster resource usage
+			\item response time: edge devices(low latency)
+		\end{itemize}
+		\item \textbf{migration of data} based on function requirements: data migration from cloud to edge cluster and execution in edge cluster.
+		\item fault-tolerance across clusters 
+	\end{itemize}
+	\item Architecture:
+	\begin{itemize}
+		\item control plane schedules function deployment to the best suitable FaaS platform.
+	\end{itemize}
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\textwidth]{fdn.png}
+	\end{figure}
+\end{itemize}
