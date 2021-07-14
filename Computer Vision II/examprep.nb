@@ -1,0 +1,138 @@
+Notebook[{Cell[
+TextData[{"\[Copyright]"," ","Niklas"," ","Vest"}],"Text",ExpressionUUID -> "3b71748f-259c-494d-869f-10b881eb1ada"],Cell[
+TextData[
+{"The"," ","projection"," ","matrix"," ","mapping"," ","from"," ","3D"," ","to"," ","2D"," ","space",StyleBox[
+RowBox[{" ","("}]],"embedded"," ","in"," ","homogeneous"," ","coordinates",")."}],
+"Text",ExpressionUUID -> "0732f9a9-27cd-461b-aaa6-9bc73673f775"],Cell[
+CellGroupData[
+{Cell[
+BoxData[{RowBox[{RowBox[{"pi0","=",RowBox[{"{",RowBox[{RowBox[{"{",RowBox[
+{"1",",","0",",","0",",","0"}],"}"}],",",RowBox[{"{",RowBox[{"0",",","1",",","0",",","0"}],"}"}],",",RowBox[
+{"{",RowBox[{"0",",","0",",","1",",","0"}],"}"}]}],"}"}]}],";"}],"\n",RowBox[{"MatrixForm","[","pi0","]"}]}],
+"Input",CellLabel -> "In[130]:= ",ExpressionUUID -> "04b8fd72-3c83-44e2-a912-f2cb0ef9376b"],Cell[
+BoxData[
+TagBox[RowBox[{"(","\[NoBreak]",GridBox[{{"1","0","0","0"},{"0","1","0","0"},{"0","0","1","0"}},
+RowSpacings -> 1,ColumnSpacings -> 1,RowAlignments -> Baseline,ColumnAlignments -> Center],"\[NoBreak]",")"}],
+Function[BoxForm`e$,MatrixForm[BoxForm`e$]]],StandardForm],"Output",CellLabel -> "Out[131]//MatrixForm= ",
+ExpressionUUID -> "fec32c7d-17b1-4234-bc4a-9167fe60ccc2"]},Open],ExpressionUUID -> "cbc4b568-a7ec-4538-8e2a-7bce3254b013"],Cell[
+TextData[
+{"Constructs"," ","the"," ","intrinsic"," ","camera"," ","parameter"," ","matrix"," ","K","."}],
+"Text",ExpressionUUID -> "2a193f31-a30a-4d1c-9093-45fc7ca3eb7b"],Cell[
+BoxData[RowBox[
+{RowBox[{"intrinsic","[",RowBox[{"fx_",",","fy_",",","sx_",",","sy_",",","ox_",",","oy_",",","\[Theta]_"}],"]"}],":=",RowBox[
+{"{",RowBox[{RowBox[{"{",RowBox[{RowBox[{"sx","*","fx"}],",","\[Theta]",",","ox"}],"}"}],",",RowBox[
+{"{",RowBox[{"0",",",RowBox[{"sy","*","fy"}],",","oy"}],"}"}],",",RowBox[{"{",RowBox[
+{"0",",","0",",","1"}],"}"}]}],"}"}]}]],"Input",CellLabel -> "In[132]:= ",ExpressionUUID -> "6661c6d1-2bef-400d-98e5-258f8d87670e"],Cell[
+TextData[
+{"An"," ","intrinsic"," ","camera"," ","parameter"," ","matrix"," ","for"," ","a"," ","pinhole"," ","cam"," ","without"," ","skew","."}],
+"Text",ExpressionUUID -> "442977e0-ffae-4666-82cf-77e896b6c883"],Cell[
+CellGroupData[
+{Cell[
+BoxData[{RowBox[{RowBox[{"pinholeK","=",RowBox[{"intrinsic","[",RowBox[{"fx",",","fy",",","1",",","1",",","ox",",","oy",",","0"}],"]"}]}],";"}],"\n",RowBox[
+{"MatrixForm","[","k","]"}]}],"Input",CellLabel -> "In[133]:= ",ExpressionUUID -> "1026337f-f21b-4eaf-ac04-087a61184c1a"],Cell[
+BoxData[
+TagBox[RowBox[{"(","\[NoBreak]",GridBox[{{"fx","0","ox"},{"0","fy","oy"},{"0","0","1"}},
+RowSpacings -> 1,ColumnSpacings -> 1,RowAlignments -> Baseline,ColumnAlignments -> Center],"\[NoBreak]",")"}],
+Function[BoxForm`e$,MatrixForm[BoxForm`e$]]],StandardForm],"Output",CellLabel -> "Out[134]//MatrixForm= ",
+ExpressionUUID -> "fc170b83-9364-4365-9838-fea54eece8b6"]},Open],ExpressionUUID -> "deb2f459-710e-4233-a1a0-4aa27126dc76"],Cell[
+TextData[
+{"A"," ","transformation"," ","from"," ","the"," ","world"," ","coordinate"," ","frame"," ","to"," ","the"," ","camera"," ","coordinate"," ","frame","."}],
+"Text",ExpressionUUID -> "81f314f0-aaea-4a39-bb02-3185172ddbf1"],Cell[
+CellGroupData[
+{Cell[
+BoxData[{RowBox[{RowBox[{"g","[",RowBox[{"r_",",","t_"}],"]"}],":=",RowBox[
+{"Join","[","\n",RowBox[{RowBox[{"Join","[",RowBox[{"r",",",RowBox[{"Transpose","[",RowBox[
+{"{",RowBox[{"-","t"}],"}"}],"]"}],",","2"}],"]"}],","," ","\n",RowBox[{"{",RowBox[
+{"{",RowBox[{"0",",","0",",","0",",","1"}],"}"}],"}"}]}],"\n","]"}]}],"\n",RowBox[
+{RowBox[{"(*"," ","example"," ","*)"}],"\n",RowBox[{"MatrixForm","[",RowBox[{"g","[",RowBox[
+{RowBox[{"IdentityMatrix","[","3","]"}],",",RowBox[{"{",RowBox[{"1",",","1",",","1"}],"}"}]}],"]"}],"]"}]}]}],
+"Input",CellLabel -> "In[135]:= ",ExpressionUUID -> "09391696-f58d-4828-a420-e6efb244cde8"],Cell[
+BoxData[
+TagBox[RowBox[{"(","\[NoBreak]",GridBox[{{"1","0","0",RowBox[{"-","1"}]},{"0","1","0",RowBox[
+{"-","1"}]},{"0","0","1",RowBox[{"-","1"}]},{"0","0","0","1"}},RowSpacings -> 1,ColumnSpacings -> 1,
+RowAlignments -> Baseline,ColumnAlignments -> Center],"\[NoBreak]",")"}],Function[
+BoxForm`e$,MatrixForm[BoxForm`e$]]],StandardForm],"Output",CellLabel -> "Out[136]//MatrixForm= ",
+ExpressionUUID -> "0e1b64b6-e221-4a57-af52-376e3755d021"]},Open],ExpressionUUID -> "ef18e869-375a-4e28-8055-f71dd065e52b"],Cell[
+TextData[
+{"Embeds"," ","the"," ","vector"," ",StyleBox["v",FontWeight -> Bold],StyleBox[" ",
+FontWeight -> Bold],StyleBox["in",FontWeight -> Plain],StyleBox[" ",FontWeight -> Plain],StyleBox[
+"homogeneous",FontWeight -> Plain],StyleBox[" ",FontWeight -> Plain],StyleBox["coordinates",
+FontWeight -> Plain]}],"Text",ExpressionUUID -> "67fe2e07-5efe-4a68-b4a5-5d83bc8bf044"],Cell[
+CellGroupData[
+{Cell[
+BoxData[{RowBox[{RowBox[{"homog","[",RowBox[{"v_","/;",RowBox[{"VectorQ","[","v","]"}]}],"]"}],":=",RowBox[
+{"Join","[",RowBox[{"v",",",RowBox[{"{","1","}"}]}],"]"}]}],"\n",RowBox[{"MatrixForm","[",RowBox[
+{"homog","[",RowBox[{"{",RowBox[{"1",",","2",",","3"}],"}"}],"]"}],"]"}]}],"Input",
+CellLabel -> "In[137]:= ",ExpressionUUID -> "e0fc750d-8024-45d2-a42e-9a002db7d878"],Cell[
+BoxData[
+TagBox[RowBox[{"(","\[NoBreak]",TagBox[GridBox[{{"1"},{"2"},{"3"},{"1"}},ColumnAlignments -> Center,
+RowSpacings -> 1,ColumnAlignments -> Left],Column],"\[NoBreak]",")"}],Function[BoxForm`e$,
+MatrixForm[BoxForm`e$]]],StandardForm],"Output",CellLabel -> "Out[138]//MatrixForm= ",
+ExpressionUUID -> "fbc5c72d-cf7b-4b0b-8314-9d4f27f1b298"]},Open],ExpressionUUID -> "d2588755-10c9-4976-930f-c10feb4c63d1"],Cell[
+TextData[
+{"A"," ","function"," ","that"," ","constructs"," ","a"," ","camera"," ","that"," ","is"," ","rotated"," ","and"," ","translated"," ","in"," ","the"," ","world",StyleBox[
+RowBox[{"."," "}]],"Applying"," ","it"," ","to"," ","a"," ","point"," ","in"," ","3D"," ","world"," ","coordinates"," ","will"," ","yield"," ","the"," ","2D"," ","image"," ","coordinates","."}],
+"Text",ExpressionUUID -> "d332da71-689f-43cf-8779-516aae9576ba"],Cell[
+BoxData[RowBox[
+{RowBox[{"camera","[",RowBox[{"c_",",",RowBox[{"rot_",":",RowBox[{"IdentityMatrix","[","3","]"}]}]}],"]"}],":=",RowBox[
+{RowBox[{"pi0"," ","."," ",RowBox[{"g","[",RowBox[{"rot",",","c"}],"]"}]," ","."," ",RowBox[
+{"homog","[","#","]"}]}],"&"}]}]],"Input",CellLabel -> "In[139]:= ",ExpressionUUID -> "f8babd40-bf7c-471c-909f-80fb8f66882e"],Cell[
+TextData[
+{"Scale"," ","2D"," ","pixel"," ","coordinates"," ","by"," ","a"," ","constant",StyleBox[
+RowBox[{" ","\[Lambda]"," "}]],"in"," ","homogeneous"," ","coordinates"}],"Text",
+ExpressionUUID -> "edc24818-f3e5-415d-bef5-b834a94dd4df"],Cell[
+BoxData[RowBox[{RowBox[
+{"lambda","[",RowBox[{"x_",",","\[Lambda]_"}],"]"}],":=",RowBox[{"\[Lambda]","*",RowBox[
+{"homog","[","x","]"}]}]}]],"Input",CellLabel -> "In[140]:= ",ExpressionUUID -> "72be57e7-a151-4a60-9330-21b3d7114f78"],Cell[
+TextData[
+{"Solves"," ","the"," ","linear"," ","system"," ","of"," ","equations"," ","that"," ","is"," ","the"," ","mapping"," ","from"," ","3D"," ","world"," ","coordinates"," ","to"," ","2D"," ","pixel"," ","coordinates"," ","to"," ","find"," ","intrinsic"," ","camera"," ","parameters",StyleBox[
+RowBox[{" ","("}]],"assuming"," ","no"," ","rotation"," ","of"," ","the"," ","cam",")."}],
+"Text",ExpressionUUID -> "6ef833b4-3eb8-4d37-a3e1-0f976611de8e"],Cell[
+BoxData[RowBox[
+{RowBox[{"intrinsicParamsFromProjections","[",RowBox[{"p1_",",","x1_",",","p2_",",","x2_",",","cam_"}],"]"}],":=","\n",RowBox[
+{"Module","[",RowBox[{RowBox[{"{",RowBox[{"z",",","p1p",",","p2p"}],"}"}],",","\n",RowBox[
+{RowBox[{"project",":=",RowBox[{"camera","[","cam","]"}]}],";","\n",RowBox[{RowBox[
+{"{",RowBox[{"p1p",","," ","p2p"}],"}"}],":="," ",RowBox[{"{",RowBox[{RowBox[{"project","[","p1","]"}],","," ",RowBox[
+{"project","[","p2","]"}]}],"}"}]}],";","\n",RowBox[{"Solve","[","\n",RowBox[{RowBox[
+{RowBox[{RowBox[{"lambda","[",RowBox[{"x1",",",RowBox[{"p1p","[",RowBox[{"[",RowBox[
+{"-","1"}],"]"}],"]"}]}],"]"}],"==",RowBox[{"pinholeK"," ",".","p1p"}]}]," ","&&","\n",RowBox[
+{RowBox[{"lambda","[",RowBox[{"x2",",",RowBox[{"p2p","[",RowBox[{"[",RowBox[{"-","1"}],"]"}],"]"}]}],"]"}],"==",RowBox[
+{"pinholeK"," ","."," ","p2p"}]}]}],",","\n",RowBox[{"{",RowBox[{"fx",",","fy",",","ox",",","oy"}],"}"}]}],"\n","]"}]}]}],"\n","]"}]}]],
+"Input",ExpressionUUID -> "45caa8f8-97ac-465d-b6c9-66e3aee2aac9"],Cell[
+TextData[
+{"An"," ","example"," ","for"," ","finding"," ","the"," ","intrinsic"," ","camera"," ","parameters",":"}],
+"Text",ExpressionUUID -> "3500c6a5-342e-4ea1-b3e7-3d260eda778f"],Cell[
+CellGroupData[
+{Cell[
+BoxData[RowBox[{"intrinsicParamsFromProjections","[","\n",RowBox[{RowBox[{"{",RowBox[
+{"1",",","4",",","3"}],"}"}],",",RowBox[{"{",RowBox[{"150",",","350"}],"}"}],",","\n",RowBox[
+{"{",RowBox[{"3",",","4",",","5"}],"}"}],",",RowBox[{"{",RowBox[{"225",",","325"}],"}"}],",","\n",RowBox[
+{"{",RowBox[{"2",",","3",",","1"}],"}"}]}],"\n","]"}]],"Input",CellLabel -> "In[142]:= ",
+ExpressionUUID -> "edbc10d9-ef93-4773-bece-59fbacc6c0a0"],Cell[
+BoxData[RowBox[{"{",RowBox[
+{"{",RowBox[{RowBox[{"fx","\[Rule]","100"}],",",RowBox[{"fy","\[Rule]","100"}],",",RowBox[
+{"ox","\[Rule]","200"}],",",RowBox[{"oy","\[Rule]","300"}]}],"}"}],"}"}],StandardForm],
+"Output",CellLabel -> "Out[142]= ",ExpressionUUID -> "00314dd8-151b-4b6d-b3a1-575828dd6ef2"]},
+Open],ExpressionUUID -> "36d0086c-1f51-4e41-b4b7-929a6c02b32a"],Cell[
+TextData[{"An"," ","example"," ","where"," ","the"," ","intrinsic"," ","parameters"," ","are"," ","known"," ","and"," ","you"," ","want"," ","to"," ","find"," ","the"," ","2D"," ","pixel"," ","coordinates",":"}],
+"Text",ExpressionUUID -> "1409e04a-cf59-473d-bbf9-f355db77b8d3"],Cell[
+CellGroupData[
+{Cell[
+BoxData[{RowBox[{"intr1","=",RowBox[{"{",RowBox[{RowBox[{"{",RowBox[{"700",",","0",",","350"}],"}"}],",",RowBox[
+{"{",RowBox[{"0",",","350",",","135"}],"}"}],",",RowBox[{"{",RowBox[{"0",",","0",",","1"}],"}"}]}],"}"}]}],"\n",RowBox[
+{"x1","=",RowBox[{"intr1"," ","."," ",RowBox[{RowBox[{"camera","[",RowBox[{"{",RowBox[
+{RowBox[{"-","1"}],",",RowBox[{"-","1"}],",","0"}],"}"}],"]"}],"[",RowBox[{"{",RowBox[
+{"4",",",RowBox[{"-","1"}],",","7"}],"}"}],"]"}]}]}],"\n",RowBox[{"x1","/",RowBox[
+{"x1","[",RowBox[{"[",RowBox[{"-","1"}],"]"}],"]"}]}]}],"Input",CellLabel -> "In[147]:= ",
+ExpressionUUID -> "355df7f9-627c-4a6c-8e20-9f586aa63687"],Cell[
+BoxData[RowBox[{"{",RowBox[
+{RowBox[{"{",RowBox[{"700",",","0",",","350"}],"}"}],",",RowBox[{"{",RowBox[{"0",",","350",",","135"}],"}"}],",",RowBox[
+{"{",RowBox[{"0",",","0",",","1"}],"}"}]}],"}"}],StandardForm],"Output",CellLabel -> "Out[147]= ",
+ExpressionUUID -> "88bd0f1e-f656-418a-99c8-241839363b9f"],Cell[
+BoxData[RowBox[{"{",RowBox[
+{"5950",",","945",",","7"}],"}"}],StandardForm],"Output",CellLabel -> "Out[148]= ",
+ExpressionUUID -> "08b7750a-16fe-4578-a04e-2b3c816f1e47"],Cell[
+BoxData[RowBox[{"{",RowBox[
+{"850",",","135",",","1"}],"}"}],StandardForm],"Output",CellLabel -> "Out[149]= ",
+ExpressionUUID -> "10a8e006-a28a-496c-9647-7426c6161681"]},Open],ExpressionUUID -> "f3b6962f-15f4-48e6-b689-cda84a6e46dc"]},
+StyleDefinitions -> "Default.nb",FrontEndVersion -> "12.3 for Wolfram Cloud 1.58.2.1 (May 19, 2021)"]
