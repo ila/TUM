@@ -1,138 +1,466 @@
-Notebook[{Cell[
-TextData[{"\[Copyright]"," ","Niklas"," ","Vest"}],"Text",ExpressionUUID -> "3b71748f-259c-494d-869f-10b881eb1ada"],Cell[
-TextData[
-{"The"," ","projection"," ","matrix"," ","mapping"," ","from"," ","3D"," ","to"," ","2D"," ","space",StyleBox[
-RowBox[{" ","("}]],"embedded"," ","in"," ","homogeneous"," ","coordinates",")."}],
-"Text",ExpressionUUID -> "0732f9a9-27cd-461b-aaa6-9bc73673f775"],Cell[
-CellGroupData[
-{Cell[
-BoxData[{RowBox[{RowBox[{"pi0","=",RowBox[{"{",RowBox[{RowBox[{"{",RowBox[
-{"1",",","0",",","0",",","0"}],"}"}],",",RowBox[{"{",RowBox[{"0",",","1",",","0",",","0"}],"}"}],",",RowBox[
-{"{",RowBox[{"0",",","0",",","1",",","0"}],"}"}]}],"}"}]}],";"}],"\n",RowBox[{"MatrixForm","[","pi0","]"}]}],
-"Input",CellLabel -> "In[130]:= ",ExpressionUUID -> "04b8fd72-3c83-44e2-a912-f2cb0ef9376b"],Cell[
-BoxData[
-TagBox[RowBox[{"(","\[NoBreak]",GridBox[{{"1","0","0","0"},{"0","1","0","0"},{"0","0","1","0"}},
-RowSpacings -> 1,ColumnSpacings -> 1,RowAlignments -> Baseline,ColumnAlignments -> Center],"\[NoBreak]",")"}],
-Function[BoxForm`e$,MatrixForm[BoxForm`e$]]],StandardForm],"Output",CellLabel -> "Out[131]//MatrixForm= ",
-ExpressionUUID -> "fec32c7d-17b1-4234-bc4a-9167fe60ccc2"]},Open],ExpressionUUID -> "cbc4b568-a7ec-4538-8e2a-7bce3254b013"],Cell[
-TextData[
-{"Constructs"," ","the"," ","intrinsic"," ","camera"," ","parameter"," ","matrix"," ","K","."}],
-"Text",ExpressionUUID -> "2a193f31-a30a-4d1c-9093-45fc7ca3eb7b"],Cell[
-BoxData[RowBox[
-{RowBox[{"intrinsic","[",RowBox[{"fx_",",","fy_",",","sx_",",","sy_",",","ox_",",","oy_",",","\[Theta]_"}],"]"}],":=",RowBox[
-{"{",RowBox[{RowBox[{"{",RowBox[{RowBox[{"sx","*","fx"}],",","\[Theta]",",","ox"}],"}"}],",",RowBox[
-{"{",RowBox[{"0",",",RowBox[{"sy","*","fy"}],",","oy"}],"}"}],",",RowBox[{"{",RowBox[
-{"0",",","0",",","1"}],"}"}]}],"}"}]}]],"Input",CellLabel -> "In[132]:= ",ExpressionUUID -> "6661c6d1-2bef-400d-98e5-258f8d87670e"],Cell[
-TextData[
-{"An"," ","intrinsic"," ","camera"," ","parameter"," ","matrix"," ","for"," ","a"," ","pinhole"," ","cam"," ","without"," ","skew","."}],
-"Text",ExpressionUUID -> "442977e0-ffae-4666-82cf-77e896b6c883"],Cell[
-CellGroupData[
-{Cell[
-BoxData[{RowBox[{RowBox[{"pinholeK","=",RowBox[{"intrinsic","[",RowBox[{"fx",",","fy",",","1",",","1",",","ox",",","oy",",","0"}],"]"}]}],";"}],"\n",RowBox[
-{"MatrixForm","[","k","]"}]}],"Input",CellLabel -> "In[133]:= ",ExpressionUUID -> "1026337f-f21b-4eaf-ac04-087a61184c1a"],Cell[
-BoxData[
-TagBox[RowBox[{"(","\[NoBreak]",GridBox[{{"fx","0","ox"},{"0","fy","oy"},{"0","0","1"}},
-RowSpacings -> 1,ColumnSpacings -> 1,RowAlignments -> Baseline,ColumnAlignments -> Center],"\[NoBreak]",")"}],
-Function[BoxForm`e$,MatrixForm[BoxForm`e$]]],StandardForm],"Output",CellLabel -> "Out[134]//MatrixForm= ",
-ExpressionUUID -> "fc170b83-9364-4365-9838-fea54eece8b6"]},Open],ExpressionUUID -> "deb2f459-710e-4233-a1a0-4aa27126dc76"],Cell[
-TextData[
-{"A"," ","transformation"," ","from"," ","the"," ","world"," ","coordinate"," ","frame"," ","to"," ","the"," ","camera"," ","coordinate"," ","frame","."}],
-"Text",ExpressionUUID -> "81f314f0-aaea-4a39-bb02-3185172ddbf1"],Cell[
-CellGroupData[
-{Cell[
-BoxData[{RowBox[{RowBox[{"g","[",RowBox[{"r_",",","t_"}],"]"}],":=",RowBox[
-{"Join","[","\n",RowBox[{RowBox[{"Join","[",RowBox[{"r",",",RowBox[{"Transpose","[",RowBox[
-{"{",RowBox[{"-","t"}],"}"}],"]"}],",","2"}],"]"}],","," ","\n",RowBox[{"{",RowBox[
-{"{",RowBox[{"0",",","0",",","0",",","1"}],"}"}],"}"}]}],"\n","]"}]}],"\n",RowBox[
-{RowBox[{"(*"," ","example"," ","*)"}],"\n",RowBox[{"MatrixForm","[",RowBox[{"g","[",RowBox[
-{RowBox[{"IdentityMatrix","[","3","]"}],",",RowBox[{"{",RowBox[{"1",",","1",",","1"}],"}"}]}],"]"}],"]"}]}]}],
-"Input",CellLabel -> "In[135]:= ",ExpressionUUID -> "09391696-f58d-4828-a420-e6efb244cde8"],Cell[
-BoxData[
-TagBox[RowBox[{"(","\[NoBreak]",GridBox[{{"1","0","0",RowBox[{"-","1"}]},{"0","1","0",RowBox[
-{"-","1"}]},{"0","0","1",RowBox[{"-","1"}]},{"0","0","0","1"}},RowSpacings -> 1,ColumnSpacings -> 1,
-RowAlignments -> Baseline,ColumnAlignments -> Center],"\[NoBreak]",")"}],Function[
-BoxForm`e$,MatrixForm[BoxForm`e$]]],StandardForm],"Output",CellLabel -> "Out[136]//MatrixForm= ",
-ExpressionUUID -> "0e1b64b6-e221-4a57-af52-376e3755d021"]},Open],ExpressionUUID -> "ef18e869-375a-4e28-8055-f71dd065e52b"],Cell[
-TextData[
-{"Embeds"," ","the"," ","vector"," ",StyleBox["v",FontWeight -> Bold],StyleBox[" ",
-FontWeight -> Bold],StyleBox["in",FontWeight -> Plain],StyleBox[" ",FontWeight -> Plain],StyleBox[
-"homogeneous",FontWeight -> Plain],StyleBox[" ",FontWeight -> Plain],StyleBox["coordinates",
-FontWeight -> Plain]}],"Text",ExpressionUUID -> "67fe2e07-5efe-4a68-b4a5-5d83bc8bf044"],Cell[
-CellGroupData[
-{Cell[
-BoxData[{RowBox[{RowBox[{"homog","[",RowBox[{"v_","/;",RowBox[{"VectorQ","[","v","]"}]}],"]"}],":=",RowBox[
-{"Join","[",RowBox[{"v",",",RowBox[{"{","1","}"}]}],"]"}]}],"\n",RowBox[{"MatrixForm","[",RowBox[
-{"homog","[",RowBox[{"{",RowBox[{"1",",","2",",","3"}],"}"}],"]"}],"]"}]}],"Input",
-CellLabel -> "In[137]:= ",ExpressionUUID -> "e0fc750d-8024-45d2-a42e-9a002db7d878"],Cell[
-BoxData[
-TagBox[RowBox[{"(","\[NoBreak]",TagBox[GridBox[{{"1"},{"2"},{"3"},{"1"}},ColumnAlignments -> Center,
-RowSpacings -> 1,ColumnAlignments -> Left],Column],"\[NoBreak]",")"}],Function[BoxForm`e$,
-MatrixForm[BoxForm`e$]]],StandardForm],"Output",CellLabel -> "Out[138]//MatrixForm= ",
-ExpressionUUID -> "fbc5c72d-cf7b-4b0b-8314-9d4f27f1b298"]},Open],ExpressionUUID -> "d2588755-10c9-4976-930f-c10feb4c63d1"],Cell[
-TextData[
-{"A"," ","function"," ","that"," ","constructs"," ","a"," ","camera"," ","that"," ","is"," ","rotated"," ","and"," ","translated"," ","in"," ","the"," ","world",StyleBox[
-RowBox[{"."," "}]],"Applying"," ","it"," ","to"," ","a"," ","point"," ","in"," ","3D"," ","world"," ","coordinates"," ","will"," ","yield"," ","the"," ","2D"," ","image"," ","coordinates","."}],
-"Text",ExpressionUUID -> "d332da71-689f-43cf-8779-516aae9576ba"],Cell[
-BoxData[RowBox[
-{RowBox[{"camera","[",RowBox[{"c_",",",RowBox[{"rot_",":",RowBox[{"IdentityMatrix","[","3","]"}]}]}],"]"}],":=",RowBox[
-{RowBox[{"pi0"," ","."," ",RowBox[{"g","[",RowBox[{"rot",",","c"}],"]"}]," ","."," ",RowBox[
-{"homog","[","#","]"}]}],"&"}]}]],"Input",CellLabel -> "In[139]:= ",ExpressionUUID -> "f8babd40-bf7c-471c-909f-80fb8f66882e"],Cell[
-TextData[
-{"Scale"," ","2D"," ","pixel"," ","coordinates"," ","by"," ","a"," ","constant",StyleBox[
-RowBox[{" ","\[Lambda]"," "}]],"in"," ","homogeneous"," ","coordinates"}],"Text",
-ExpressionUUID -> "edc24818-f3e5-415d-bef5-b834a94dd4df"],Cell[
-BoxData[RowBox[{RowBox[
-{"lambda","[",RowBox[{"x_",",","\[Lambda]_"}],"]"}],":=",RowBox[{"\[Lambda]","*",RowBox[
-{"homog","[","x","]"}]}]}]],"Input",CellLabel -> "In[140]:= ",ExpressionUUID -> "72be57e7-a151-4a60-9330-21b3d7114f78"],Cell[
-TextData[
-{"Solves"," ","the"," ","linear"," ","system"," ","of"," ","equations"," ","that"," ","is"," ","the"," ","mapping"," ","from"," ","3D"," ","world"," ","coordinates"," ","to"," ","2D"," ","pixel"," ","coordinates"," ","to"," ","find"," ","intrinsic"," ","camera"," ","parameters",StyleBox[
-RowBox[{" ","("}]],"assuming"," ","no"," ","rotation"," ","of"," ","the"," ","cam",")."}],
-"Text",ExpressionUUID -> "6ef833b4-3eb8-4d37-a3e1-0f976611de8e"],Cell[
-BoxData[RowBox[
-{RowBox[{"intrinsicParamsFromProjections","[",RowBox[{"p1_",",","x1_",",","p2_",",","x2_",",","cam_"}],"]"}],":=","\n",RowBox[
-{"Module","[",RowBox[{RowBox[{"{",RowBox[{"z",",","p1p",",","p2p"}],"}"}],",","\n",RowBox[
-{RowBox[{"project",":=",RowBox[{"camera","[","cam","]"}]}],";","\n",RowBox[{RowBox[
-{"{",RowBox[{"p1p",","," ","p2p"}],"}"}],":="," ",RowBox[{"{",RowBox[{RowBox[{"project","[","p1","]"}],","," ",RowBox[
-{"project","[","p2","]"}]}],"}"}]}],";","\n",RowBox[{"Solve","[","\n",RowBox[{RowBox[
-{RowBox[{RowBox[{"lambda","[",RowBox[{"x1",",",RowBox[{"p1p","[",RowBox[{"[",RowBox[
-{"-","1"}],"]"}],"]"}]}],"]"}],"==",RowBox[{"pinholeK"," ",".","p1p"}]}]," ","&&","\n",RowBox[
-{RowBox[{"lambda","[",RowBox[{"x2",",",RowBox[{"p2p","[",RowBox[{"[",RowBox[{"-","1"}],"]"}],"]"}]}],"]"}],"==",RowBox[
-{"pinholeK"," ","."," ","p2p"}]}]}],",","\n",RowBox[{"{",RowBox[{"fx",",","fy",",","ox",",","oy"}],"}"}]}],"\n","]"}]}]}],"\n","]"}]}]],
-"Input",ExpressionUUID -> "45caa8f8-97ac-465d-b6c9-66e3aee2aac9"],Cell[
-TextData[
-{"An"," ","example"," ","for"," ","finding"," ","the"," ","intrinsic"," ","camera"," ","parameters",":"}],
-"Text",ExpressionUUID -> "3500c6a5-342e-4ea1-b3e7-3d260eda778f"],Cell[
-CellGroupData[
-{Cell[
-BoxData[RowBox[{"intrinsicParamsFromProjections","[","\n",RowBox[{RowBox[{"{",RowBox[
-{"1",",","4",",","3"}],"}"}],",",RowBox[{"{",RowBox[{"150",",","350"}],"}"}],",","\n",RowBox[
-{"{",RowBox[{"3",",","4",",","5"}],"}"}],",",RowBox[{"{",RowBox[{"225",",","325"}],"}"}],",","\n",RowBox[
-{"{",RowBox[{"2",",","3",",","1"}],"}"}]}],"\n","]"}]],"Input",CellLabel -> "In[142]:= ",
-ExpressionUUID -> "edbc10d9-ef93-4773-bece-59fbacc6c0a0"],Cell[
-BoxData[RowBox[{"{",RowBox[
-{"{",RowBox[{RowBox[{"fx","\[Rule]","100"}],",",RowBox[{"fy","\[Rule]","100"}],",",RowBox[
-{"ox","\[Rule]","200"}],",",RowBox[{"oy","\[Rule]","300"}]}],"}"}],"}"}],StandardForm],
-"Output",CellLabel -> "Out[142]= ",ExpressionUUID -> "00314dd8-151b-4b6d-b3a1-575828dd6ef2"]},
-Open],ExpressionUUID -> "36d0086c-1f51-4e41-b4b7-929a6c02b32a"],Cell[
-TextData[{"An"," ","example"," ","where"," ","the"," ","intrinsic"," ","parameters"," ","are"," ","known"," ","and"," ","you"," ","want"," ","to"," ","find"," ","the"," ","2D"," ","pixel"," ","coordinates",":"}],
-"Text",ExpressionUUID -> "1409e04a-cf59-473d-bbf9-f355db77b8d3"],Cell[
-CellGroupData[
-{Cell[
-BoxData[{RowBox[{"intr1","=",RowBox[{"{",RowBox[{RowBox[{"{",RowBox[{"700",",","0",",","350"}],"}"}],",",RowBox[
-{"{",RowBox[{"0",",","350",",","135"}],"}"}],",",RowBox[{"{",RowBox[{"0",",","0",",","1"}],"}"}]}],"}"}]}],"\n",RowBox[
-{"x1","=",RowBox[{"intr1"," ","."," ",RowBox[{RowBox[{"camera","[",RowBox[{"{",RowBox[
-{RowBox[{"-","1"}],",",RowBox[{"-","1"}],",","0"}],"}"}],"]"}],"[",RowBox[{"{",RowBox[
-{"4",",",RowBox[{"-","1"}],",","7"}],"}"}],"]"}]}]}],"\n",RowBox[{"x1","/",RowBox[
-{"x1","[",RowBox[{"[",RowBox[{"-","1"}],"]"}],"]"}]}]}],"Input",CellLabel -> "In[147]:= ",
-ExpressionUUID -> "355df7f9-627c-4a6c-8e20-9f586aa63687"],Cell[
-BoxData[RowBox[{"{",RowBox[
-{RowBox[{"{",RowBox[{"700",",","0",",","350"}],"}"}],",",RowBox[{"{",RowBox[{"0",",","350",",","135"}],"}"}],",",RowBox[
-{"{",RowBox[{"0",",","0",",","1"}],"}"}]}],"}"}],StandardForm],"Output",CellLabel -> "Out[147]= ",
-ExpressionUUID -> "88bd0f1e-f656-418a-99c8-241839363b9f"],Cell[
-BoxData[RowBox[{"{",RowBox[
-{"5950",",","945",",","7"}],"}"}],StandardForm],"Output",CellLabel -> "Out[148]= ",
-ExpressionUUID -> "08b7750a-16fe-4578-a04e-2b3c816f1e47"],Cell[
-BoxData[RowBox[{"{",RowBox[
-{"850",",","135",",","1"}],"}"}],StandardForm],"Output",CellLabel -> "Out[149]= ",
-ExpressionUUID -> "10a8e006-a28a-496c-9647-7426c6161681"]},Open],ExpressionUUID -> "f3b6962f-15f4-48e6-b689-cda84a6e46dc"]},
-StyleDefinitions -> "Default.nb",FrontEndVersion -> "12.3 for Wolfram Cloud 1.58.2.1 (May 19, 2021)"]
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 12.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     16233,        458]
+NotebookOptionsPosition[     13415,        409]
+NotebookOutlinePosition[     13874,        426]
+CellTagsIndexPosition[     13831,        423]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell["\[Copyright] Niklas Vest", "Text",ExpressionUUID->"3b71748f-259c-494d-869f-10b881eb1ada"],
+
+Cell["\<\
+The projection matrix mapping from 3D to 2D space (embedded in homogeneous \
+coordinates).\
+\>", "Text",ExpressionUUID->"0732f9a9-27cd-461b-aaa6-9bc73673f775"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   SubscriptBox["\[CapitalPi]", "0"], "=", 
+   RowBox[{"(", GridBox[{
+      {"1", "0", "0", "0"},
+      {"0", "1", "0", "0"},
+      {"0", "0", "1", "0"}
+     }], ")"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.835260890563878*^9, 3.8352609328147917`*^9}, {
+  3.835264301220818*^9, 3.8352643053118553`*^9}},
+ CellLabel->"In[45]:=",ExpressionUUID->"cbc4b568-a7ec-4538-8e2a-7bce3254b013"],
+
+Cell["Constructs the intrinsic camera parameter matrix K.", "Text",ExpressionUUID->"2a193f31-a30a-4d1c-9093-45fc7ca3eb7b"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"K", "[", 
+   RowBox[{
+   "fx_", ",", "fy_", ",", "sx_", ",", "sy_", ",", "ox_", ",", "oy_", ",", 
+    "\[Theta]_"}], "]"}], ":=", 
+  RowBox[{"(", GridBox[{
+     {
+      RowBox[{"(", 
+       RowBox[{"sx", "*", "fx"}], ")"}], "\[Theta]", "ox"},
+     {"0", 
+      RowBox[{"sy", "*", "fy"}], "oy"},
+     {"0", "0", "1"}
+    }], ")"}]}]], "Input",
+ CellChangeTimes->{{3.835260947242001*^9, 3.835261004312273*^9}, {
+   3.83526412498085*^9, 3.835264198515861*^9}, 3.835264311054945*^9},
+ CellLabel->"In[46]:=",ExpressionUUID->"6661c6d1-2bef-400d-98e5-258f8d87670e"],
+
+Cell["\<\
+An intrinsic camera parameter matrix for a pinhole cam without skew.\
+\>", "Text",ExpressionUUID->"442977e0-ffae-4666-82cf-77e896b6c883"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"pinholeK", "=", 
+   RowBox[{"K", "[", 
+    RowBox[{
+    "fx", ",", "fy", ",", "1", ",", "1", ",", "ox", ",", "oy", ",", "0"}], 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"MatrixForm", "[", "pinholeK", "]"}]}], "Input",
+ CellChangeTimes->{
+  3.835262296718789*^9, {3.8352639197169333`*^9, 3.835263919880004*^9}, {
+   3.835264234103345*^9, 3.835264264348743*^9}, 3.835264316915572*^9},
+ CellLabel->"In[47]:=",ExpressionUUID->"deb2f459-710e-4233-a1a0-4aa27126dc76"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", GridBox[{
+     {"fx", "0", "ox"},
+     {"0", "fy", "oy"},
+     {"0", "0", "1"}
+    },
+    GridBoxAlignment->{"Columns" -> {{Center}}, "Rows" -> {{Baseline}}},
+    GridBoxSpacings->{"Columns" -> {
+        Offset[0.27999999999999997`], {
+         Offset[0.7]}, 
+        Offset[0.27999999999999997`]}, "Rows" -> {
+        Offset[0.2], {
+         Offset[0.4]}, 
+        Offset[0.2]}}], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{
+  3.835260849337387*^9, 3.835262298391822*^9, {3.8352639106677437`*^9, 
+   3.835263920258437*^9}, {3.835264231424521*^9, 3.835264240575811*^9}, 
+   3.835264616012434*^9},
+ CellLabel->
+  "Out[48]//MatrixForm=",ExpressionUUID->"d6401fa6-f67b-4e2b-9b52-\
+34182801805b"]
+}, Open  ]],
+
+Cell["\<\
+A transformation from the world coordinate frame to the camera coordinate \
+frame.\
+\>", "Text",ExpressionUUID->"81f314f0-aaea-4a39-bb02-3185172ddbf1"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"g", "[", 
+    RowBox[{"r_", ",", "t_"}], "]"}], ":=", 
+   RowBox[{"Join", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"Join", "[", 
+      RowBox[{"r", ",", 
+       RowBox[{"Transpose", "[", 
+        RowBox[{"{", 
+         RowBox[{"-", "t"}], "}"}], "]"}], ",", "2"}], "]"}], ",", " ", 
+     "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"0", ",", "0", ",", "0", ",", "1"}], "}"}], "}"}]}], 
+    "\[IndentingNewLine]", "]"}]}], "\n", 
+  RowBox[{"(*", " ", "example", " ", "*)"}]}], "\n", 
+ RowBox[{"MatrixForm", "[", 
+  RowBox[{"g", "[", 
+   RowBox[{
+    RowBox[{"IdentityMatrix", "[", "3", "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"1", ",", "1", ",", "1"}], "}"}]}], "]"}], "]"}]}], "Input",
+ CellChangeTimes->{{3.83526393322189*^9, 3.8352639378387747`*^9}},
+ CellLabel->"In[49]:=",ExpressionUUID->"ef18e869-375a-4e28-8055-f71dd065e52b"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", GridBox[{
+     {"1", "0", "0", 
+      RowBox[{"-", "1"}]},
+     {"0", "1", "0", 
+      RowBox[{"-", "1"}]},
+     {"0", "0", "1", 
+      RowBox[{"-", "1"}]},
+     {"0", "0", "0", "1"}
+    },
+    GridBoxAlignment->{"Columns" -> {{Center}}, "Rows" -> {{Baseline}}},
+    GridBoxSpacings->{"Columns" -> {
+        Offset[0.27999999999999997`], {
+         Offset[0.7]}, 
+        Offset[0.27999999999999997`]}, "Rows" -> {
+        Offset[0.2], {
+         Offset[0.4]}, 
+        Offset[0.2]}}], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{3.8352608493524427`*^9, 3.835263910694076*^9, 
+  3.83526461604237*^9},
+ CellLabel->
+  "Out[50]//MatrixForm=",ExpressionUUID->"f282397d-15ba-4efd-960d-\
+72b2ba4dcc4d"]
+}, Open  ]],
+
+Cell[TextData[{
+ "Embeds",
+ " ",
+ "the",
+ " ",
+ "vector",
+ " ",
+ StyleBox["v",
+  FontWeight->Bold],
+ StyleBox[" ",
+  FontWeight->Bold],
+ StyleBox["in",
+  FontWeight->Plain],
+ StyleBox[" ",
+  FontWeight->Plain],
+ StyleBox["homogeneous",
+  FontWeight->Plain],
+ StyleBox[" ",
+  FontWeight->Plain],
+ StyleBox["coordinates",
+  FontWeight->Plain]
+}], "Text",ExpressionUUID->"67fe2e07-5efe-4a68-b4a5-5d83bc8bf044"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"homog", "[", 
+    RowBox[{"v_", "/;", 
+     RowBox[{"VectorQ", "[", "v", "]"}]}], "]"}], ":=", 
+   RowBox[{"Join", "[", 
+    RowBox[{"v", ",", 
+     RowBox[{"{", "1", "}"}]}], "]"}]}], "\[IndentingNewLine]", 
+  RowBox[{"(*", " ", "example", " ", "*)"}]}], "\n", 
+ RowBox[{"MatrixForm", "[", 
+  RowBox[{"homog", "[", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "2", ",", "3"}], "}"}], "]"}], "]"}]}], "Input",
+ CellChangeTimes->{{3.835263966574374*^9, 3.835263967081047*^9}},
+ CellLabel->"In[51]:=",ExpressionUUID->"d2588755-10c9-4976-930f-c10feb4c63d1"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", 
+   TagBox[GridBox[{
+      {"1"},
+      {"2"},
+      {"3"},
+      {"1"}
+     },
+     GridBoxAlignment->{"Columns" -> {{Center}}, "Rows" -> {{Baseline}}},
+     GridBoxSpacings->{"Columns" -> {
+         Offset[0.27999999999999997`], {
+          Offset[0.5599999999999999]}, 
+         Offset[0.27999999999999997`]}, "Rows" -> {
+         Offset[0.2], {
+          Offset[0.4]}, 
+         Offset[0.2]}}],
+    Column], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{3.835260849371656*^9, 3.835263910725842*^9, 
+  3.835263967794819*^9, 3.83526461606774*^9},
+ CellLabel->
+  "Out[52]//MatrixForm=",ExpressionUUID->"cb5040d5-195d-4537-8c22-\
+5b80e7b1412b"]
+}, Open  ]],
+
+Cell["\<\
+A function that constructs a camera which is rotated and translated in the \
+world. Applying it to a point in 3D world coordinates will yield the 2D image \
+coordinates.\
+\>", "Text",
+ CellChangeTimes->{{3.8352639770193167`*^9, 
+  3.835263977443284*^9}},ExpressionUUID->"d332da71-689f-43cf-8779-\
+516aae9576ba"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"camera", "[", 
+   RowBox[{"c_", ",", 
+    RowBox[{"rot_", ":", 
+     RowBox[{"IdentityMatrix", "[", "3", "]"}]}]}], "]"}], ":=", 
+  RowBox[{
+   RowBox[{
+    SubscriptBox["\[CapitalPi]", "0"], " ", ".", " ", 
+    RowBox[{"g", "[", 
+     RowBox[{"rot", ",", "c"}], "]"}], " ", ".", " ", 
+    RowBox[{"homog", "[", "#", "]"}]}], "&"}]}]], "Input",
+ CellChangeTimes->{{3.8352642803393517`*^9, 3.835264287617991*^9}},
+ CellLabel->"In[53]:=",ExpressionUUID->"f8babd40-bf7c-471c-909f-80fb8f66882e"],
+
+Cell["\<\
+Solves the linear system of equations that is the mapping from 3D world \
+coordinates to 2D pixel coordinates to find intrinsic camera parameters \
+(assuming no rotation of the cam).\
+\>", "Text",ExpressionUUID->"6ef833b4-3eb8-4d37-a3e1-0f976611de8e"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"intrinsicParamsFromProjections", "[", 
+   RowBox[{"p1_", ",", "x1_", ",", "p2_", ",", "x2_", ",", "cam_"}], "]"}], ":=",
+   "\[IndentingNewLine]", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"z", ",", "p1p", ",", "p2p", ",", "\[Lambda]"}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"project", ":=", 
+      RowBox[{"camera", "[", "cam", "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"p1p", ",", " ", "p2p"}], "}"}], "=", " ", 
+      RowBox[{"project", "/@", 
+       RowBox[{"{", 
+        RowBox[{"p1", ",", " ", "p2"}], "}"}]}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        SubscriptBox["\[Lambda]", "1"], ",", 
+        SubscriptBox["\[Lambda]", "2"]}], "}"}], "=", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"#", "[", 
+         RowBox[{"[", 
+          RowBox[{"-", "1"}], "]"}], "]"}], "&"}], "/@", 
+       RowBox[{"{", 
+        RowBox[{"p1p", ",", "p2p"}], "}"}]}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"Solve", "[", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{
+          SubscriptBox["\[Lambda]", "1"], 
+          RowBox[{"homog", "[", "x1", "]"}]}], "==", 
+         RowBox[{"pinholeK", " ", ".", " ", "p1p"}]}], " ", "&&", 
+        "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{
+          SubscriptBox["\[Lambda]", "2"], 
+          RowBox[{"homog", "[", "x2", "]"}]}], "==", 
+         RowBox[{"pinholeK", " ", ".", " ", "p2p"}]}]}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"{", 
+        RowBox[{"fx", ",", "fy", ",", "ox", ",", "oy"}], "}"}]}], 
+      "\[IndentingNewLine]", "]"}]}]}], "\[IndentingNewLine]", 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.835264393668487*^9, 3.8352646060501966`*^9}, {
+  3.835264666666403*^9, 3.835264807155113*^9}, {3.835264908830989*^9, 
+  3.8352650431486998`*^9}},ExpressionUUID->"45caa8f8-97ac-465d-b6c9-\
+66e3aee2aac9"],
+
+Cell["An example for finding the intrinsic camera parameters:", "Text",ExpressionUUID->"3500c6a5-342e-4ea1-b3e7-3d260eda778f"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"intrinsicParamsFromProjections", "[", "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"1", ",", "4", ",", "3"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"150", ",", "350"}], "}"}], ",", "\[IndentingNewLine]", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "4", ",", "5"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"225", ",", "325"}], "}"}], ",", "\[IndentingNewLine]", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "3", ",", "1"}], "}"}]}], "\n", "]"}]], "Input",
+ CellChangeTimes->{{3.835264621035301*^9, 3.8352646243602943`*^9}},
+ CellLabel->
+  "In[101]:=",ExpressionUUID->"36d0086c-1f51-4e41-b4b7-929a6c02b32a"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"fx", "\[Rule]", "100"}], ",", 
+    RowBox[{"fy", "\[Rule]", "100"}], ",", 
+    RowBox[{"ox", "\[Rule]", "200"}], ",", 
+    RowBox[{"oy", "\[Rule]", "300"}]}], "}"}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.83526084942302*^9, 3.835263910789207*^9, {3.835264616295867*^9, 
+   3.83526462484021*^9}, 3.835264678301814*^9, {3.835264762903715*^9, 
+   3.8352647972966413`*^9}, 3.835264852339653*^9, 3.835264902076789*^9, {
+   3.835264954580374*^9, 3.8352650090481863`*^9}, 3.8352650524915533`*^9},
+ CellLabel->
+  "Out[101]=",ExpressionUUID->"8d662c40-e61f-400d-9ac0-c7fc148af8d8"]
+}, Open  ]],
+
+Cell["\<\
+An example where the intrinsic parameters are known and you want to find the \
+2D pixel coordinates:\
+\>", "Text",ExpressionUUID->"1409e04a-cf59-473d-bbf9-f355db77b8d3"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"intr1", "=", 
+   RowBox[{"(", GridBox[{
+      {"700", "0", "350"},
+      {"0", "350", "135"},
+      {"0", "0", "1"}
+     }], ")"}]}], ";"}], "\n", 
+ RowBox[{"x1", "=", 
+  RowBox[{"intr1", " ", ".", " ", 
+   RowBox[{
+    RowBox[{"camera", "[", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"-", "1"}], ",", 
+       RowBox[{"-", "1"}], ",", "0"}], "}"}], "]"}], "[", 
+    RowBox[{"{", 
+     RowBox[{"4", ",", 
+      RowBox[{"-", "1"}], ",", "7"}], "}"}], "]"}]}]}], "\n", 
+ RowBox[{"x1", "/", 
+  RowBox[{"x1", "[", 
+   RowBox[{"[", 
+    RowBox[{"-", "1"}], "]"}], "]"}]}]}], "Input",
+ CellChangeTimes->{{3.835264857643634*^9, 3.835264879682041*^9}},
+ CellLabel->"In[89]:=",ExpressionUUID->"f3b6962f-15f4-48e6-b689-cda84a6e46dc"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"5950", ",", "945", ",", "7"}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.835260849439705*^9, 3.835263910817543*^9, 3.835264616316441*^9, {
+   3.835264854808401*^9, 3.8352648893826447`*^9}},
+ CellLabel->"Out[90]=",ExpressionUUID->"7c84a91d-9d4c-4a77-81e8-44f642ce4513"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"850", ",", "135", ",", "1"}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.835260849439705*^9, 3.835263910817543*^9, 3.835264616316441*^9, {
+   3.835264854808401*^9, 3.835264889385097*^9}},
+ CellLabel->"Out[91]=",ExpressionUUID->"d810cc1a-93bf-441d-bb01-641e95503300"]
+}, Open  ]]
+},
+WindowSize->{923.4782608695652, 710.608695652174},
+WindowMargins->{{Automatic, -1425.1304347826085`}, {
+  206.50549450549454`, Automatic}},
+FrontEndVersion->"12.2 for Linux x86 (64-bit) (December 12, 2020)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"108b4759-1e61-4814-b639-67f2689c7937"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 95, 0, 35, "Text",ExpressionUUID->"3b71748f-259c-494d-869f-10b881eb1ada"],
+Cell[656, 22, 169, 3, 35, "Text",ExpressionUUID->"0732f9a9-27cd-461b-aaa6-9bc73673f775"],
+Cell[828, 27, 420, 11, 61, "Input",ExpressionUUID->"cbc4b568-a7ec-4538-8e2a-7bce3254b013"],
+Cell[1251, 40, 122, 0, 35, "Text",ExpressionUUID->"2a193f31-a30a-4d1c-9093-45fc7ca3eb7b"],
+Cell[1376, 42, 593, 16, 61, "Input",ExpressionUUID->"6661c6d1-2bef-400d-98e5-258f8d87670e"],
+Cell[1972, 60, 147, 2, 35, "Text",ExpressionUUID->"442977e0-ffae-4666-82cf-77e896b6c883"],
+Cell[CellGroupData[{
+Cell[2144, 66, 509, 11, 50, "Input",ExpressionUUID->"deb2f459-710e-4233-a1a0-4aa27126dc76"],
+Cell[2656, 79, 805, 23, 78, "Output",ExpressionUUID->"d6401fa6-f67b-4e2b-9b52-34182801805b"]
+}, Open  ]],
+Cell[3476, 105, 161, 3, 35, "Text",ExpressionUUID->"81f314f0-aaea-4a39-bb02-3185172ddbf1"],
+Cell[CellGroupData[{
+Cell[3662, 112, 931, 25, 133, "Input",ExpressionUUID->"ef18e869-375a-4e28-8055-f71dd065e52b"],
+Cell[4596, 139, 808, 25, 95, "Output",ExpressionUUID->"f282397d-15ba-4efd-960d-72b2ba4dcc4d"]
+}, Open  ]],
+Cell[5419, 167, 407, 21, 35, "Text",ExpressionUUID->"67fe2e07-5efe-4a68-b4a5-5d83bc8bf044"],
+Cell[CellGroupData[{
+Cell[5851, 192, 597, 15, 71, "Input",ExpressionUUID->"d2588755-10c9-4976-930f-c10feb4c63d1"],
+Cell[6451, 209, 754, 24, 95, "Output",ExpressionUUID->"cb5040d5-195d-4537-8c22-5b80e7b1412b"]
+}, Open  ]],
+Cell[7220, 236, 321, 7, 58, "Text",ExpressionUUID->"d332da71-689f-43cf-8779-516aae9576ba"],
+Cell[7544, 245, 526, 13, 29, "Input",ExpressionUUID->"f8babd40-bf7c-471c-909f-80fb8f66882e"],
+Cell[8073, 260, 261, 4, 58, "Text",ExpressionUUID->"6ef833b4-3eb8-4d37-a3e1-0f976611de8e"],
+Cell[8337, 266, 2011, 53, 235, "Input",ExpressionUUID->"45caa8f8-97ac-465d-b6c9-66e3aee2aac9"],
+Cell[10351, 321, 126, 0, 35, "Text",ExpressionUUID->"3500c6a5-342e-4ea1-b3e7-3d260eda778f"],
+Cell[CellGroupData[{
+Cell[10502, 325, 645, 15, 112, "Input",ExpressionUUID->"36d0086c-1f51-4e41-b4b7-929a6c02b32a"],
+Cell[11150, 342, 645, 14, 33, "Output",ExpressionUUID->"8d662c40-e61f-400d-9ac0-c7fc148af8d8"]
+}, Open  ]],
+Cell[11810, 359, 179, 3, 35, "Text",ExpressionUUID->"1409e04a-cf59-473d-bbf9-f355db77b8d3"],
+Cell[CellGroupData[{
+Cell[12014, 366, 766, 24, 106, "Input",ExpressionUUID->"f3b6962f-15f4-48e6-b689-cda84a6e46dc"],
+Cell[12783, 392, 308, 6, 33, "Output",ExpressionUUID->"7c84a91d-9d4c-4a77-81e8-44f642ce4513"],
+Cell[13094, 400, 305, 6, 33, "Output",ExpressionUUID->"d810cc1a-93bf-441d-bb01-641e95503300"]
+}, Open  ]]
+}
+]
+*)
+
