@@ -9,7 +9,7 @@ function r = checkPFconstraint(x1, PI1, x2, PI2, x3, PI3)
         hat(x3) * PI3;
         ];
     r = rank(Wp);
-    fprint('r = %d\n', r);
+    fprintf('r = %d\n', r);
 
     if r <= 3
         fprintf('rank constraint holds\n');
