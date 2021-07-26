@@ -7,7 +7,9 @@ function [m, b] = getEpipolarLineEquation(T, R, p, K1, K2)
     T_hat = hat(T);
     E = inv(K2).' * T_hat * R * inv(K1);
 
-    % calculate line = E*p
+    % if p is a true pixel coordinate you have to change
+    % the following equation to
+    % l = E * p; % because K1 was already applied then
     l = E * K1 * p;
 
     [m, b] = getMnBfromL(l)
