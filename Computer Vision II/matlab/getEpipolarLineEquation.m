@@ -5,7 +5,7 @@ function [m, b] = getEpipolarLineEquation(T, R, p, K1, K2)
     assert(numberofelements(R) == 9);
     assert(numberofelements(p) == 3);
     T_hat = hat(T);
-    E = K2' \ T_hat * R / K1;
+    E = inv(K2).' * T_hat * R * inv(K1);
 
     % calculate line = E*p
     l = E * K1 * p;
