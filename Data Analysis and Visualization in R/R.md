@@ -297,7 +297,7 @@ To obtain a partition from a hierarchical clustering, a threshold can be decided
 
 ##### Rand index
 
-$$ R = \frac{a+b}{{n}\choose{2}}$$
+$$ R = \frac{a+b}{{{n}\choose{2}}}$$
 
 * $S$ is a set of $n$ elements;
 * $X$ is a partition of $S$ into $k$ sets;
@@ -508,7 +508,7 @@ Binary classification has outcome $k$ which can only take values of 0 or 1.  Lin
 
 The system is rewritten so that $\epsilon_i$ (error), following a normal distribution, becomes the probability of having a value $y_i$ according to a normal with mean $y_i | \mu_i$. The expectation is then $E(y_i | x_i) = \mu_i$.
 
-Logistic regression models the conditional expectation of the outcome conditioned on the features. The expectation $\mu$ in a binary classification is probability of class 1 ($\mu > 0.5$):  real numbers used in linear regression are mapped to the $[0, 1]$ interval using the logistic function $ \lambda(t) = \frac{1}{1+e^{-t}}$ or the inverse sigmoid (logit). 
+Logistic regression models the conditional expectation of the outcome conditioned on the features. The expectation $\mu$ in a binary classification is probability of class 1 ($\mu > 0.5$):  real numbers used in linear regression are mapped to the $[0, 1]$ interval using the logistic function $\lambda(t) = \frac{1}{1+e^{-t}}$ or the inverse sigmoid (logit). 
 
 Logistic regression can also be applied to generalized linear models (Poisson, Gamma) exploiting a probability distribution from the exponential family, a linear predictor and a link function (inverse of activation function).
 
