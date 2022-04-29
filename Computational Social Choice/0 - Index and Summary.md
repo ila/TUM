@@ -1,0 +1,197 @@
+![[course-summary.png]]
+
+### Social Choice Functions (and related types of functions)
+- Pareto SCF
+- majority SCF
+- silly SCF $f_{silly}$
+- approval voting
+- median voting
+- Borda's rule
+- Black's rule
+- Baldwin's rule
+- Kemeny's Rule
+- Top Cycle $TC$
+- Uncovered Set $UC$
+- Banks set $BA$
+- Tournament equilibrium set $TEQ$
+- Bipartisan Set $BP$
+- Random Dictatorship
+- Maximal Lotteries
+
+### Algorithms
+- Single-Peakedness Algorithm (Bartholdi; Escoffier)
+- Top Cycle Algorithm
+- Uncovered Set Algorithm (= Matrix Multiplication)
+- Finding some ("random") alternative in the Banks set (in linear time)
+
+
+### Terms
+- rationalizable choice function
+- base relation
+- Contraction consistency $\alpha$
+- Expansion consistency $\gamma$
+- Strong expansion consistency $\gamma^+$
+- transitive rationalizability
+- weak axiom of revealed preference (WARP)
+- anonymity
+- neutrality
+- Pareto optimality
+- resoluteness
+- manipulability by a voter, strategyproofness
+- monotonicity
+- positive responsiveness
+- most decisive SCF
+- Condorcet winner
+- Independence of infeasible alternatives (IIA)
+- dictatorship
+- social welfare function (SWF)
+- decisive group of voters for $a$ against $b$, decisive and  semidecisive group of voters
+- weak dictatorship
+- oligarchy
+- collegium
+- strategic abstention and participation
+- dichotomous preferences
+- declaration of oddity ($R(U)$ = the linear orders)
+- single-peaked preferences $D^>_{SP}$
+- median voting
+- value-restricted domains
+- scoring rule
+- Condorcet extension
+- Fishburn classification: C1, C2, C3 SCFs
+- reinforcement
+- composed scoring rule
+- cancellation (technical axiom)
+- social preference function (SPF)
+- majority graph (with majority margin weights)
+- anonymity, neutrality, Pareto optimality for SPFs
+- local independence of irrelevant alternatives (LIIA)
+- Feedback Arc Set (FAS)
+- Kemeny Ranking decision problem
+- dominant set
+- binary SCF
+- majoritarian SCF
+- Dominion $D(x)$, Dominator $\overline{D}(x)$, $D^k(x)$, $\overline{D}^k(x)$, $D^\ast(x)$ and $\overline{D}^\ast(x)$
+- covering relation $C$
+- transitive subset of a tournament
+- strong retentiveness $\rho^+$
+- retentiveness $\rho$
+- $S$-retentiveness
+- $\mathring{\phantom{I}}: S \mapsto \mathring{S}$ operator
+- set rationalizability
+- set consistency conditions $\hat{\alpha}$ and $\hat{\gamma}$
+- stability ($\hat{\alpha}$ + $\hat{\gamma}$)
+- quasi-transitive rationalizability ($\alpha$ + $\hat{\alpha}$ + $\hat{\gamma}$)
+- optimal probability distribution
+- more discriminating SCF (selects fewer alternatives on average)
+- strong monotonicity (= invariance under weakening of unchosen alternatives)
+- lower contour set
+- non-imposing SCF
+- Kelly's preference extension $R^K$
+- Kelly strategyproofness/participation
+- Fishburn's preference extension $R^F$
+- set-non-imposing SCF
+- social decision scheme (SDS)
+- manipulability of an SDS
+- non-imposing SDS
+- (uniform) random dictatorship
+- majority margin matrix $M_{x,y} = n_{xy} - n_{yx}$
+- maximality of a lottery
+
+
+### Theorems
+- Sen's Theorem
+- Schwartz' characterization of $\alpha$ and $\gamma$
+- (Arrow, 1959): transitively rationalizable <=> $\alpha$ + $\beta^+$
+- anonymity + neutrality => not (resolute for an arbitrary number of voters and alternatives)
+- (Moulin 1983): $\exists$ anonymous, neutral and PO <=> n cannot be divided by any $2 \leq q \leq m$.
+- resoluteness + monotonicity + 2 alternatives => strategyproof
+- May's Theorem
+- Condorcet(-May) paradox
+- Arrow's Impossibility Theorem
+- Field Expansion Lemma, Group Contraction Lemma
+- Variants of Arrovian Impossibility Results
+- Arrow's Theorem holds for strict preferences
+- transitive-in-domain $R_M$ --> $\max$-SCF satisfies strategy-proofness and participation in that domain
+- (Inada, 1964) $R_M$ transitive on dichotomous preferences
+- (Black, Arrow) $R_M$ transitive on single-peaked preferences
+- (Sen & Pattanaik) $R_M$ transitive exactly on the value-restricted domains
+- scoring rules invariant under positive affine transformations
+- scoring rule monotonic <==> score vector monotonic (given enough voters)
+- Scoring rules are not Condorcet extensions
+- (Smith, 1973) Condorcet winners are never Borda losers; Condorcet losers are never Borda winners
+- (Gehrlein, 1978) Borda's rule among all scoring rules maximizes the probability of choosing a Condorcet winner, if it exists
+- (Smith; Young) Neutral + anon. SCF is a composed scoring rule iff it satisfies reinforcment
+- (Young, 1974) Borda's rule is the unique SCF satisfying neutrality, Pareto-optimality, reinforcement and cancellation
+- (Young & Levenglick 1978) No Condorcet extension satisfies reinforcement when $m \geq 3$
+- Condorcet Jury theorem: for two alternatives, majority rule is the maximum likelihood SCF
+- (Young 1988) For $p$ close to 0.5, Borda's rule is the maximum likelihood SCF
+- (Young 1988) Kemeny's rule is the maximum-likelihood SPF for any $p$
+- (Young & Levenglick 1978) Kemeny's rule is the only neutral SPF that satisfies Condorcet consistency and reinforcement
+- (Young 1988) Kemeny's rule is the only SPF that satisfies anonymity, neutrality, Pareto optimality, reinforcement and LIIA
+- (McGarvey, 1953) Every majority graph (with 1 on every edge) can be induced by a preference profile with an odd number of voters
+- Kemeny Ranking hardness results
+	- FAS is NP complete (even if restricted to tournaments)
+	- (Bartholdi 1989) Kemeny Ranking decision problem is NP-complete
+	- (Dwork 2001) Finding a Kemeny ranking is NP-hard for $n \in \{4, 6, 7, 8, \dots\}$
+	- deciding for a ranking if it is a Kemeny ranking is coNP-complete
+	- deciding whether a given alternative is a Kemeny winner is $\Theta_2^P$-complete
+	- FAS is APX-hard (cannot be approximated efficiently); However, there is a polynomial-time approximation scheme for weighted tournament FAS.
+- Strong Condorcet-May Impossibility
+- Strong Mas-Colell/Sonenschein impossibility
+- TC is a Condorcet extension
+- (Bordes 1976) TC is the finest SCF satisfying anonymity, neutrality, pos-resp. and $\beta^+$.
+- majoritarian SCF selects everything from a 3-cycle (or generally, a "completely symmetric" majority graph)
+- (Deb 1977) Maximal elements of $P_M^\ast$ = top cycle
+- covering relation $C$ is a transitive subrelation of $P_M$
+- (Moulin 1986) UC is the finest majoritarian SCF satisfying $\gamma$
+- $UC \subseteq TC$, i.e. $UC$ is a refinement of $TC$
+- (Brandt & Geist 2014) $UC$ is the largest majoritarian SCF that satisfies Pareto optimality
+- (Shepsle & Weingast 1984) UC = the alternatives that can reach any other alternative in at most two steps
+- $BA \subseteq UC$, i.e. $BA$ is a refinement of $UC$
+- majoritarian SCF that satisfies $\gamma$ satisfies $\rho^+$
+- $BA$ is the finest majoritarian SCF that satisfies $\rho^+$
+- computing $BA$ is NP-complete
+- $BA, UC, TC$ all select a single alternative if and only if it is a Condorcet winner
+- Computing $TEQ$ is NP-hard
+- Schwartz' conjecture is false
+- set-rationalizability <=> $\hat{\alpha}$
+- many SCFs violate $\hat{\alpha}$:
+	- non-trivial monotonic scoring rules violate $\hat{\alpha}$
+	- almost all other rules we studied: instant-runoff, plurality with runoff, Baldwin's rule, Black's rule, Kemeny's rule, maximin, Young's rule, Copeland's rule, uncovered set, Banks set
+- $TC$ satisfies both $\hat{\alpha}$ and $\hat{\gamma}$
+- every tournament has a unique optimal probability distribution
+- $BP$ and optimal probability distribution properties
+	- $p(x) > 0$ iff $u_p(x) = 0$
+	- $|BP(A, P_M)|$ is odd
+	- $p(x)$ is the quotient of odd numbers or 0
+- $BP \subseteq UC$
+- $BP$ is a Condorcet extension
+- $BP$ is a (non-unique) most discriminating stable majoritarian SCF
+- $BP$ can be computed in polynomial time ("solving a symmetric zero-sum game")
+- $BP$ is $P$-complete
+- any monotonic scoring rule satisfies participation
+- a resolute SCF an two alternatives is strategyproof iff it is monotonic
+- in any domain with $R_M$ acyclic, $Max(R_M, A)$ satisfies strategproofness and participation
+- strong monotonicity implies monotonicity
+- a resolute SCF is strongly monotonic iff any single voter can move around the alternatives below the winning alternative without changing the result
+- (Muller & Satterthwaite 1977) A resolute SCF is strategyproof iff it is strongly monotonic
+- no resolute Condorcet extension satisfies strong monotonicity if $m, n \geq 3$
+- Gibbard-Satterthwaite Impossibility: Any non-imposing, strategyproof, resolute SCF on at least 3 alternatives is dictatorial
+- (Brandt et al. 2016) No resolute Condorcet extension satisfies participation when $n \geq 12$, $m \geq 4$
+- The second-order Copeland, Instant Runoff, and Baldwin's rules are NP-hard to manipulate
+- Every strongly monotonic SCF is $R^K$-strategyproof
+- An SCF that satisfies monotonicity, $\hat{\alpha}$ and IIA satisfies strong monotonicity
+- $BP$, $TC$ and $UC$ are $R^K$-strategyproof
+- Every majoritarian $R^K$-strategyproof SCF satisfies $R^K$-participation
+- (Barberà 1977; Kelly 1977) Every non-imposing $R^K$-strategyproof, quasi-transitively rat. SCF is weakly dictatorial for $m \geq 3$
+- (Barberà 1977) Every Pareto-optimal, $R^K$-strategyproof, positive responsive SCF is dictatorial for $m \geq 3$
+- (Brandt & Lederer, 2021) $TC$ is the only majoritarian SCF that satisfies $R^F$-strategyproofness and set non-imposition
+- (Brandt & Lederer, 2021) $TC$ is the finest majoritarian $R^F$-strategyproof SCF
+- (Brandl et al. 2015) No Pareto-optimal majoritarian SCF satisfies $R^F$-participation for $m \geq 5$
+- (Brandt et al. 2018) For weak preferences and $m \geq 5$, there is no Pareto-optimal, anonymous and $R^F$-strategyproof SCF
+- every SDS that puts probability 1 on Condorcet winners can be manipulated if $m, n \geq 3$
+- (Gibbard 1977) The only non-imposing, non-manipulable SDS for $m \geq 3$ are random dictatorships
+- (Barberà 1979) There are probabilistic variants of Borda's rule and Copeland's rule that are non-manipulable
+- (Kreweras 1965; Fishburn 1984) Maximal lotteries "essentially pick a randomized Condorcet winner"
+- A unique maximal lottery always exists
+- Maximal lotteries are Condorcet extensions, Pareto optimal, monotonic, satisfy reinforcement, participation, etc. etc... (all the good properties!)
