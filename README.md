@@ -4,4 +4,4 @@ This repository contains my notes on the Foundations in Data Analysis course hel
 
 The notes are written in [Obsidian markdown](https://obsidian.md/) and are best viewed in Obsidian.
 
-[^1]: Felix Krahmer -- Foundations in Data Analysis, lecture slides
+[^1]: Felix Krahmer - Foundations in Data Analysis, lecture slides
