@@ -1,0 +1,112 @@
+
+
+\usepackage[left=1.5cm, right=1.5cm, top=2cm, bottom=3cm]{geometry}
+
+
+\usepackage[main=english]{babel}
+\usepackage[T1]{fontenc} % Schrift ordentlich rendern, damit Umlaute auch Umlaute sind
+\usepackage[utf8]{luainputenc} % Interpretation des Inputs in utf8 (inkl. Umlaute, Akzente, etc.)
+\usepackage{lmodern} % Ordentliche skalierbare Schriftart
+\usepackage{blindtext}
+\usepackage{dirtytalk}
+\usepackage{slashed}
+\usepackage{caption} %Abb. statt Abbildung bei Grafiken sowie Tab. statt Table
+\usepackage{chngcntr}
+\usepackage{xcolor}
+
+\usepackage{framed}
+\usepackage{mdframed}
+
+\usepackage{graphicx} %zum einbinden von Grafiken
+\usepackage{wrapfig} %zur wrapfigure-Umgebung, damit Grafiken nicht über die ganze Seitenbreite gehen
+\usepackage{listings} %to write python code
+\usepackage{multicol}
+\usepackage{makeidx} 
+\usepackage[all]{nowidow}
+\usepackage{paralist}
+\usepackage{perpage}
+\usepackage{tikz}
+    \usetikzlibrary{mindmap,decorations.pathreplacing,arrows,calc}
+\usepackage[compat=1.1.0]{tikz-feynman}
+\usepackage{pgfplots}
+    \pgfplotsset{compat = 1.15}
+    \def\sothreecirc{\path[thin,dashed,draw=black,fill=black!20] (0,0) circle (\rad)}
+    \def\dotmiddle{\fill (0,0) circle (2pt)}
+    \def\rad{1.8cm}
+\usepackage{todonotes}
+
+\usepackage[separate-uncertainty = true]{siunitx}
+\usepackage{nicefrac} %zum darstellen von 1/2 in "schön"
+\usepackage{upgreek}
+\usepackage{cancel}
+\usepackage{braket}
+\usepackage{tensor}
+\usepackage{marvosym}
+\usepackage{mathtools}
+\usepackage{mathrsfs} 
+\usepackage{amsfonts, amsmath, amssymb} %Mathezeugs
+\usepackage{fixmath}
+\usepackage{bm}
+\usepackage{dsfont}
+\usepackage{minted} %to highlight code syntax
+
+\usepackage{stackengine,scalerel}
+\usepackage{calc}
+
+\usepackage{hyperref}
+\makeatletter
+\def\@footnotecolor{myorange}
+\define@key{Hyp}{footnotecolor}{%
+ \HyColor@HyperrefColor{#1}\@footnotecolor%
+}
+\def\@footnotemark{%
+    \leavevmode
+    \ifhmode\edef\@x@sf{\the\spacefactor}\nobreak\fi
+    \stepcounter{Hfootnote}%
+    \global\let\Hy@saved@currentHref\@currentHref
+    \hyper@makecurrent{Hfootnote}%
+    \global\let\Hy@footnote@currentHref\@currentHref
+    \global\let\@currentHref\Hy@saved@currentHref
+    \hyper@linkstart{footnote}{\Hy@footnote@currentHref}%
+    \@makefnmark
+    \hyper@linkend
+    \ifhmode\spacefactor\@x@sf\fi
+    \relax
+  }%
+\makeatother
+\hypersetup{
+  linkcolor = blue,
+  citecolor  = myorange,
+  urlcolor   = myblue,
+  colorlinks = true,
+}
+%
+\definecolor{myred}  {HTML}{A3061E}
+\definecolor{myblue} {RGB} {0,63,119}
+\definecolor{myyellow} {cmy} {0,0.263,0.741}
+\definecolor{mygreen} {HTML}{0B6E4F}
+%
+\colorlet{myorange} {myyellow!60!myred}
+\colorlet{myviolett} {myred!50!myblue!80}
+\renewcommand{\thefootnote}{\roman{footnote}}
+\MakePerPage{footnote} %Fußnoten werden am Ende jeder Seite statt am Ende des Dokuments angezeigt
+
+
+%\setcounter{tocdepth}{1} %Im Inhaltsverzeichnis werden Chapter und Sections angezeigt.
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{remark}{Remark}[section]
+
+\newlength\shlength
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5\baselineskip}
+
+
+
+\definecolor{shadecolor}{RGB}{192,192,192}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}

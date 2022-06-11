@@ -1,0 +1,145 @@
+\documentclass[a4paper, english, headtopline=0.08em, headsepline=0.04em, left = 1cm, right = 1cm, DIV=15]{article}
+
+\input{imports}
+\input{shorts}
+% template from https://latex.tum.de/project/618c4a584a8e454c5f4cfa1a
+\begin{document}
+{
+    \begin{titlepage}
+    	\centering
+    	\vfill
+    	{\scshape\LARGE Technische Universität München \par}
+    	\vfill
+    	{\scshape\Large Summary of the lecture MA4800\\   \par}
+    	{\huge\bfseries Foundations in Data Analysis \par}
+    	\vfill
+    	{\Large\itshape Instructors: Dr. Anna Veselovska and  Felix Krahmer\par}
+    	\vfill
+    \end{titlepage}
+}
+
+\tableofcontents
+\clearpage 
+
+%%%%% section start %%%%%%%%%
+\section{Linear Algebra Review}
+
+
+\begin{itemize}
+	\item We work on $\mathbb{K} \in\{\mathbb{R}, \mathbb{C}\}$.
+	\item $A^H = \overline{(A^T)}$.
+	\item A Hermitian matrix $A$ satisfies $A=A^H$.
+	\item $A^{(i)}$ are rows and $A_{(j)}$ are the columns.
+	\item $A^{(i)}=\left(a_{i j}\right)_{j \in J}$ and $A_{(j)}=\left(a_{i j}\right)_{i \in I}=\left(A^{T}\right)^{(j)}$
+	\item The matrix-vector product between $A \in \mathbb{K}^{I \times J}$ and $x \in \mathbb{K}^{I}$ results in the vector in $A x \in K^{\prime}$ with entries
+
+\end{itemize}
+
+\subsection{Matrices}
+
+\begin{align*}
+	(A x)_{i}=\sum_{j \in J} a_{i j} x_{j} .
+\end{align*}
+\subsection{Matrix Multiplication}
+The matrix-matrix product between $A \in \mathbb{K}^{I\times J}$ and $B \in \mathbb{K}^{J \times L}$ yields the matrix in $\mathbb{K}^{I \times L}$ with entries
+\begin{align*}
+	(A B)_{i \ell}=\sum_{j \in J} A_{i j} B_{j \ell} .
+\end{align*}
+%%%%% section end %%%%%%%%%
+
+
+%%%%% section start %%%%%%%%%
+\section{The Singular Value Decomposition}
+
+\subsection{The Power Method}
+\begin{lemma}
+Let $x \in \mathbb{R}^{d}$ be a unit $d$-dimensional vector of components $x=$ $\left(x_{1}, \ldots, x_{d}\right)$ with respect to the canonical basis and picked uniformly at random from the sphere $\left\{x:\|x\|_{2}=1\right\}$. The probability that $\left|x_{1}\right| \geq \alpha>0$ is at least $1-C \alpha \sqrt{d}$ for some absolute constant.
+\end{lemma}
+\subsection*{Proof}
+We want the probability of y picked uniformly at random from
+\begin{align*}
+	B^d(1)=\left\{y\in\RR^d,||y||_2 \leq 1\right\}
+\end{align*}	
+satisfies $|y_1|>\alpha$. In other words, we are looking for the fraction of $B^d(1)$ that satisfies $|y_1|>\alpha$.
+This corresponds to
+\begin{align*}
+	V_{\alpha}:=\text{Vol}(B^d(1) \cap \{y : |y_1| \leq \alpha\})
+\end{align*}
+\begin{align*}
+	=\int_{y\in B^d(1) \cap \{y : |y_1| \leq \alpha\}}1dy
+\end{align*}
+\begin{align*}
+	=\int_{-\alpha}^{\alpha} \left(\int_{\RR^{d-1}} 1_{y_2^2+...+y_d^2\leq 1-y_1^2}\,dy_2...dy_d\right)dy_1
+\end{align*}
+\begin{align*}
+=\int_{-\alpha}^{\alpha} \text{Vol}\left(B^{d-1}\left(\sqrt{1-y_1^2}\right)\right)dy_1
+\end{align*}
+Replacing $\text{Vol}\left(B^{d-1}\left(\sqrt{1-y_1^2}\right)\right)$ with $(\sqrt{1-y_1^2})^{d-1}\text{Vol}\left(B^{d-1}(1)\right)$ since the volume the unit ball with a factor proportional to radius in the power of $d-1$.
+\begin{align*}
+	=\int_{-\alpha}^{\alpha} (\sqrt{1-y_1^2})^{d-1}\text{Vol}\left(B^{d-1}(1)\right)dy_1
+\end{align*}
+\begin{align*}
+	=\text{Vol}\left(B^{d-1}(1)\right)\int_{-\alpha}^{\alpha} (1-y_1^2)^{(d-1)/2}dy_1
+\end{align*}
+In the integral part, $\int_{-\alpha}^{\alpha} (1-y_1^2)^{(d-1)/2}dy_1$, notice that $(1-y_1^2)^{(d-1)/2}<1$ in the whole integration domain.
+Thus we can write
+\begin{align*}
+	=\text{Vol}\left(B^{d-1}(1)\right)\int_{-\alpha}^{\alpha} (1-y_1^2)^{(d-1)/2}dy_1
+\end{align*}
+\begin{align*}
+	\leq \text{Vol}\left(B^{d-1}(1)\right)\int_{-\alpha}^{\alpha} 1dy_1
+\end{align*}
+\begin{align*}
+	=2\alpha \text{Vol}\left(B^{d-1}(1)\right)
+\end{align*}
+Recall that volume of unit ball in d dimensions is asymptotically
+\begin{align*}
+	V_1 = \frac{1}{\sqrt{d\pi}}\left(\frac{2 \pi e}{d}\right)^{d/2}
+\end{align*}
+Hence the probability $p$ we are interested in satisfies asymptotically
+\begin{align*}
+	p=\frac{V_\alpha}{V_1} \propto
+\frac{2\alpha\frac{1}{\sqrt{(d-1)\pi}}\left(\frac{2 \pi e}{d-1}\right)^{(d-1)/2}}
+ {\frac{1}{\sqrt{d\pi}}\left(\frac{2 \pi e}{d}\right)^{d/2}}
+=
+\frac{2\alpha\frac{1}{\sqrt{(d-1)\pi}}\left(\frac{2 \pi e}{d-1}\right)^{(d-1)/2}}
+{\frac{1}{\sqrt{d\pi}}\left(\frac{2 \pi e}{d}\right)^{(d-1)/2}\left(\frac{2 \pi e}{d}\right)^{1/2}}
+\end{align*}
+We simplify the last term
+\begin{align*}
+	=2\alpha* \left(\frac{d}{d-1}\right)^{1/2} *   \left(\frac{d}{d-1}\right)^{(d-1)/2} * \left(\frac{d}{2\pi e}\right)^{1/2}
+\end{align*}
+\begin{align*}
+	=2\alpha*  \left(\frac{d}{\sqrt{2\pi e (d-1)}}\right) *   \left(\frac{d}{d-1}\right)^{(d-1)/2}
+\end{align*}
+ Since $\frac{d}{d-1} = 1+\frac{1}{d-1}$
+\begin{align*}
+	=2\alpha*  \left(\frac{d}{\sqrt{2\pi e (d-1)}}\right) *   \left(1+\frac{1}{d-1}\right)^{(d-1)/2}
+\end{align*}
+We modify the power of the same term, to show it as
+\begin{align*}
+	=2\alpha*  \left(\frac{d}{\sqrt{2\pi e (d-1)}}\right) *   \left(\left(1+\frac{1}{d-1}\right)^{(d-1)}\right)^{1/2}
+\end{align*}
+Recall that 
+\begin{align*}
+	e = \lim_{n \rightarrow \infty} \left(1+1/n\right)^n
+\end{align*}
+Thus this term is bounded with $\sqrt{e}$
+\begin{align*}
+	\leq 2\alpha*  \left(\frac{d}{\sqrt{2\pi e (d-1)}}\right) *   \sqrt{e}
+\end{align*}
+We reformulate as
+\begin{align*}
+	= \alpha \sqrt{d}\sqrt{\frac{2d}{\pi(d-1)}}
+\end{align*}
+Since $\sqrt{\frac{d}{d-1}}\leq 2$ for $d\geq 2$
+\begin{align*}
+	\leq \frac{2\sqrt{2}}{\pi}\alpha \sqrt{d} 
+\end{align*}
+Given that all of this only holds asymptotically; we might need another multiplicative constant to make it hold in general. Hence the constant $C$ in the theorem.
+\begin{align*}
+	p \leq  C\alpha \sqrt{d}
+\end{align*}
+\end{document}
+
+%%%%% section end %%%%%%%%%
