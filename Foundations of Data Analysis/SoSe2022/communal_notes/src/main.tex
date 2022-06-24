@@ -13,7 +13,7 @@
     	{\scshape\Large Summary of the lecture MA4800\\   \par}
     	{\huge\bfseries Foundations in Data Analysis \par}
     	\vfill
-    	{\Large\itshape Instructors: Dr. Anna Veselovska and  Felix Krahmer\par}
+    	{\Large\itshape Instructors: Prof. Felix Krahmer and Dr. Anna Veselovska \par}
     	\vfill
     \end{titlepage}
 }
@@ -30,9 +30,10 @@
 	\item $A^H = \overline{(A^T)}$.
 	\item A Hermitian matrix $A$ satisfies $A=A^H$.
 	\item $A^{(i)}$ are rows and $A_{(j)}$ are the columns.
-	\item $A^{(i)}=\left(a_{i j}\right)_{j \in J}$ and $A_{(j)}=\left(a_{i j}\right)_{i \in I}=\left(A^{T}\right)^{(j)}$
-	\item The matrix-vector product between $A \in \mathbb{K}^{I \times J}$ and $x \in \mathbb{K}^{I}$ results in the vector in $A x \in K^{\prime}$ with entries
-
+	\item $A^{(i)}=\left(a_{i j}\right)_{j \in J}$ 
+	and $A_{(j)}=\left(a_{i j}\right)_{i \in I}=\left(A^{T}\right)^{(j)}$
+	\item The matrix-vector product between 
+	$A \in \mathbb{K}^{I \times J}$ and $x \in \mathbb{K}^{I}$ results in the vector in $A x \in K^{\prime}$ with entries
 \end{itemize}
 
 \subsection{Matrices}
@@ -40,7 +41,7 @@
 \begin{align*}
 	(A x)_{i}=\sum_{j \in J} a_{i j} x_{j} .
 \end{align*}
-\subsection{Matrix Multiplication}
+\subsection{Matrix multiplication}
 The matrix-matrix product between $A \in \mathbb{K}^{I\times J}$ and $B \in \mathbb{K}^{J \times L}$ yields the matrix in $\mathbb{K}^{I \times L}$ with entries
 \begin{align*}
 	(A B)_{i \ell}=\sum_{j \in J} A_{i j} B_{j \ell} .
@@ -50,12 +51,15 @@ The matrix-matrix product between $A \in \mathbb{K}^{I\times J}$ and $B \in \mat
 
 %%%%% section start %%%%%%%%%
 \section{The Singular Value Decomposition}
-
-\subsection{The Power Method}
-\begin{lemma}
+\subsection{The leading singular vector}
+\subsection{Principal components}
+\subsection{Further singular vectors}
+\subsection{Best k-rank approximation}
+\subsection{The power method}
+\begin{lemma} \label{lemma6.1} %named same with the numbers in the slides
 Let $x \in \mathbb{R}^{d}$ be a unit $d$-dimensional vector of components $x=$ $\left(x_{1}, \ldots, x_{d}\right)$ with respect to the canonical basis and picked uniformly at random from the sphere $\left\{x:\|x\|_{2}=1\right\}$. The probability that $\left|x_{1}\right| \geq \alpha>0$ is at least $1-C \alpha \sqrt{d}$ for some absolute constant.
 \end{lemma}
-\subsection*{Proof}
+\subsubsection*{Proof}
 We want the probability of y picked uniformly at random from
 \begin{align*}
 	B^d(1)=\left\{y\in\RR^d,||y||_2 \leq 1\right\}
@@ -96,7 +100,7 @@ Recall that volume of unit ball in d dimensions is asymptotically
 \begin{align*}
 	V_1 = \frac{1}{\sqrt{d\pi}}\left(\frac{2 \pi e}{d}\right)^{d/2}
 \end{align*}
-Hence the probability $p$ we are interested in satisfies asymptotically
+Hence the probability $p=\Pr(\alpha \leq|y_1|)$ we are interested in satisfies asymptotically
 \begin{align*}
 	p=\frac{V_\alpha}{V_1} \propto
 \frac{2\alpha\frac{1}{\sqrt{(d-1)\pi}}\left(\frac{2 \pi e}{d-1}\right)^{(d-1)/2}}
@@ -140,6 +144,150 @@ Given that all of this only holds asymptotically; we might need another multipli
 \begin{align*}
 	p \leq  C\alpha \sqrt{d}
 \end{align*}
+This bounds the probability $p = \Pr(\alpha \leq|y_1|) \leq  C\alpha \sqrt{d}$. Considering the probability of the complement event
+the bounds $1-\Pr(\alpha > |y_1|) \leq  C\alpha \sqrt{d}$ can be stated as 
+\begin{align*}
+	1-C\alpha \sqrt{d} \leq \Pr(\alpha > |y_1|).
+\end{align*}
+
+\begin{remark} \label{remark6.2}
+Notice that in the previous result essentially shows also that, independently of the dimension d, the $x_1 = \langle x,u_1\rangle$  component
+of a random unit vector x with respect to any orthonormal basis $\{u_1 , . . . , u_d \}^1$ is bounded away from zero with overwhelming
+probability.
+\end{remark}
+
+\begin{remark} \label{remark6.3}
+Consider the isometric mapping $(a,b) \rightarrow a+bi$ from $\RR^2$ to $\CC$. The previous
+result extends to random unit vectors in $\CC^d$ simplify by modifying the statement as follows:
+The probability that, for a randomly chosen unit vector $z\in\CC^d$, $|z_1|\geq\alpha >0$ holds is
+at least $1-C\alpha\sqrt{2d}=1-C'\alpha\sqrt{d}$.
+\end{remark}
+It is important to note that remark \ref{remark6.2} and remark \ref{remark6.3} holds with any orthonormal basis by rotating it to coincide
+with the canonical basis.
+\begin{theorem}
+Let $A\in \KK^{I \times  J}$ and $x\in \KK^I$. Let $V$ be the space spanned by
+the left singular vectors of $A$ corresponding to singular values greater than $(1-\epsilon)\sigma_1$.
+Let $m\in \Omega\left(\frac{\ln(d/\epsilon)}{\epsilon}\right)$. Let $w^*$ be the unit vector after m iterations
+of the power method, namely,
+\begin{align} \label{t6.4_theorem}
+	w^* = \frac{\left(AA^H\right)^mx}{||\left(AA^H\right)^mx||_2}
+\end{align}
+The probability that $w^*$ has a component of at most $l$, where  $l \in O\left(\frac{\epsilon}{\alpha d}\right)$,
+orthogonal to $V$ is at least $1-C\alpha\sqrt{d}$ i.e. $1-C\alpha\sqrt{d} < \Pr\left(\|\text{Proj}_{V^{\bot }}(w^*)\|_2<l\right)$.
+\end{theorem}
+% todo: what does this mean give a more meaning full explanation and an example
+\subsubsection*{Proof}
+% todo refer to SVD
+Let the SVD of $A$ be given by
+\begin{align*}
+	A = \sum_{k=1}^r \sigma_k u_k v_k^H
+\end{align*}
+If the rank of A is less than $n=|I|$ we complete the orthonormal set of vectors $\left\{u_1,...,u_r\right\}$
+into a full orthogonal basis $\left\{u_1,...,u_n\right\}$ of the $n$-dimensional space.
+% todo: maybe orthonormal basis?
+We can expand $x$ in the terms of this basis as
+\begin{align*}
+	x = \sum_{k=1}^n \langle x,u_k\rangle u_k
+\end{align*}
+% todo: where is this expansion mentioned before
+We set $\sigma_k=0$ for $k>r$ so that we can write $A$ as
+\begin{align*}
+	A = \sum_{k=1}^n \sigma_k u_k v_k^H
+\end{align*}
+It follows that 
+% todo: refer to this equation
+\begin{align*}
+	(AA^H)^m x = \sum_{k=1}^n \sigma_k^{2m}u_ku_k^Hx = \sum_{k=1}^n \sigma_k^{2m}u_k\langle x,u_k\rangle
+\end{align*}
+By lemma \ref{lemma6.1}, remark \ref{remark6.2} and remark \ref{remark6.3} one 
+has $|\langle x_1,u_1 \rangle| \geq  \alpha > 0$ with probability 
+at least $1-C\alpha \sqrt{d}$.
+We choose $r_{\epsilon}$ such that $\sigma_1,...,\sigma_{r_\epsilon}$ are the singular values of
+$A$ that are greater or equal to $(1-\epsilon)\sigma_1$ and $\sigma_{r_{\epsilon}+1},...,\sigma_n$ are those 
+that are less than $(1-\epsilon)\sigma_1$. Notice that $V = \text{span}\left\{\sigma_1,...,\sigma_{r_\epsilon}\right\}$ and
+$V^\bot = \text{span}\left\{\sigma_{r_{\epsilon+1}},...,\sigma_{n}\right\}$.
+The component of $w^*$ orthogonal to $V^\bot$ is $\text{Proj}_{V^{\bot }}(w^*)$ which can be written as
+\begin{align}\label{t6.4_proj}
+	\text{Proj}_{V^{\bot }}(w^*) = \frac{\text{Proj}_{V^{\bot}}\left( \left( AA^H\right)^m x \right)}{\|\left(AA^H\right)^m x\|_2}
+\end{align}
+We find  denominator of equation \ref{t6.4_proj} by Pythagoras-Fourier theorem
+\begin{align} \label{t6.4_denom}
+	||(AA^H)^m x||_2^2 = \sum_{k=1}^{n}\sigma_k^{4m} |\langle x,u_k\rangle|^2
+\end{align}
+\begin{align} \label{t6.4_denom_bound}
+	\sum_{k=1}^{n}\sigma_k^{4m} |\langle x,u_k\rangle|^2 \geq
+	\sigma_1^{4m}|\langle x,u_1\rangle|^2 \geq
+	\sigma_1^{4m}\alpha^2 
+\end{align}
+with probability at least $1-C\alpha\sqrt{d}$. To find the nominator of equation \ref{t6.4_proj}, 
+we check component of $(AA^H)^m x$ that is orthogonal to $V = span\{u_1,\dots,u_{r_\epsilon}\}$, namely,
+\begin{align} \label{t6.4_nom}
+	\text{Proj}_{V^{\bot}}\left( \left( AA^H\right)^m x \right) = \sum_{k=1}^n \sigma_k^{2m} |\langle x, u_k \rangle|_2=\sum_{k=r_\epsilon + 1}^n \sigma_k^{2m} |\langle x, u_k \rangle|_2 
+\end{align} 
+\begin{align} \label{t6.4_nom_bound}
+	\text{Proj}_{V^{\bot}}\left( \left( AA^H\right)^m x \right) 
+	\leq (1-\epsilon)^{2m} \sigma_1^{2m} \sum_{k=r_\epsilon + 1}^n |\langle x, u_k\rangle|_2 \leq (1-\epsilon)^{2m} \sigma_1^{2m}	
+\end{align}
+since $\sum_{k=r_\epsilon + 1}^n \leq ||x||_2^2 = 1$ and $(1-\epsilon)\sigma_1>\sigma_k$ for $r_{\epsilon}<k$.
+
+By using \ref{t6.4_denom} and \ref{t6.4_nom} we find squared norm of the component of $w^*$ orthogonal to $V$, that is $\|\text{Proj}_{V^{\bot }}(w^*)\|_2^2$, as
+$$
+\|\text{Proj}_{V^{\bot }}(w^*)\|_2^2
+= \frac{\sum_{k=r_\epsilon + 1}^n \sigma_k^{4m} |\langle x, u_k \rangle|^2}{\sum_{k=1}^n \sigma_k^{4m} |\langle x, u_k \rangle|^2}
+$$
+We bound this term by using the relations \ref{t6.4_denom_bound} and \ref{t6.4_nom_bound}
+$$
+\|\text{Proj}_{V^{\bot }}(w^*)\|_2^2=
+\frac{\sum_{k=r_\epsilon + 1}^n \sigma_k^{4m} |\langle x, u_k \rangle|^2}{\sum_{k=1}^n \sigma_k^{4m} |\langle x, u_k \rangle|^2}
+\leq \frac{(1-\epsilon)^{4m} \sigma_1^{4m}}{\alpha^2 \sigma_1^{4m}}
+= \frac{(1-\epsilon)^{4m}}{\alpha^2}
+$$
+Thus, by taking the square root we have
+\begin{align*}
+	\|\text{Proj}_{V^{\bot }}(w^*)\|_2 \leq \frac{(1-\epsilon)^{2m}}{\alpha}
+\end{align*}
+In terms of \textit{Big O} notation we have
+\begin{align*}
+	\|\text{Proj}_{V^{\bot }}(w^*)\|_2 \in \OO\left(\frac{(1-\epsilon)^{2m}}{\alpha}\right) 
+\end{align*}
+Notice that $1-\epsilon$ is a linear approximation of $e^{-\epsilon}$. Similarly, $(1-\epsilon)^{2m}$ approximates
+$e^{-2m}$ for small $\epsilon$. Using this approximation,
+\begin{align*}
+	\|\text{Proj}_{V^{\bot }}(w^*)\|_2 \in \OO\left(\frac{e^{-2\epsilon m}}{\alpha}\right) 
+\end{align*}
+Recall that $m\in \Omega\left(\frac{\ln(d/\epsilon)}{\epsilon}\right)$. This is another way
+of saying there exists $m_0$ and some constant $c>0$ such that $m \geq c\frac{\ln(d/\epsilon)}{d}$ for all $m>m_0$.
+Similarly, this also means there exists $m_0$ and some 
+constant $c>0$ such that $-\frac{m}{c} \leq -\frac{\ln(d/\epsilon)}{d}$ for all $m>m_0$.
+Since exponentiation is a non-decreasing function $e^{-\frac{m}{c}} \leq e^{-\frac{\ln(d/\epsilon)}{\epsilon}} = e^{\frac{\ln(\epsilon/d)}{\epsilon}} = (\epsilon/d)^{1/\epsilon}$. We have
+\begin{align*}
+	e^{-\frac{m}{c}} \leq (\epsilon/d)^{1/\epsilon}
+\end{align*}
+for some constant $c>0$ and $m>m_0$. 
+We take the power of $\epsilon$ of both sides
+\begin{align*}
+	e^{-\frac{m\epsilon}{c}} \leq \frac{\epsilon}{d}
+\end{align*}
+Let $c_1 = c/2$
+\begin{align*}
+	e^{-\frac{2m\epsilon}{c_1}} \leq \frac{\epsilon}{d}
+\end{align*}
+For some constant $e^{-1/c_1}>0$ and all $m > m_0$. We divide both sides with $\alpha$
+\begin{align*}
+	\frac{e^{-\frac{2m\epsilon}{c_1}}}{\alpha} \leq \frac{\epsilon}{\alpha d}
+\end{align*}
+\begin{align*}
+	{\alpha}^{-1}{e^{-\frac{2m\epsilon}{c_1}}} \leq \frac{\epsilon}{\alpha d}
+\end{align*}
+Which means
+\begin{align*}
+	\frac{e^{-{2m\epsilon}}}{\alpha} \in \OO\left(\frac{\epsilon}{\alpha d}\right) 
+\end{align*}
+Consequently
+\begin{align*}
+	\|\text{Proj}_{V^{\bot }}(w^*)\|_2 \in \OO\left(\frac{\epsilon}{\alpha d}\right) 
+\end{align*}
+%todo ref pythagoras fourier theorem
 \end{document}
 
 %%%%% section end %%%%%%%%%
