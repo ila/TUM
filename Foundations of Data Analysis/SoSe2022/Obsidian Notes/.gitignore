@@ -1,0 +1,8 @@
+*.pdf
+*.txt
+*.pdf
+*.txt
+.obsidian/
+__pycache__
+*.py
+exercises/
