@@ -21,10 +21,12 @@
 \tableofcontents
 \clearpage 
 
-%%%%% section start %%%%%%%%%
+% section Linear Algebra Review
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%% SECTION START %%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Linear Algebra Review}
-
-
+\subsection{The setup}
 \begin{itemize}
 	\item We work on $\mathbb{K} \in\{\mathbb{R}, \mathbb{C}\}$.
 	\item $A^H = \overline{(A^T)}$.
@@ -33,11 +35,9 @@
 	\item $A^{(i)}=\left(a_{i j}\right)_{j \in J}$ 
 	and $A_{(j)}=\left(a_{i j}\right)_{i \in I}=\left(A^{T}\right)^{(j)}$
 	\item The matrix-vector product between 
-	$A \in \mathbb{K}^{I \times J}$ and $x \in \mathbb{K}^{I}$ results in the vector in $A x \in K^{\prime}$ with entries
+	$A \in \mathbb{K}^{I \times J}$ and $x \in \mathbb{K}^{I}$ results in the vector in $A x \in K^{\PP ime}$ with entries
 \end{itemize}
-
 \subsection{Matrices}
-
 \begin{align*}
 	(A x)_{i}=\sum_{j \in J} a_{i j} x_{j} .
 \end{align*}
@@ -46,15 +46,21 @@ The matrix-matrix product between $A \in \mathbb{K}^{I\times J}$ and $B \in \mat
 \begin{align*}
 	(A B)_{i \ell}=\sum_{j \in J} A_{i j} B_{j \ell} .
 \end{align*}
-%%%%% section end %%%%%%%%%
+% section Linear Algebra Review
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%% SECTION END %%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-%%%%% section start %%%%%%%%%
+% section The Singular Value Decomposition
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%% SECTION START %%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The Singular Value Decomposition}
 \subsection{The leading singular vector}
 \subsection{Principal components}
 \subsection{Further singular vectors}
 \subsection{Best k-rank approximation}
+
 \subsection{The power method}
 \begin{lemma} \label{lemma6.1} %named same with the numbers in the slides
 Let $x \in \mathbb{R}^{d}$ be a unit $d$-dimensional vector of components $x=$ $\left(x_{1}, \ldots, x_{d}\right)$ with respect to the canonical basis and picked uniformly at random from the sphere $\left\{x:\|x\|_{2}=1\right\}$. The probability that $\left|x_{1}\right| \geq \alpha>0$ is at least $1-C \alpha \sqrt{d}$ for some absolute constant.
@@ -100,9 +106,9 @@ Recall that volume of unit ball in d dimensions is asymptotically
 \begin{align*}
 	V_1 = \frac{1}{\sqrt{d\pi}}\left(\frac{2 \pi e}{d}\right)^{d/2}
 \end{align*}
-Hence the probability $p=\Pr(\alpha \leq|y_1|)$ we are interested in satisfies asymptotically
+Hence the probability $p=\PP (\alpha \leq|y_1|)$ we are interested in satisfies asymptotically
 \begin{align*}
-	p=\frac{V_\alpha}{V_1} \propto
+	p=\frac{V_\alpha}{V_1} \PP opto
 \frac{2\alpha\frac{1}{\sqrt{(d-1)\pi}}\left(\frac{2 \pi e}{d-1}\right)^{(d-1)/2}}
  {\frac{1}{\sqrt{d\pi}}\left(\frac{2 \pi e}{d}\right)^{d/2}}
 =
@@ -144,25 +150,25 @@ Given that all of this only holds asymptotically; we might need another multipli
 \begin{align*}
 	p \leq  C\alpha \sqrt{d}
 \end{align*}
-This bounds the probability $p = \Pr(\alpha \leq|y_1|) \leq  C\alpha \sqrt{d}$. Considering the probability of the complement event
-the bounds $1-\Pr(\alpha > |y_1|) \leq  C\alpha \sqrt{d}$ can be stated as 
+This bounds the probability $p = \PP (\alpha \leq|y_1|) \leq  C\alpha \sqrt{d}$. Considering the probability of the complement event
+the bounds $1-\PP (\alpha > |y_1|) \leq  C\alpha \sqrt{d}$ can be stated as 
 \begin{align*}
-	1-C\alpha \sqrt{d} \leq \Pr(\alpha > |y_1|).
+	1-C\alpha \sqrt{d} \leq \PP (\alpha > |y_1|).
 \end{align*}
-
 \begin{remark} \label{remark6.2}
 Notice that in the previous result essentially shows also that, independently of the dimension d, the $x_1 = \langle x,u_1\rangle$  component
 of a random unit vector x with respect to any orthonormal basis $\{u_1 , . . . , u_d \}^1$ is bounded away from zero with overwhelming
 probability.
 \end{remark}
-
 \begin{remark} \label{remark6.3}
 Consider the isometric mapping $(a,b) \rightarrow a+bi$ from $\RR^2$ to $\CC$. The previous
 result extends to random unit vectors in $\CC^d$ simplify by modifying the statement as follows:
 The probability that, for a randomly chosen unit vector $z\in\CC^d$, $|z_1|\geq\alpha >0$ holds is
 at least $1-C\alpha\sqrt{2d}=1-C'\alpha\sqrt{d}$.
 \end{remark}
-It is important to note that remark \ref{remark6.2} and remark \ref{remark6.3} holds with any orthonormal basis by rotating it to coincide
+It is important to note that \cref{remark6.2} and \cref{remark6.3} holds with any orthonormal basis by rotating it to coincide
+
+
 with the canonical basis.
 \begin{theorem}
 Let $A\in \KK^{I \times  J}$ and $x\in \KK^I$. Let $V$ be the space spanned by
@@ -173,7 +179,7 @@ of the power method, namely,
 	w^* = \frac{\left(AA^H\right)^mx}{||\left(AA^H\right)^mx||_2}
 \end{align}
 The probability that $w^*$ has a component of at most $l$, where  $l \in O\left(\frac{\epsilon}{\alpha d}\right)$,
-orthogonal to $V$ is at least $1-C\alpha\sqrt{d}$ i.e. $1-C\alpha\sqrt{d} < \Pr\left(\|\text{Proj}_{V^{\bot }}(w^*)\|_2<l\right)$.
+orthogonal to $V$ is at least $1-C\alpha\sqrt{d}$ i.e. $1-C\alpha\sqrt{d} < \PP \left(\|\text{Proj}_{V^{\bot }}(w^*)\|_2<l\right)$.
 \end{theorem}
 % todo: what does this mean give a more meaning full explanation and an example
 \subsubsection*{Proof}
@@ -199,7 +205,10 @@ It follows that
 \begin{align*}
 	(AA^H)^m x = \sum_{k=1}^n \sigma_k^{2m}u_ku_k^Hx = \sum_{k=1}^n \sigma_k^{2m}u_k\langle x,u_k\rangle
 \end{align*}
-By lemma \ref{lemma6.1}, remark \ref{remark6.2} and remark \ref{remark6.3} one 
+By \cref{lemma6.1}, \cref{remark6.2} and \cref{remark6.3} one 
+
+
+
 has $|\langle x_1,u_1 \rangle| \geq  \alpha > 0$ with probability 
 at least $1-C\alpha \sqrt{d}$.
 We choose $r_{\epsilon}$ such that $\sigma_1,...,\sigma_{r_\epsilon}$ are the singular values of
@@ -210,7 +219,8 @@ The component of $w^*$ orthogonal to $V^\bot$ is $\text{Proj}_{V^{\bot }}(w^*)$ 
 \begin{align}\label{t6.4_proj}
 	\text{Proj}_{V^{\bot }}(w^*) = \frac{\text{Proj}_{V^{\bot}}\left( \left( AA^H\right)^m x \right)}{\|\left(AA^H\right)^m x\|_2}
 \end{align}
-We find  denominator of equation \ref{t6.4_proj} by Pythagoras-Fourier theorem
+We find  denominator of \cref{t6.4_proj} by Pythagoras-Fourier theorem
+
 \begin{align} \label{t6.4_denom}
 	||(AA^H)^m x||_2^2 = \sum_{k=1}^{n}\sigma_k^{4m} |\langle x,u_k\rangle|^2
 \end{align}
@@ -219,7 +229,8 @@ We find  denominator of equation \ref{t6.4_proj} by Pythagoras-Fourier theorem
 	\sigma_1^{4m}|\langle x,u_1\rangle|^2 \geq
 	\sigma_1^{4m}\alpha^2 
 \end{align}
-with probability at least $1-C\alpha\sqrt{d}$. To find the nominator of equation \ref{t6.4_proj}, 
+with probability at least $1-C\alpha\sqrt{d}$. To find the nominator of \cref{t6.4_proj}, 
+
 we check component of $(AA^H)^m x$ that is orthogonal to $V = span\{u_1,\dots,u_{r_\epsilon}\}$, namely,
 \begin{align} \label{t6.4_nom}
 	\text{Proj}_{V^{\bot}}\left( \left( AA^H\right)^m x \right) = \sum_{k=1}^n \sigma_k^{2m} |\langle x, u_k \rangle|_2=\sum_{k=r_\epsilon + 1}^n \sigma_k^{2m} |\langle x, u_k \rangle|_2 
@@ -230,12 +241,16 @@ we check component of $(AA^H)^m x$ that is orthogonal to $V = span\{u_1,\dots,u_
 \end{align}
 since $\sum_{k=r_\epsilon + 1}^n \leq ||x||_2^2 = 1$ and $(1-\epsilon)\sigma_1>\sigma_k$ for $r_{\epsilon}<k$.
 
-By using \ref{t6.4_denom} and \ref{t6.4_nom} we find squared norm of the component of $w^*$ orthogonal to $V$, that is $\|\text{Proj}_{V^{\bot }}(w^*)\|_2^2$, as
+By using \cref{t6.4_denom} and \cref{t6.4_nom} we find squared norm of the component of $w^*$ orthogonal to $V$, that is $\|\text{Proj}_{V^{\bot }}(w^*)\|_2^2$, as
+
+
 $$
 \|\text{Proj}_{V^{\bot }}(w^*)\|_2^2
 = \frac{\sum_{k=r_\epsilon + 1}^n \sigma_k^{4m} |\langle x, u_k \rangle|^2}{\sum_{k=1}^n \sigma_k^{4m} |\langle x, u_k \rangle|^2}
 $$
-We bound this term by using the relations \ref{t6.4_denom_bound} and \ref{t6.4_nom_bound}
+We bound this term by using the relations \cref{t6.4_denom_bound} and \cref{t6.4_nom_bound}
+
+
 $$
 \|\text{Proj}_{V^{\bot }}(w^*)\|_2^2=
 \frac{\sum_{k=r_\epsilon + 1}^n \sigma_k^{4m} |\langle x, u_k \rangle|^2}{\sum_{k=1}^n \sigma_k^{4m} |\langle x, u_k \rangle|^2}
@@ -288,6 +303,369 @@ Consequently
 	\|\text{Proj}_{V^{\bot }}(w^*)\|_2 \in \OO\left(\frac{\epsilon}{\alpha d}\right) 
 \end{align*}
 %todo ref pythagoras fourier theorem
-\end{document}
+\subsection{Stability of the Singular Value
+Decomposition}
+Common scenario: data matrix of interest $A$, but one has
+only a perturbed version of it $\tilde{A} = A + E$ where $E$ is going
+to be a relatively small quantifiable perturbation.
 
-%%%%% section end %%%%%%%%%
+We start by considering Hermitian matrices $A\in \KK^{I \times I}$, i.e.
+$A = A^H$.
+Recall that a nonzero vector $v\in K^{I}$ is an eigenvector of $A$
+if $Av = \lambda v$ for some scalar $\lambda\in \KK$ called the 
+corresponding eigenvalue.  The following theorem establishes that Hermitian
+matrices have real eigenvalues and orthogonal
+eigenvectors.
+\begin{theorem}[Spectral theorem for Hermitian matrices]
+If $A \in K^{I \times I}$ and $A = A^H$ , then there exists an orthonormal basis
+$\{v_1, ..., v_n\}$ consisting of eigenvectors of A with real corresponding 
+eigenvalues $\{\lambda_1, ..., \lambda_n\}$ such that
+	\begin{align*}
+		A = \sum_{k=1} \lambda_k v_k {v_k}^H
+	\end{align*}
+	This representation is called the spectral decomposition of $A$.
+\end{theorem}
+As a consequence of the spectral theorem, for Hermitian
+matrices, singular value decomposition and eigenvalue
+decomposition are closely related.
+Indeed, by denoting $u_{k}=v_{k}\operatorname{sign}\lambda_{k}$ and $\sigma_{k}=|\lambda_{k}|$, then
+$$A=\sum_{k=1}^{n}\lambda_{k}v_{k}v_{k}^{H}=\sum_{k=1}^{n}\mathrm{sign}\,\lambda_{k}|\lambda_{k}|v_{k}v_{k}^{H}=\sum_{k=1}^{n}\sigma_{k}u_{k}v_{k}^{H},$$
+which is actually the SVD of $A$. Thus the SVD agrees with the spectral decomposition up
+to signs. A first step towards analyzing stability is hence to study
+stability of the spectral decomposition.
+\subsubsection*{Weyl's Bounds}
+Assume $\tilde A = {\tilde A}^H$ is Hermitian and hence also $E$.
+As the eigenvalues of $A$ are real, we can order in a
+non-increasing order $\lambda_{1}\geq\,\lambda_{2}\geq\,\cdot\,\cdot\,\geq\,\lambda_{n}$.
+Recall that we cannot assume that the eigenvalues are positive.
+Let's show
+\begin{align*}
+	\lambda_1(\tilde A) = \max_{|v|^2_{2}=1}v^{H}(\tilde A)v 
+\end{align*}
+Let $v=\tilde v_1$ from the spectral decomposition of $\tilde A$.
+\begin{align*}
+	 \tilde {v_1}^H \tilde A \tilde {v_1}  \leq \max_{|v|^2_{2}=1}v^{H}(\tilde A)v \\
+	 \tilde \lambda_1  \leq \max_{|v|^2_{2}=1}v^{H}(\tilde A)v 
+\end{align*}
+Now consider the maximizer $v^*$ decomposed into orthonormal basis vectors i.e. $v^* = \sum_j\alpha_j\tilde v_j$ where $\sum_j \alpha_j^2 = 1$.
+Let's plug it in
+\begin{align*}
+	\max_{|v|^2_{2}=1} \left(\sum_j{\bar\alpha_j}\tilde v_j^H\right)\tilde A\left(\sum_j\alpha_j\tilde v_j\right)
+\end{align*}
+Let $\tilde A = \sum_j \tilde \lambda_j \tilde v_j \tilde v_j^H$ be the spectral decomposition. Let's plug it in the equation.
+\begin{align*}
+	\max_{|v|^2_{2}=1} \left(\sum_j{\bar\alpha_j}\tilde v_j^H\right) \sum_j \tilde \lambda_j \tilde v_j \tilde v_j^H\left(\sum_j\alpha_j\tilde v_j\right) \\
+\end{align*}
+When the orthogonal vectors cancel out we will have the following
+\begin{align*}
+	\max_{|v|^2_{2}=1} \sum_j \alpha_j^2\tilde\lambda_j
+\end{align*}
+Notice that 
+\begin{align*}
+\sum_j \alpha_j^2 \tilde \lambda_j \leq \sum_j  \alpha_j^2 \tilde \lambda_1 = \tilde \lambda_1
+\end{align*}
+since $\sum_j \alpha_j^2 = 1$. Hence we have
+\begin{align*}
+	\lambda_1(\tilde A) = \max_{|v|^2_{2}=1}v^{H}(\tilde A)v 
+\end{align*}
+\begin{align*}
+	\lambda_1(\tilde A) = \max_{|v|^2_{2}=1}v^{H}(A+E)v \\
+\end{align*}
+\begin{align*}
+	\max_{|v|^2_{2}=1}v^{H}(A+E)v \leq \max_{|v|^2_{2}=1}v^{H}(A)v + \max_{|v|^2_{2}=1}v^{H}(A)v 
+\end{align*}
+Thus we have 
+\begin{align*}
+	\lambda_1(\tilde A) \leq \lambda_1(A) + \lambda_1(E)
+\end{align*}
+\begin{theorem}[Weyl]
+	If $A,E \in \KK^{I \times I}$ are two Hermitian matrices, then for all k = $1, ..., n$
+	\begin{align*}
+		\lambda_{k}(A)+\lambda_{n}(E)\leq\lambda_{k}(A+E)\leq\lambda_{k}(A)+\lambda_{1}(E).
+	\end{align*}
+\end{theorem}
+
+% section Singular Value Decomposition
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%% SECTION END %%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% section basics on probability
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%% SECTION START %%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Basics on Probability}
+\subsection{Motivation and single random variables}
+% slide 160
+\subsubsection*{Motivating example}
+Power method for computing singular vectors requires
+us to choose a point at random on the sphere. But there are infinitely many points on the sphere
+Yet the sphere is too “small” to proceed via a density on the
+entire space. We model a random point on $S^1$ using the following random
+process. Recall that $S^{n}=\left\{x\in\mathbb{R}^{n+1}:||x||=1\right\}$. \newline
+Consider an imaginary player $X$ of darts, with no
+experience, throwing darts at random at the two
+dimensional disk $\Omega = B_r$ radius $r$ and center $O$.
+At every point $\omega \in \Omega$ within the target hit by a dart we
+assign a point on the boundary of the target $X(\omega) = \frac{\omega}{||\omega||_2} \in S^1$. $S^1$
+can be parameterized by the angle $\theta \in [0,2\pi)$. Hence we consider the player $X$ as
+a map from $\omega\in\Omega$ to $\theta$
+\begin{align*}
+	X: \Omega \rightarrow \RR
+\end{align*}
+\subsubsection*{Calculating probabilities}
+What is the probability of the event 
+\begin{align*}
+	B = \left\{w\in\Omega:\theta_1\leq X(\omega)\leq \theta_2\right\}?
+\end{align*}
+%todo finish this part
+\subsubsection*{Expectations}
+For $N$ attempts of the player the empirical average will be
+\begin{align*}
+	\frac{1}{N}\sum_{i=1}^N X(\omega_i)
+\end{align*}
+As $N\rightarrow\infty$ this yields the expectation
+\begin{align*}
+	\EE X := \frac{1}{2\pi} \int_{0}^{2\pi}\theta d\theta = \pi
+\end{align*}
+%todo
+%\subsubsection*{Densities}
+\subsubsection*{Abstract probability theory}
+% slide 166
+A probability space is given by a triplet $(\Omega,\Sigma,\PP)$. Where the sample space $\Omega$
+is the set on which the probability is defined. $\Sigma$ is the $\sigma$-algebra (a family of subsets of $\Omega$)
+and defines the admissible events. $\PP$ is the probability measure on $(\Omega,\Sigma)$, that
+is, it assigns to each event $B\in\Sigma$ to a value $\in[0,1]$, the probability of the event
+through
+\begin{align*}
+	\PP(B) = \int_B d\PP(\omega) = \int_{\Omega} 1_B(\omega)d\PP (\omega)
+\end{align*}
+\subsubsection*{The union bound}
+Consequence of the properties of a measure: For two disjoint events $B_1,B_2,B_1 \cap B_2 = \emptyset$
+\begin{align*}
+	\PP(B_1 \cup B_2) = \PP(B_1) + \PP(B_2)
+\end{align*}
+\begin{theorem}
+The union bound (or Bonferroni's inequality, or Boole's
+inequality) states that for a collection of events $B_l\in\Sigma$, $l=1,...,n$, we have
+\begin{align}\label{eq3_25}
+\PP\left(\bigcup_{l=1}^{n}B_{l}\right)\leq\sum_{l=1}^{n}\PP \left(B_{l}\right).
+\end{align}
+\end{theorem}
+
+\subsubsection*{Proof}
+For two sets $B_1$ and $B_2$: Notice that these two sets are equal
+\begin{align*}
+	B_1 \cup B_2 = \left(B_1 \setminus B_2\right) \cup B_2
+\end{align*}
+If we write the probabilities of these events 
+\begin{align*}
+	\PP \left(B_1 \cup B_2 \right) = \PP\left(\left(B_1 \setminus B_2\right) \cup B_2\right)
+\end{align*} 
+Notice that $\left(B_1 \setminus B_2\right) \cap B_2 = \emptyset$
+\begin{align*}
+	\PP\left(\left( B_1 \setminus B_2 \right) \cup B_2\right) = \PP \left(B_1 \setminus B_2 \right) + \PP \left( B_2 \right)
+\end{align*}
+Since $ B_1 \setminus B_2  \subseteq B_1$ we can write the proof in one line as
+\begin{align*}
+	\PP \left(B_1 \cup B_2 \right)=\PP \left(\left(B_1 \setminus B_2\right) \cup B_2 \right) = \PP \left(B_1 \setminus B_2 \right) + \PP \left( B_2 \right)  \leq \PP(B_1) + \PP(B_2)
+\end{align*}
+The bound is obtained by the fact $\PP \left(B_1 \setminus B_2 \right) \leq \PP \left(B_1\right)$.
+Assume for $n-1$
+\begin{align}\label{boole_hyp}
+	\PP\left(\bigcup_{l=1}^{n-1}B_{l}\right)\leq\sum_{l=1}^{n-1}\PP \left(B_{l}\right).
+\end{align}
+Let $\bigcup_{l=1}^{n-1}B_{l} = A$. 
+\begin{align}\label{boole_hyp_a}
+	\PP\left(A\right)\leq\sum_{l=1}^{n-1}\PP \left(B_{l}\right).
+\end{align}
+Consider the union $A \cup B_n$
+\begin{align*}
+	\PP\left(\left(A\setminus B_n\right) \cup B_n \right) = \PP\left(A\setminus B_n\right) + \PP(B_n) 
+\end{align*}
+Notice that $ \PP \left(A \setminus B_n \right) \leq \PP \left(A\right)$
+\begin{align*}
+	\PP\left(\left(A\setminus B_n\right) \cup B_n \right) \leq \PP\left(A\right) + \PP(B_n) 
+\end{align*}
+Using the bound from \cref{boole_hyp_a} we have
+
+\begin{align*}
+	\PP\left(\left(A\setminus B_n\right) \cup B_n \right) \leq \PP\left(A\right) + \PP(B_n) \leq \sum_{l=1}^{n-1}\PP \left(B_{l}\right) + \PP(B_n)
+\end{align*}
+Hence we have
+\begin{align*}
+	\PP\left(\left(A\setminus B_n\right) \cup B_n \right) = \PP\left(\bigcup_{l=1}^{n}B_{l}\right) \leq \sum_{l=1}^{n}\PP \left(B_{l}\right).
+\end{align*}
+
+\subsubsection*{Random variables}
+A random variable $X$ is a real-valued measurable function on $(\Omega,\Sigma)$.
+\textbf{Recall}: X is called measurable if the preimage
+\begin{align*}
+	X^{-1}\left(A\right) = \left\{\omega\in\Omega : X(\omega)\in A\right\}
+\end{align*}
+is contained in $\Sigma$ for all Borel measurable subsets $A\subset \RR $. This means 
+reasonable events (values $X$ can take)
+are contained in the $\sigma$-algebra.
+
+\subsubsection*{Densities}
+The distribution function $F = F_X$ of $X$ is defined as
+\begin{align} \label{eq3_26}
+	F(t)=\PP (X\leq t),\quad t\in\mathbb{R}.
+\end{align}
+A random variable X possesses a \textit{probability density}
+function $\phi:\RR \rightarrow \RR_+$ if
+\begin{align} \label{eq3_27}
+	\PP (a < X\leq b)=\int_{a}^{b}\phi(t)\,\mathrm{d}t\quad{\mathrm{~for~all~}}a < b\in\mathbb{R}
+\end{align}
+Then the density function $\phi = \frac{dF(t)}{t}$. Note that not every random variable has
+a density.For example $X$ with $\PP(X=1)=\PP(X=-1)=0.5$. $F_X(t)$ is a partial function and isn't continuous.
+
+%slide 171 Expectations revisited
+\subsubsection*{Expectations revisited}
+The probability measure associated to a density $\phi$ is then given by
+$d\PP  =\varphi(\theta)d\theta$.
+Consequently, we can compute for a function g
+\begin{align*}
+\EE g(X):=\int_{\Omega}{g}(X(\omega))\mathrm{d}\PP (\omega)=\int_{\mathbb{R}}{g}(\theta)\varphi(\theta)d\theta.
+\end{align*}
+The probability of an event $E=\left\{X \in A\right\}$ satisfies $\PP (E) = \EE 1_E$ and hence 
+\begin{align*}
+	\PP (E) = \int_A \varphi(\theta)d\theta
+\end{align*}
+% slide 172
+\subsubsection*{Moments}
+$\EE X^p$ for $p>0$ are called moments of $X$, while ${\EE|X|}^p$ are called absolute moments.
+The quantity $\EE(X-\EE X)^2 = \EE X^2 - (\EE X)^2$ is called variance.
+For $1\leq p \leq \infty$, $\left(\EE|X|^p\right)^{1/p}$ defines a norm on the $L^p\left(\Omega,\PP\right)$-space
+of all $p$-integrable random variables, in particular, the triangle
+\begin{align}\label{eq3_28}
+\left(\EE {{|X+Y|}^p}\right)^{1/p} \leq  \left(\EE {{|X|}^p}\right)^{1/p} +  {\left(\EE {|Y|}^p\right)}^{1/p} 
+\end{align} 
+holds for all $p$-integrable random variables $X$,$Y$ on $\left(\Omega,\Sigma,\PP\right)$. Here, $p$-integrable random variables are random
+variables that have bounded $p$-th absolute moments.
+\subsubsection*{Important results about random variables}
+Hoelder's inequality states that, for random variables $X$, $Y$
+on a common probability space and $p,q\geq 1$  with
+\begin{align*}
+	\frac{1}{p} + \frac{1}{q} = 1
+\end{align*}
+we have 
+\begin{align*}
+	| \EE X Y | \leq \left(\EE |X|^{p}\right)^{1/p}\left(\EE |Y|^q \right)^{1/q}  
+\end{align*}
+Let $X_{n},n\in\mathbb{N}$, be a sequence of
+random variables such that $X_n$ converges
+to $X$ as $n \rightarrow \infty$ 
+in the sense that $\lim_{n\rightarrow\infty}X_n(\omega) = X\left(\omega\right)$
+almost surely (a.s.).
+\begin{theorem}[Lebesgue's dominated convergence theorem]
+	If there exists a random variable $Y$ with $\EE|Y| < \infty$ such that
+	$|X_n|<|Y|$ then almost surely $\lim_{n\rightarrow \infty}\EE X_n = \EE X$.
+\end{theorem}
+\subsubsection*{Moment computations \& Cavalieri's formula}
+\begin{proposition}
+	\label{prop9.1} 
+	The absolute moments of a random variable $X$ can be expressed as
+\begin{align} \label{eq3_prop9.1}
+\EE |X|^{p}=p\int_{0}^{\infty}\PP (|X|\geq t)t^{p-1} dt \,\quad p > 0.
+\end{align}
+\end{proposition}
+\subsubsection*{Important tool for the proof: Fubini's theorem}
+Let $f : A \times B \rightarrow C$ be measurable,
+ where $(A, \nu)$ and $(B, \mu)$ are
+measurable spaces. If $\int_{A\times B} |f(x, y)| d(\nu \otimes  \mu)(x, y) < \infty $ then 
+\begin{align*}
+	\int_{ A}\left(\int_{ B}f(x,y)\,d\mu (y)\right)\,d\nu(x)=\int_{ B}\left(\int_{ A}f(x,y)\,d\nu(x)\right)\,d\mu(y)\,.
+\end{align*}
+\subsubsection*{Proof}
+Using Fubini's theorem we derive 
+\begin{align*}
+	\EE |X|^p = \int_\Omega |X\left(\omega\right)|^p d\PP\left(\omega\right) \\
+	= \int_\Omega \int_0^{|X\left(\omega\right)|^p} 1dx \, d\PP\left(\omega\right) \\
+	= \int_\Omega \int_0^{\infty} \charf_{|X\left(\omega\right)|^p > x} dx \, d\PP\left(\omega\right) \\
+	= \int_0^{\infty} \int_\Omega \charf_{|X\left(\omega\right)|^p > x} d\PP\left(\omega\right) \, dx \\
+	= \int_0^{\infty} \PP\left(|X|^p \geq x\right) \, dx 
+\end{align*}
+Let $t^p = x$, we use the change of variables trick $p \, t^{p-1} \, dt = dx$
+\begin{align*}
+	\int_0^{\infty} \PP\left(|X|^p \geq x\right) \, dx \\
+	= p\int_0^{\infty} \PP\left(|X|^p \geq t^p \right) t^{p-1} \, dt \\
+	= p\int_0^{\infty} \PP\left(|X| \geq t \right) t^{p-1} \, dt 
+\end{align*}
+Hence we have proved \cref{prop9.1}.
+
+\begin{corollary} \label{cor9.2}
+	For a random variable $X$ the expectation satisfies
+	\begin{align} \label{eq3_cor9.2}
+		\EE X=\int_{0}^{\infty}\PP (X\geq t)\,dt-\int_{0}^{\infty}\PP (X\leq-t)\,dt\,.
+	\end{align}
+\end{corollary}
+\subsubsection*{Proof}
+Write $X=X_+ + X_-$ where $X_+ = X1_{X\geq 0}$ and $X_- = X1_{X < 0}$. Consequently
+$\EE X = \EE X_+ + \EE X_- = \EE |X_+| - \EE |X_-|$. Applying \cref{prop9.1} to both yields (for $p=1$) the \cref{cor9.2}.
+
+
+\subsubsection*{Tail bounds and Markov inequality}
+The function $t \rightarrow \PP\left(|X| \geq t\right)$ is called the \textbf{tail} of $X$. The tail can be estimated by expectations and moments
+via the Markov inequality.
+\begin{theorem} \label{theorem9.3}
+	Let $X$ be a random variable. Then
+\end{theorem}
+\begin{align} 
+	\PP (|X|\geq t)\leq{\frac{\EE |X|}{t}} \, \text{for all} \, t>0. 
+\end{align}
+\subsubsection*{Proof}
+Consider the term
+\begin{align} \label{eq_theorem9.2_1}
+	t\PP \left(|X| \geq t\right)
+\end{align}
+since $\PP \left(|X| \geq t\right) = \EE \charf_{|X| \geq t}$ this term \cref{eq_theorem9.2_1}
+
+can be written as
+\begin{align} \label{eq_theorem9.2_2}
+	t\PP \left(|X| \geq t\right) = t \EE \left[\charf_{|X| \geq t}\right]  = \EE \left[t\charf_{|X| \geq t}\right]
+\end{align}
+Notice that 
+\begin{align*}
+	t\charf_{|X| \geq t} \leq |X|
+\end{align*}
+always holds. This also means
+\begin{align*}
+	\EE \left[t\charf_{|X| \geq t}\right] \leq \EE |X|
+\end{align*}
+Notice that left hand side is same as \cref{eq_theorem9.2_1}. Hence we have
+
+\begin{align*}
+	t\PP \left(|X| \geq t\right) \leq \EE |X| \\
+	\PP \left(|X| \geq t\right) \leq \frac{\EE |X|}{t}.
+\end{align*}
+\begin{remark}
+	As an important consequence we note that for $p > 0$
+	\begin{align*}
+		\PP (|X|\geq t)= \PP (|X|^{p}\geq t^{p}) \leq t^{-p}\mathbb{E}|X|^{p} \quad \text{for all} \quad t>0
+	\end{align*}
+	The special case p = 2 is referred to as the \textbf{Chebyshev} inequality.
+\end{remark}
+\begin{remark}
+	For $\theta > 0$ we obtain that for all $t \in \RR$
+	\begin{align*}
+		\PP (X\geq t)=\PP (\exp(\theta X)\geq\exp(\theta t)) 
+		\leq \exp(-\theta t)\mathbb{E}\exp(\theta X)\,.
+	\end{align*}
+	The function $\theta \rightarrow \EE \exp(\theta X)$ is usually called the 
+	\textbf{Laplace transform} or the \textbf{moment generating function} of $X$.
+\end{remark}
+\subsubsection*{Gaussian Random Variables}
+A normally distributed random variable or Gaussian
+random variable $X$ has probability density function
+\begin{align*}
+	\psi(t)=\frac{1}{\sqrt{2\pi\sigma^{2}}}\exp\left(-\frac{(t-\mu)^{2}}{2\sigma^{2}}\right).
+\end{align*}
+Its distribution is often denoted by $\Nr(\mu, \sigma)$.
+It has mean $\EE X = \mu$ and variance $\EE (X - \mu)^2 = \sigma^2$ .
+% section basics on probability
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%% SECTION END %%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
