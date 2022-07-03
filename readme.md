@@ -6,9 +6,7 @@ Since I really love Open Source and helping my fellow peers, I am collecting all
 
 The good news is, my LaTeX is objectively very pretty. The bad news is, my course choices are fairly unpopular, so do not expect mainstream machine learning stuff in this repository. The other half of my ECTS are Maths, and the notes for those are hand-written sheets of paper which have been used firstly to wipe my tears of desperation, and then gladly thrown away when the exam was over.
 
-These are class notes and there is no assurance that the material is correct and compliant to the professors' standards, therefore use them at your own risk. If you have any problems or notice any errors, you are more than welcome to notify them to ilaria.battiston@gmail.com.
-
-Please do not use my personal email to ask for exams or additional material! Everything I have is here, posting exams publicly is in most cases illegal and you are just annoying.
+These are class notes and there is no assurance that the material is correct and compliant to the professors' standards, therefore use them at your own risk. If you have any problems or notice any errors, you are more than welcome to fix them.
 
 Of course I expect you to comply with the TUM Code of Conduct and not copy. Anyway, there is the license, so it is illegal to copy regardless if you care or not about TUM rules.
 
