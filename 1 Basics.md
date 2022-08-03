@@ -1,5 +1,5 @@
-
-%% Lecture 1, 02.05. %%
+# 1 Basics
+%% #Lecture 1, 02.05. %%
 
 Motivation: to understand phenomena in deep learning, mathematical concepts needed are *linear algebra*, *nonlinear optimization*, *probability and statistics*.
 
